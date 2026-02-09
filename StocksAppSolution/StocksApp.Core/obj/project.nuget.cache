@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "tV9Eh6vYcOI=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\wwael\\OneDrive\\Documents\\Wael Projects\\ASP.NET Core Learning\\StocksApp\\StocksAppSolution\\StocksApp.Core\\StocksApp.Core.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\wwael\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.2\\microsoft.extensions.configuration.abstractions.10.0.2.nupkg.sha512",
+    "C:\\Users\\wwael\\.nuget\\packages\\microsoft.extensions.primitives\\10.0.2\\microsoft.extensions.primitives.10.0.2.nupkg.sha512",
+    "C:\\Users\\wwael\\.nuget\\packages\\newtonsoft.json\\13.0.4\\newtonsoft.json.13.0.4.nupkg.sha512"
+  ],
+  "logs": []
+}

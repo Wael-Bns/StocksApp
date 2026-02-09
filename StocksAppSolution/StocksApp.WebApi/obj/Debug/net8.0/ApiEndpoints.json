@@ -1,0 +1,18 @@
+[
+  {
+    "ContainingType": "StocksApp.WebApi.Controllers.StockController",
+    "Method": "GetCompanyProfile",
+    "RelativePath": "api/Stock",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "stockSymbol",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>7b8670d5-c325-488b-bf44-54df59144a55</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs" />
+    <Compile Include="obj\Debug\net8.0\StocksApp.WebApi.AssemblyInfo.cs" />
+    <Compile Include="obj\Debug\net8.0\StocksApp.WebApi.GlobalUsings.g.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="obj\Debug\net8.0\rpswa.dswa.cache.json" />
+    <Content Include="obj\Debug\net8.0\staticwebassets.removed.txt" />
+    <Content Include="obj\project.assets.json" />
+    <Content Include="obj\StocksApp.WebApi.csproj.nuget.dgspec.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StocksApp.Core\StocksApp.Core.csproj" />
+    <ProjectReference Include="..\StocksApp.Infrastructure\StocksApp.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="bin\Debug\net8.0\" />
+    <Folder Include="obj\Debug\net8.0\refint\" />
+    <Folder Include="obj\Debug\net8.0\ref\" />
+    <Folder Include="obj\Debug\net8.0\staticwebassets\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="obj\Debug\net8.0\StocksApp.WebApi.AssemblyInfoInputs.cache" />
+    <None Include="obj\Debug\net8.0\StocksApp.WebApi.assets.cache" />
+    <None Include="obj\Debug\net8.0\StocksApp.WebApi.csproj.AssemblyReference.cache" />
+    <None Include="obj\Debug\net8.0\StocksApp.WebApi.GeneratedMSBuildEditorConfig.editorconfig" />
+    <None Include="obj\project.nuget.cache" />
+    <None Include="obj\StocksApp.WebApi.csproj.nuget.g.props" />
+    <None Include="obj\StocksApp.WebApi.csproj.nuget.g.targets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.23" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.23">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.2" />
+  </ItemGroup>
+
+</Project>
