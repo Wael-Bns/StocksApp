@@ -1,8 +1,12 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using StocksApp.Core.Domain.RepositoryContracts;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 using StocksApp.Infrastructure;
+using StocksApp.WebApi.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 
 builder.Services.AddHttpClient();
+
+builder.Services.Configure<TradeOptions>(builder.Configuration.GetSection("TradingOptions"));
 
 builder.Services.AddScoped<IFinnHubService, FinnhubService>();
 

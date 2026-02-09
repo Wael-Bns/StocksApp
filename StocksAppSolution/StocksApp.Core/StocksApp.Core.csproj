@@ -8,32 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="obj\Debug\net8.0\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs" />
-    <Compile Include="obj\Debug\net8.0\StocksApp.Core.AssemblyInfo.cs" />
-    <Compile Include="obj\Debug\net8.0\StocksApp.Core.GlobalUsings.g.cs" />
+    <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="obj\**" />
+    <None Remove="obj\**" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="bin\Debug\net8.0\StocksApp.Core.deps.json" />
-    <Content Include="obj\Debug\net8.0\StocksApp.Core.csproj.FileListAbsolute.txt" />
-    <Content Include="obj\project.assets.json" />
-    <Content Include="obj\StocksApp.Core.csproj.nuget.dgspec.json" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="bin\Debug\net8.0\StocksApp.Core.dll" />
     <None Include="bin\Debug\net8.0\StocksApp.Core.pdb" />
-    <None Include="obj\Debug\net8.0\refint\StocksApp.Core.dll" />
-    <None Include="obj\Debug\net8.0\ref\StocksApp.Core.dll" />
-    <None Include="obj\Debug\net8.0\StocksApp.Core.AssemblyInfoInputs.cache" />
-    <None Include="obj\Debug\net8.0\StocksApp.Core.assets.cache" />
-    <None Include="obj\Debug\net8.0\StocksApp.Core.csproj.CoreCompileInputs.cache" />
-    <None Include="obj\Debug\net8.0\StocksApp.Core.dll" />
-    <None Include="obj\Debug\net8.0\StocksApp.Core.GeneratedMSBuildEditorConfig.editorconfig" />
-    <None Include="obj\Debug\net8.0\StocksApp.Core.pdb" />
-    <None Include="obj\project.nuget.cache" />
-    <None Include="obj\StocksApp.Core.csproj.nuget.g.props" />
-    <None Include="obj\StocksApp.Core.csproj.nuget.g.targets" />
   </ItemGroup>
 
   <ItemGroup>
