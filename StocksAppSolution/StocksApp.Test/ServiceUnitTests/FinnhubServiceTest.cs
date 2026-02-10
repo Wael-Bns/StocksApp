@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace StocksApp.Test.ServiceTests
 {
-    public class FinnhubTest
+    public class FinnhubServiceTest
     {
         public void GetCompanyProfile_EmptyStockSymbol()
         {
