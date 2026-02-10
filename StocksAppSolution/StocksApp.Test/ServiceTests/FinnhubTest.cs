@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace StocksApp.Test
+namespace StocksApp.Test.ServiceTests
 {
     public class FinnhubTest
     {

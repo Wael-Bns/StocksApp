@@ -12,6 +12,25 @@ namespace StocksApp.Infrastructure
     public class OrderRepository : IOrderRepository
     {
         private readonly ApplicationDbContext _dbContext;
+        public OrderRepository(ApplicationDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
+        public async Task<BuyOrder> AddBuyOrderAsync(BuyOrder buyOrder)
+        {
+            await _dbContext.BuyOrders.AddAsync(buyOrder);
+            await _dbContext.SaveChangesAsync();
+            return buyOrder;
+        }
+
+        public async Task<SellOrder> AddSellOrderAsync(SellOrder sellOrder)
+        {
+            await _dbContext.SellOrders.AddAsync(sellOrder);
+            await _dbContext.SaveChangesAsync();
+            return sellOrder;
+        }
+
         public async Task<List<BuyOrder>> GetAllBuyOrdersAsync()
         {
             return await _dbContext.BuyOrders.ToListAsync();
