@@ -7,10 +7,25 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="StocksApp.Test.csproj.Backup.tmp" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.18.1" />
     <PackageReference Include="FluentAssertions" Version="8.8.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StocksApp.Core\StocksApp.Core.csproj" />
+    <ProjectReference Include="..\StocksApp.Infrastructure\StocksApp.Infrastructure.csproj" />
+    <ProjectReference Include="..\StocksApp.WebApi\StocksApp.WebApi.csproj" />
   </ItemGroup>
 
 </Project>

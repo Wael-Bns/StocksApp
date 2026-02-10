@@ -8,18 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="bin\**" />
     <Compile Remove="obj\**" />
+    <EmbeddedResource Remove="bin\**" />
     <EmbeddedResource Remove="obj\**" />
+    <None Remove="bin\**" />
     <None Remove="obj\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="bin\Debug\net8.0\StocksApp.Core.deps.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="bin\Debug\net8.0\StocksApp.Core.dll" />
-    <None Include="bin\Debug\net8.0\StocksApp.Core.pdb" />
   </ItemGroup>
 
   <ItemGroup>

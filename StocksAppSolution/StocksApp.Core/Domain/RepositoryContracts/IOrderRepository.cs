@@ -16,5 +16,7 @@ namespace StocksApp.Core.Domain.RepositoryContracts
         Task<List<SellOrder>> GetAllSellOrdersAsync();
         Task<BuyOrder?> GetBuyOrder(Guid buyOrderID);
         Task<SellOrder?> GetSellOrder(Guid sellOrderID);
+        Task<BuyOrder> AddBuyOrderAsync(BuyOrder buyOrder);
+        Task<SellOrder> AddSellOrderAsync(SellOrder sellOrder);
     }
 }
