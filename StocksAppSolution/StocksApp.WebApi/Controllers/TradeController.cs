@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using StocksApp.Core.DTO;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.WebApi.Options;
 
@@ -11,11 +12,13 @@ namespace StocksApp.WebApi.Controllers
     public class TradeController : CommonControllerBase
     {
         private readonly IFinnHubService _finnHubService;
+        private readonly IStockService _stockService;
         private readonly IOptions<TradeOptions> _tradeOptions;
 
-        public TradeController(IFinnHubService finnHubService, IOptions<TradeOptions> tradeOptions)
+        public TradeController(IFinnHubService finnHubService, IStockService stockService, IOptions<TradeOptions> tradeOptions)
         {
             _finnHubService = finnHubService;
+            _stockService = stockService;
             _tradeOptions = tradeOptions;
         }
 
@@ -24,13 +27,13 @@ namespace StocksApp.WebApi.Controllers
         {
             try
             {
-                if(stockSymbol == null)
+                if (stockSymbol == null)
                 {
                     stockSymbol = _tradeOptions.Value.DefaultStockSymbol;
                 }
                 var companyProfile = await _finnHubService.GetCompanyProfile(stockSymbol);
                 var stockPriceQuote = await _finnHubService.GetStockPriceQuote(stockSymbol);
-                if(companyProfile == null || stockPriceQuote == null)
+                if (companyProfile == null || stockPriceQuote == null)
                 {
                     return NotFound($"No trade information found for stock symbol: {stockSymbol}");
                 }
@@ -48,20 +51,46 @@ namespace StocksApp.WebApi.Controllers
                 return Problem(ex.Message);
             }
         }
-        
-        [HttpGet]
-        public async Task<IActionResult> GetCompanyProfile([FromQuery] string stockSymbol)
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> BuyOrder(BuyOrderRequest buyOrderRequest)
         {
-            try
+            if (buyOrderRequest == null)
             {
-                Dictionary<string, object> companyProfile = await _finnHubService.GetCompanyProfile(stockSymbol);
-                var jsonResult = JsonConvert.SerializeObject(companyProfile);
-                return Ok(jsonResult);
+                return BadRequest("Buy order request cannot be null.");
             }
-            catch (Exception ex)
+            if (!ModelState.IsValid)
             {
-                return Problem(ex.Message);
+                return BadRequest(ModelState);
             }
+            BuyOrderResponse buyOrderResponse = await _stockService.CreateBuyOrder(buyOrderRequest);
+            return Ok(buyOrderResponse);
+        }
+        [HttpPost("[action]")]
+        public async Task<IActionResult> SellOrder(SellOrderRequest sellOrderRequest)
+        {
+            if (sellOrderRequest == null)
+            {
+                return BadRequest("Sell order request cannot be null.");
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            SellOrderResponse sellOrderResponse = await _stockService.CreateSellOrder(sellOrderRequest);
+            return Ok(sellOrderResponse);
+        }
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetAllBuyOrders()
+        {
+            List<BuyOrderResponse> buyOrders = await _stockService.GetAllBuyOrders();
+            return Ok(buyOrders);
+        }
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetAllSellOrders()
+        {
+            List<SellOrderResponse> sellOrders = await _stockService.GetAllSellOrders();
+            return Ok(sellOrders);
         }
     }
 }

@@ -22,6 +22,8 @@ builder.Services.AddScoped<IFinnHubService, FinnhubService>();
 
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
+builder.Services.AddScoped<IStockService, StockService>();
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
