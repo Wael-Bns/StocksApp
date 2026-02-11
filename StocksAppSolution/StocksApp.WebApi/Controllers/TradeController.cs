@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using StocksApp.Core.DTO;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.WebApi.Options;
 
@@ -42,21 +44,6 @@ namespace StocksApp.WebApi.Controllers
                     Logo = companyProfile["logo"]?.ToString(),
                 };
                 return Ok(stockTrade);
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.Message);
-            }
-        }
-        
-        [HttpGet]
-        public async Task<IActionResult> GetCompanyProfile([FromQuery] string stockSymbol)
-        {
-            try
-            {
-                Dictionary<string, object> companyProfile = await _finnHubService.GetCompanyProfile(stockSymbol);
-                var jsonResult = JsonConvert.SerializeObject(companyProfile);
-                return Ok(jsonResult);
             }
             catch (Exception ex)
             {
