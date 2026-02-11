@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using StocksApp.Core.DTO;
 using StocksApp.Core.ServiceContracts;
+using StocksApp.WebApi.Constants;
 using StocksApp.WebApi.Options;
 
 namespace StocksApp.WebApi.Controllers
@@ -38,10 +39,10 @@ namespace StocksApp.WebApi.Controllers
                 }
                 var stockTrade = new StockTrade
                 {
-                    StockName = companyProfile["name"]?.ToString(),
-                    StockSymbol = companyProfile["ticker"]?.ToString(),
-                    PricePerShare = stockPriceQuote["c"]?.ToString() != null ? Convert.ToDouble(stockPriceQuote["c"].ToString()) : 0,
-                    Logo = companyProfile["logo"]?.ToString(),
+                    StockName = companyProfile[FinnhubKeys.Name]?.ToString(),
+                    StockSymbol = companyProfile[FinnhubKeys.Ticker]?.ToString(),
+                    PricePerShare = stockPriceQuote[FinnhubKeys.CurrentPrice]?.ToString() != null ? Convert.ToDouble(stockPriceQuote[FinnhubKeys.CurrentPrice].ToString()) : 0,
+                    Logo = companyProfile[FinnhubKeys.Logo]?.ToString(),
                 };
                 return Ok(stockTrade);
             }

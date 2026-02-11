@@ -13,7 +13,6 @@ namespace StocksApp.Test.ServiceTests
     public class StockServiceTest
     {
         private readonly IStockService _stockService;
-        private readonly IFixture _fixture;
         private readonly IOrderRepository _orderRepository;
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
         // A sample BuyOrderRequest object that can be used in multiple tests
@@ -41,8 +40,6 @@ namespace StocksApp.Test.ServiceTests
             _orderRepository = _orderRepositoryMock.Object;
             // Pass the mocked repository to the Service
             _stockService = new StockService(_orderRepository);
-            // Use AutoFixture to create test data
-            _fixture = new Fixture();
         }
 
         #region CreateBuyOrder

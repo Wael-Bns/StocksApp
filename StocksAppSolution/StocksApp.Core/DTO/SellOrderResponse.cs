@@ -27,6 +27,7 @@ namespace StocksApp.Core.DTO
                 SellOrderID = sellOrder.SellOrderID,
                 StockName = sellOrder.StockName,
                 StockSymbol = sellOrder.StockSymbol,
+                DateAndTimeOfOrder = sellOrder.DateAndTimeOfOrder,
                 Price = sellOrder.Price,
                 Quantity = sellOrder.Quantity,
                 TradeAmount = sellOrder.Quantity * sellOrder.Price

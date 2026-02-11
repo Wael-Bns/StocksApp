@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -28,7 +26,7 @@ namespace StocksApp.Core.Services
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"Failed to fetch company profile. Status code: {response.StatusCode}");
+                throw new Exception($"Failed to fetch company profile.\n Status code: {response.StatusCode}");
             }
             try
             {
@@ -40,12 +38,9 @@ namespace StocksApp.Core.Services
             {
                 throw new Exception($"Error deserializing company profile: {ex.Message}");
             }
-
-
         }
         public async Task<Dictionary<string, object>?> GetCompanyProfile(string stockSymbol)
         {
-
             if(string.IsNullOrEmpty(stockSymbol))
             {
                 throw new ArgumentException("Stock symbol cannot be empty or null", nameof(stockSymbol));

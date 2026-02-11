@@ -6,6 +6,7 @@ using StocksApp.Core.Domain.RepositoryContracts;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 using StocksApp.Infrastructure;
+using StocksApp.Infrastructure.Repositories;
 using StocksApp.WebApi.Options;
 
 var builder = WebApplication.CreateBuilder(args);
