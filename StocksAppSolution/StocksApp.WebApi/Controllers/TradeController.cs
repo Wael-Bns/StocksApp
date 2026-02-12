@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using StocksApp.Core.DTO;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.WebApi.Options;
@@ -22,7 +22,14 @@ namespace StocksApp.WebApi.Controllers
             _tradeOptions = tradeOptions;
         }
 
-        [HttpGet("trade-info/{stockSymbol?}")]
+        [HttpGet]
+        public async Task<IActionResult> SearchStocks(string query)
+        {
+            var res = await _finnHubService.SearchStocks(query);
+            return Ok(res);
+        }
+
+        [HttpGet("{stockSymbol?}")]
         public async Task<IActionResult> GetTradeInfo([FromRoute] string? stockSymbol)
         {
             try
@@ -52,7 +59,7 @@ namespace StocksApp.WebApi.Controllers
             }
         }
 
-        [HttpPost("[action]")]
+        [HttpPost]
         public async Task<IActionResult> BuyOrder(BuyOrderRequest buyOrderRequest)
         {
             if (buyOrderRequest == null)
@@ -66,7 +73,7 @@ namespace StocksApp.WebApi.Controllers
             BuyOrderResponse buyOrderResponse = await _stockService.CreateBuyOrder(buyOrderRequest);
             return Ok(buyOrderResponse);
         }
-        [HttpPost("[action]")]
+        [HttpPost]
         public async Task<IActionResult> SellOrder(SellOrderRequest sellOrderRequest)
         {
             if (sellOrderRequest == null)
@@ -80,13 +87,13 @@ namespace StocksApp.WebApi.Controllers
             SellOrderResponse sellOrderResponse = await _stockService.CreateSellOrder(sellOrderRequest);
             return Ok(sellOrderResponse);
         }
-        [HttpGet("[action]")]
+        [HttpGet]
         public async Task<IActionResult> GetAllBuyOrders()
         {
             List<BuyOrderResponse> buyOrders = await _stockService.GetAllBuyOrders();
             return Ok(buyOrders);
         }
-        [HttpGet("[action]")]
+        [HttpGet]
         public async Task<IActionResult> GetAllSellOrders()
         {
             List<SellOrderResponse> sellOrders = await _stockService.GetAllSellOrders();

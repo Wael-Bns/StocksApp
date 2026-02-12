@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
+using StocksApp.Core.DTO;
 using StocksApp.Core.ServiceContracts;
 
 namespace StocksApp.Core.Services
@@ -21,7 +22,7 @@ namespace StocksApp.Core.Services
             _httpClient = httpClient;
         }
 
-        private async Task<Dictionary<string,object>?> GetData(string url)
+        private async Task<T> GetData<T>(string url)
         {
             var apiKey = _configuration["FinnhubApiKey"];
             var response = await _httpClient.GetAsync(url);
@@ -33,7 +34,7 @@ namespace StocksApp.Core.Services
             try
             {
                 string json = await response.Content.ReadAsStringAsync();
-                Dictionary<string, object>? companyProfile = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+                T companyProfile = JsonConvert.DeserializeObject<T>(json);
                 return companyProfile;
             }
             catch(Exception ex)
@@ -52,7 +53,7 @@ namespace StocksApp.Core.Services
             }
             string url = $"https://finnhub.io/api/v1/stock/profile2?symbol={stockSymbol}&token={_configuration["FinnhubApiKey"]}";
 
-            var companyData = await GetData(url);
+            var companyData = await GetData<Dictionary<string, object>>(url);
 
             return companyData;
         }
@@ -65,8 +66,27 @@ namespace StocksApp.Core.Services
             }
             string url = $"https://finnhub.io/api/v1/quote?symbol={stockSymbol}&token={_configuration["FinnhubApiKey"]}";
 
-            var companyData = await GetData(url);
+            var companyData = await GetData<Dictionary<string,object>>(url);
             return companyData;
+        }
+
+        public async Task<List<Stock>> SearchStocks(string query)
+        {
+            string url = $"https://finnhub.io/api/v1/search?q={query}&exchange=US&token={_configuration["FinnhubApiKey"]}";
+            Dictionary<string, object> searchResults = await GetData<Dictionary<string, object>>(url);
+            List<Dictionary<string, object>> results = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(searchResults["result"].ToString());
+
+            List<Stock> stocks = [];
+            for(int i=0;i<results.Count;i++)
+            {
+                stocks.Add(new Stock
+                {
+                    StockSymbol = results[i]["symbol"] as string,
+                    StockName = results[i]["description"] as string
+                });
+            }
+
+            return stocks;
         }
     }
 }

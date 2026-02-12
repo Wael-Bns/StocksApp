@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using StocksApp.Core.DTO;
 
 namespace StocksApp.Core.ServiceContracts
 {
@@ -20,5 +21,11 @@ namespace StocksApp.Core.ServiceContracts
         /// <param name="stockSymbol">Stock symbol of the desired company</param>
         /// <returns>Quote data as key-value pairs</returns>
         Task<Dictionary<string, object>?> GetStockPriceQuote(string stockSymbol);
+        /// <summary>
+        /// Search for best-matching symbols based on your query.
+        /// </summary>
+        /// <param name="query">Query text can be symbol, name, isin, or cusip.</param>
+        /// <returns></returns>
+        Task<List<Stock>> SearchStocks(string query); 
     }
 }
