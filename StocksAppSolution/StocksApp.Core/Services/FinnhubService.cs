@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using StocksApp.Core.ServiceContracts;
 
@@ -12,16 +8,20 @@ namespace StocksApp.Core.Services
     {
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
+        private readonly string _apiKey;
 
         public FinnhubService(IConfiguration configuration, HttpClient httpClient)
         {
             _configuration = configuration;
             _httpClient = httpClient;
+            _apiKey = _configuration["FinnhubApiKey"];
         }
-
+        private string BuildUrl(string endpoint, string stockSymbol)
+        {
+            return $"https://finnhub.io/api/v1/{endpoint}?symbol={stockSymbol}&token={_apiKey}";
+        }
         private async Task<Dictionary<string,object>?> GetData(string url)
         {
-            var apiKey = _configuration["FinnhubApiKey"];
             var response = await _httpClient.GetAsync(url);
 
             if (!response.IsSuccessStatusCode)
@@ -45,7 +45,8 @@ namespace StocksApp.Core.Services
             {
                 throw new ArgumentException("Stock symbol cannot be empty or null", nameof(stockSymbol));
             }
-            string url = $"https://finnhub.io/api/v1/stock/profile2?symbol={stockSymbol}&token={_configuration["FinnhubApiKey"]}";
+            
+            string url = BuildUrl("stock/profile2", stockSymbol);
 
             var companyData = await GetData(url);
 
@@ -58,7 +59,7 @@ namespace StocksApp.Core.Services
             {
                 throw new ArgumentException("Stock symbol cannot be empty or null", nameof(stockSymbol));
             }
-            string url = $"https://finnhub.io/api/v1/quote?symbol={stockSymbol}&token={_configuration["FinnhubApiKey"]}";
+            string url = BuildUrl("quote", stockSymbol);
 
             var companyData = await GetData(url);
             return companyData;

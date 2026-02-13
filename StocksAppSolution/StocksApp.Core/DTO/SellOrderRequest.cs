@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using StocksApp.Core.CustomValidationAttributes;
 using StocksApp.Core.Domain.Entities;
 
@@ -25,6 +24,7 @@ namespace StocksApp.Core.DTO
                 SellOrderID = Guid.NewGuid(),
                 StockName = StockName,
                 StockSymbol = StockSymbol,
+                DateAndTimeOfOrder = DateAndTimeOfOrder,
                 Price = Price,
                 Quantity = Quantity
             };

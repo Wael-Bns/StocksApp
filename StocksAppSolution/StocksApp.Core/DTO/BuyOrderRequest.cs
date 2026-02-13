@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using StocksApp.Core.CustomValidationAttributes;
 using StocksApp.Core.Domain.Entities;
 
@@ -23,11 +22,11 @@ namespace StocksApp.Core.DTO
             return new BuyOrder
             {
                 BuyOrderID = Guid.NewGuid(),
-                StockSymbol = this.StockSymbol,
-                StockName = this.StockName,
-                DateAndTimeOfOrder = this.DateAndTimeOfOrder,
-                Price = this.Price,
-                Quantity = this.Quantity
+                StockSymbol = StockSymbol,
+                StockName = StockName,
+                DateAndTimeOfOrder = DateAndTimeOfOrder,
+                Price = Price,
+                Quantity = Quantity
             };
         }
     }

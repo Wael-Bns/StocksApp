@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using StocksApp.Core.Domain.RepositoryContracts;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;

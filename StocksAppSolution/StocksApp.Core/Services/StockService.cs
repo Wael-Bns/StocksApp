@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using StocksApp.Core.Domain.Entities;
+﻿using StocksApp.Core.Domain.Entities;
 using StocksApp.Core.Domain.RepositoryContracts;
 using StocksApp.Core.DTO;
 using StocksApp.Core.Helpers;

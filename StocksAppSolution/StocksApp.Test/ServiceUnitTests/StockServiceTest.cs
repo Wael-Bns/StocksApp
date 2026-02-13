@@ -1,5 +1,4 @@
-﻿using AutoFixture;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using StocksApp.Core.Domain.Entities;
 using StocksApp.Core.Domain.RepositoryContracts;

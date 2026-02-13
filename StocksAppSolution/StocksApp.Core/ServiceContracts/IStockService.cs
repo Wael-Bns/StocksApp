@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using StocksApp.Core.DTO;
+﻿using StocksApp.Core.DTO;
 
 namespace StocksApp.Core.ServiceContracts
 {

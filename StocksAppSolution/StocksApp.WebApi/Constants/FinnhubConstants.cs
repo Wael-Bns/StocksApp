@@ -1,6 +1,6 @@
 ﻿namespace StocksApp.WebApi.Constants
 {
-    public static class FinnhubKeys
+    public static class FinnhubConstants
     {
         public const string Name = "name";
         public const string Ticker = "ticker";
