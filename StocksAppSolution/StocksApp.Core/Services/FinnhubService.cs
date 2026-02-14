@@ -39,7 +39,7 @@ namespace StocksApp.Core.Services
                 throw new Exception($"Error deserializing company profile: {ex.Message}");
             }
         }
-        public async Task<Dictionary<string, object>?> GetCompanyProfile(string stockSymbol)
+        public async Task<Dictionary<string, object>?> GetCompanyProfile(string stockSymbol) 
         {
             if(string.IsNullOrEmpty(stockSymbol))
             {

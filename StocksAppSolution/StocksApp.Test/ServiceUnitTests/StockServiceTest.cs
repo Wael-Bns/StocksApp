@@ -40,6 +40,26 @@ namespace StocksApp.Test.ServiceTests
             // Pass the mocked repository to the Service
             _stockService = new StockService(_orderRepository);
         }
+        private void MockAddBuyOrder(BuyOrder buyOrder)
+        {
+            _orderRepositoryMock.Setup(repo => repo.AddBuyOrderAsync(It.IsAny<BuyOrder>()))
+                .ReturnsAsync(buyOrder);
+        }
+        private void MockAddSellOrder(SellOrder sellOrder)
+        {
+            _orderRepositoryMock.Setup(repo => repo.AddSellOrderAsync(It.IsAny<SellOrder>()))
+                .ReturnsAsync(sellOrder);
+        }
+        private void MockGetAllBuyOrders(List<BuyOrder> buyOrders)
+        {
+            _orderRepositoryMock.Setup(repo => repo.GetAllBuyOrdersAsync())
+                .ReturnsAsync(buyOrders);
+        }
+        private void MockGetAllSellOrders(List<SellOrder> sellOrders)
+        {
+            _orderRepositoryMock.Setup(repo => repo.GetAllSellOrdersAsync())
+                .ReturnsAsync(sellOrders);
+        }
 
         #region CreateBuyOrder
         [Fact]
@@ -58,8 +78,7 @@ namespace StocksApp.Test.ServiceTests
         {
             // Arrange 
             buyOrderRequest.Quantity = 0;
-            _orderRepositoryMock.Setup(repo => repo.AddBuyOrderAsync(It.IsAny<BuyOrder>()))
-                .ReturnsAsync(buyOrderRequest.ToBuyOrder());
+            MockAddBuyOrder(buyOrderRequest.ToBuyOrder());
 
             // Act
             Func<Task> actual = async () =>
@@ -75,8 +94,7 @@ namespace StocksApp.Test.ServiceTests
             // Arrange 
             buyOrderRequest.Quantity = 10001;
 
-            _orderRepositoryMock.Setup(repo => repo.AddBuyOrderAsync(It.IsAny<BuyOrder>()))
-                .ReturnsAsync(buyOrderRequest.ToBuyOrder());
+            MockAddBuyOrder(buyOrderRequest.ToBuyOrder());
 
             // Act
             Func<Task> actual = async () =>
@@ -91,8 +109,7 @@ namespace StocksApp.Test.ServiceTests
         {
             // Arrange 
             buyOrderRequest.Price = 0;
-            _orderRepositoryMock.Setup(repo => repo.AddBuyOrderAsync(It.IsAny<BuyOrder>()))
-                .ReturnsAsync(buyOrderRequest.ToBuyOrder());
+            MockAddBuyOrder(buyOrderRequest.ToBuyOrder());
 
             // Act
             Func<Task> actual = async () =>
@@ -108,8 +125,7 @@ namespace StocksApp.Test.ServiceTests
             // Arrange 
             buyOrderRequest.Price = 10001;
 
-            _orderRepositoryMock.Setup(repo => repo.AddBuyOrderAsync(It.IsAny<BuyOrder>()))
-                .ReturnsAsync(buyOrderRequest.ToBuyOrder());
+            MockAddBuyOrder(buyOrderRequest.ToBuyOrder());
 
             // Act
             Func<Task> actual = async () =>
@@ -125,8 +141,7 @@ namespace StocksApp.Test.ServiceTests
             // Arrange 
             buyOrderRequest.StockSymbol = null;
 
-            _orderRepositoryMock.Setup(repo => repo.AddBuyOrderAsync(It.IsAny<BuyOrder>()))
-                .ReturnsAsync(buyOrderRequest.ToBuyOrder());
+            MockAddBuyOrder(buyOrderRequest.ToBuyOrder());
             // Act
             Func<Task> actual = async () =>
             {
@@ -141,8 +156,7 @@ namespace StocksApp.Test.ServiceTests
             // Arrange 
             buyOrderRequest.DateAndTimeOfOrder = Convert.ToDateTime("1999-12-31");
 
-            _orderRepositoryMock.Setup(repo => repo.AddBuyOrderAsync(It.IsAny<BuyOrder>()))
-                .ReturnsAsync(buyOrderRequest.ToBuyOrder());
+            MockAddBuyOrder(buyOrderRequest.ToBuyOrder());
             // Act
             Func<Task> actual = async () =>
             {
@@ -158,8 +172,7 @@ namespace StocksApp.Test.ServiceTests
             BuyOrder buyOrder = buyOrderRequest.ToBuyOrder();
             BuyOrderResponse expected = buyOrder.ToBuyOrderResponse();
 
-            _orderRepositoryMock.Setup(repo => repo.AddBuyOrderAsync(It.IsAny<BuyOrder>()))
-                .ReturnsAsync(buyOrder);
+            MockAddBuyOrder(buyOrder);
             // Act
             BuyOrderResponse actual = await _stockService.CreateBuyOrder(buyOrderRequest);
             // Assert
@@ -186,8 +199,7 @@ namespace StocksApp.Test.ServiceTests
             // Arrange 
             sellOrderRequest.Quantity = 0;
 
-            _orderRepositoryMock.Setup(repo => repo.AddSellOrderAsync(It.IsAny<SellOrder>()))
-                .ReturnsAsync(sellOrderRequest.ToSellOrder());
+            MockAddSellOrder(sellOrderRequest.ToSellOrder());
 
             // Act
             Func<Task> actual = async () =>
@@ -203,8 +215,7 @@ namespace StocksApp.Test.ServiceTests
             // Arrange 
             sellOrderRequest.Quantity = 10001;
 
-            _orderRepositoryMock.Setup(repo => repo.AddSellOrderAsync(It.IsAny<SellOrder>()))
-                .ReturnsAsync(sellOrderRequest.ToSellOrder());
+            MockAddSellOrder(sellOrderRequest.ToSellOrder());
 
             // Act
             Func<Task> actual = async () =>
@@ -220,8 +231,7 @@ namespace StocksApp.Test.ServiceTests
             // Arrange 
             sellOrderRequest.Price = 0;
 
-            _orderRepositoryMock.Setup(repo => repo.AddSellOrderAsync(It.IsAny<SellOrder>()))
-                .ReturnsAsync(sellOrderRequest.ToSellOrder());
+            MockAddSellOrder(sellOrderRequest.ToSellOrder());
 
             // Act
             Func<Task> actual = async () =>
@@ -237,8 +247,7 @@ namespace StocksApp.Test.ServiceTests
             // Arrange 
             sellOrderRequest.Price = 10001;
 
-            _orderRepositoryMock.Setup(repo => repo.AddSellOrderAsync(It.IsAny<SellOrder>()))
-                .ReturnsAsync(sellOrderRequest.ToSellOrder());
+            MockAddSellOrder(sellOrderRequest.ToSellOrder());
 
             // Act
             Func<Task> actual = async () =>
@@ -254,8 +263,7 @@ namespace StocksApp.Test.ServiceTests
             // Arrange 
             sellOrderRequest.StockSymbol = null;
 
-            _orderRepositoryMock.Setup(repo => repo.AddSellOrderAsync(It.IsAny<SellOrder>()))
-                .ReturnsAsync(sellOrderRequest.ToSellOrder());
+            MockAddSellOrder(sellOrderRequest.ToSellOrder());
             // Act
             Func<Task> actual = async () =>
             {
@@ -270,8 +278,7 @@ namespace StocksApp.Test.ServiceTests
             // Arrange 
             sellOrderRequest.DateAndTimeOfOrder = Convert.ToDateTime("1999-12-31");
 
-            _orderRepositoryMock.Setup(repo => repo.AddSellOrderAsync(It.IsAny<SellOrder>()))
-                .ReturnsAsync(sellOrderRequest.ToSellOrder());
+            MockAddSellOrder(sellOrderRequest.ToSellOrder());
             // Act
             Func<Task> actual = async () =>
             {
@@ -287,8 +294,7 @@ namespace StocksApp.Test.ServiceTests
             SellOrder sellOrder = sellOrderRequest.ToSellOrder();
             SellOrderResponse expected = sellOrder.ToSellOrderResponse();
 
-            _orderRepositoryMock.Setup(repo => repo.AddSellOrderAsync(It.IsAny<SellOrder>()))
-                .ReturnsAsync(sellOrder);
+            MockAddSellOrder(sellOrder);
             // Act
             SellOrderResponse actual = await _stockService.CreateSellOrder(sellOrderRequest);
             // Assert
@@ -302,8 +308,7 @@ namespace StocksApp.Test.ServiceTests
         public async Task GetAllBuyOrders_Empty()
         {
             // Arrange
-            _orderRepositoryMock.Setup(repo => repo.GetAllBuyOrdersAsync())
-                .ReturnsAsync(new List<BuyOrder>());
+            MockGetAllBuyOrders(new List<BuyOrder>());
             // Act
             List<BuyOrderResponse> actual = await _stockService.GetAllBuyOrders();
             // Assert
@@ -315,9 +320,8 @@ namespace StocksApp.Test.ServiceTests
             // Arrange 
             List<BuyOrder> buyOrders = [];
             buyOrders.Add(buyOrderRequest.ToBuyOrder());
-            
-            _orderRepositoryMock.Setup(repo => repo.GetAllBuyOrdersAsync())
-                .ReturnsAsync(buyOrders);
+
+            MockGetAllBuyOrders(buyOrders);
             
             List<BuyOrderResponse> expected = buyOrders.Select(order => order.ToBuyOrderResponse()).ToList();
             
@@ -335,8 +339,7 @@ namespace StocksApp.Test.ServiceTests
         public async Task GetAllSellOrders_Empty()
         {
             // Arrange
-            _orderRepositoryMock.Setup(repo => repo.GetAllSellOrdersAsync())
-                .ReturnsAsync(new List<SellOrder>());
+            MockGetAllSellOrders(new List<SellOrder>());
             // Act
             List<SellOrderResponse> actual = await _stockService.GetAllSellOrders();
             // Assert
@@ -349,8 +352,7 @@ namespace StocksApp.Test.ServiceTests
             List<SellOrder> sellOrders = [];
             sellOrders.Add(sellOrderRequest.ToSellOrder());
 
-            _orderRepositoryMock.Setup(repo => repo.GetAllSellOrdersAsync())
-                .ReturnsAsync(sellOrders);
+            MockGetAllSellOrders(sellOrders);
 
             List<SellOrderResponse> expected = sellOrders.Select(order => order.ToSellOrderResponse()).ToList();
 
