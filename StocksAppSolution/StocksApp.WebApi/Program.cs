@@ -1,8 +1,12 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using StocksApp.Core.Domain.RepositoryContracts;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 using StocksApp.Infrastructure;
+using StocksApp.Infrastructure.Repositories;
+using StocksApp.WebApi.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,13 +16,15 @@ builder.Services.AddControllers();
 
 builder.Services.AddHttpClient();
 
+builder.Services.Configure<TradeOptions>(builder.Configuration.GetSection("TradingOptions"));
+
 builder.Services.AddScoped<IFinnHubService, FinnhubService>();
 
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("ConnectionStrings:DefaultConnection"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
 // Configure Swagger for API documentation

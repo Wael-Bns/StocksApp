@@ -1,4 +1,6 @@
-bin/
-obj/
+# Ignore all .NET build output folders (in all projects)
+**/bin/
+**/obj/
 .vs/
 *.user
+*.suo

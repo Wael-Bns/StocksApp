@@ -1,26 +1,46 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Options;
+using StocksApp.Core.DTO;
 using StocksApp.Core.ServiceContracts;
+using StocksApp.WebApi.Constants;
+using StocksApp.WebApi.Options;
 
 namespace StocksApp.WebApi.Controllers
 {
     public class TradeController : CommonControllerBase
     {
         private readonly IFinnHubService _finnHubService;
-        
-        public TradeController(IFinnHubService finnHubService)
+        private readonly IOptions<TradeOptions> _tradeOptions;
+
+        public TradeController(IFinnHubService finnHubService, IOptions<TradeOptions> tradeOptions)
         {
             _finnHubService = finnHubService;
+            _tradeOptions = tradeOptions;
         }
-        
-        [HttpGet]
-        public async Task<IActionResult> GetCompanyProfile([FromQuery] string stockSymbol)
+
+        [HttpGet("trade-info/{stockSymbol?}")]
+        public async Task<IActionResult> GetTradeInfo([FromRoute] string? stockSymbol)
         {
             try
             {
-                Dictionary<string, object> companyProfile = await _finnHubService.GetCompanyProfile(stockSymbol);
-                var jsonResult = JsonConvert.SerializeObject(companyProfile);
-                return Ok(jsonResult);
+                if(stockSymbol == null)
+                {
+                    stockSymbol = _tradeOptions.Value.DefaultStockSymbol;
+                }
+                var companyProfile = await _finnHubService.GetCompanyProfile(stockSymbol);
+                var stockPriceQuote = await _finnHubService.GetStockPriceQuote(stockSymbol);
+                if(companyProfile == null || stockPriceQuote == null)
+                {
+                    return NotFound($"No trade information found for stock symbol: {stockSymbol}");
+                }
+                var stockTrade = new StockTrade
+                {
+                    StockName = companyProfile[FinnhubConstants.Name]?.ToString(),
+                    StockSymbol = companyProfile[FinnhubConstants.Ticker]?.ToString(),
+                    PricePerShare = stockPriceQuote[FinnhubConstants.CurrentPrice]?.ToString() != null ? Convert.ToDouble(stockPriceQuote[FinnhubConstants.CurrentPrice].ToString()) : 0,
+                    Logo = companyProfile[FinnhubConstants.Logo]?.ToString(),
+                };
+                return Ok(stockTrade);
             }
             catch (Exception ex)
             {
