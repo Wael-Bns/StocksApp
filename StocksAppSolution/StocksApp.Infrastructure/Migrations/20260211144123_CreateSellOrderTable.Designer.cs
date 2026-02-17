@@ -12,8 +12,8 @@ using StocksApp.Infrastructure;
 namespace StocksApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260210164557_Initial")]
-    partial class Initial
+    [Migration("20260211144123_CreateSellOrderTable")]
+    partial class CreateSellOrderTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

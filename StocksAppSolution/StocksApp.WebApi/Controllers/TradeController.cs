@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using StocksApp.Core.DTO;
 using StocksApp.Core.ServiceContracts;
+using StocksApp.WebApi.Constants;
 using StocksApp.WebApi.Options;
 
 namespace StocksApp.WebApi.Controllers
@@ -46,10 +44,10 @@ namespace StocksApp.WebApi.Controllers
                 }
                 var stockTrade = new StockTrade
                 {
-                    StockName = companyProfile["name"]?.ToString(),
-                    StockSymbol = companyProfile["ticker"]?.ToString(),
-                    PricePerShare = stockPriceQuote["c"]?.ToString() != null ? Convert.ToDouble(stockPriceQuote["c"].ToString()) : 0,
-                    Logo = companyProfile["logo"]?.ToString(),
+                    StockName = companyProfile[FinnhubConstants.Name]?.ToString(),
+                    StockSymbol = companyProfile[FinnhubConstants.Ticker]?.ToString(),
+                    PricePerShare = stockPriceQuote[FinnhubConstants.CurrentPrice]?.ToString() != null ? Convert.ToDouble(stockPriceQuote[FinnhubConstants.CurrentPrice].ToString()) : 0,
+                    Logo = companyProfile[FinnhubConstants.Logo]?.ToString(),
                 };
                 return Ok(stockTrade);
             }

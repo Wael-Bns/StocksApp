@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using StocksApp.Core.DTO;
 using StocksApp.Core.ServiceContracts;
@@ -15,43 +9,45 @@ namespace StocksApp.Core.Services
     {
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
+        private readonly string _apiKey;
 
         public FinnhubService(IConfiguration configuration, HttpClient httpClient)
         {
             _configuration = configuration;
             _httpClient = httpClient;
+            _apiKey = _configuration["FinnhubApiKey"];
         }
-
+        private string BuildUrl(string endpoint, string stockSymbol)
+        {
+            return $"https://finnhub.io/api/v1/{endpoint}?symbol={stockSymbol}&token={_apiKey}";
+        }
         private async Task<T> GetData<T>(string url)
         {
-            var apiKey = _configuration["FinnhubApiKey"];
             var response = await _httpClient.GetAsync(url);
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"Failed to fetch company profile. Status code: {response.StatusCode}");
+                throw new Exception($"Failed to fetch company profile.\n Status code: {response.StatusCode}");
             }
             try
             {
                 string json = await response.Content.ReadAsStringAsync();
-                T companyProfile = JsonConvert.DeserializeObject<T>(json);
+                var companyProfile = JsonConvert.DeserializeObject<T>(json);
                 return companyProfile;
             }
             catch(Exception ex)
             {
                 throw new Exception($"Error deserializing company profile: {ex.Message}");
             }
-
-
         }
-        public async Task<Dictionary<string, object>?> GetCompanyProfile(string stockSymbol)
+        public async Task<Dictionary<string, object>?> GetCompanyProfile(string stockSymbol) 
         {
-
             if(string.IsNullOrEmpty(stockSymbol))
             {
                 throw new ArgumentException("Stock symbol cannot be empty or null", nameof(stockSymbol));
             }
-            string url = $"https://finnhub.io/api/v1/stock/profile2?symbol={stockSymbol}&token={_configuration["FinnhubApiKey"]}";
+            
+            string url = BuildUrl("stock/profile2", stockSymbol);
 
             var companyData = await GetData<Dictionary<string, object>>(url);
 
@@ -64,7 +60,7 @@ namespace StocksApp.Core.Services
             {
                 throw new ArgumentException("Stock symbol cannot be empty or null", nameof(stockSymbol));
             }
-            string url = $"https://finnhub.io/api/v1/quote?symbol={stockSymbol}&token={_configuration["FinnhubApiKey"]}";
+            string url = BuildUrl("quote", stockSymbol);
 
             var companyData = await GetData<Dictionary<string,object>>(url);
             return companyData;

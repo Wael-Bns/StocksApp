@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using StocksApp.Core.Domain.Entities;
+﻿using StocksApp.Core.Domain.Entities;
 
 namespace StocksApp.Core.DTO
 {
@@ -27,6 +21,7 @@ namespace StocksApp.Core.DTO
                 SellOrderID = sellOrder.SellOrderID,
                 StockName = sellOrder.StockName,
                 StockSymbol = sellOrder.StockSymbol,
+                DateAndTimeOfOrder = sellOrder.DateAndTimeOfOrder,
                 Price = sellOrder.Price,
                 Quantity = sellOrder.Quantity,
                 TradeAmount = sellOrder.Quantity * sellOrder.Price
