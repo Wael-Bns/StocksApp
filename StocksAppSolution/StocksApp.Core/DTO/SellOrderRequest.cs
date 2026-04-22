@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using StocksApp.Core.CustomValidationAttributes;
 using StocksApp.Core.Domain.Entities;
+using StocksApp.Core.Enums;
 
 namespace StocksApp.Core.DTO
 {
@@ -16,7 +17,8 @@ namespace StocksApp.Core.DTO
         public uint Quantity { get; set; }
         [Range(1, 10000, ErrorMessage = "Quantity should be between 1 and 100000")]
         public double Price { get; set; }
-        
+        public SellOrderStatusEnum SellOrderStatus { get; set; } = SellOrderStatusEnum.Pending;
+
         public SellOrder ToSellOrder()
         {
             return new SellOrder
@@ -26,7 +28,8 @@ namespace StocksApp.Core.DTO
                 StockSymbol = StockSymbol,
                 DateAndTimeOfOrder = DateAndTimeOfOrder,
                 Price = Price,
-                Quantity = Quantity
+                Quantity = Quantity,
+                SellOrderStatus = SellOrderStatus.ToString()
             };
         }
     }

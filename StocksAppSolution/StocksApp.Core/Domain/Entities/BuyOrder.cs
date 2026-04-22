@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace StocksApp.Core.Domain.Entities
 {
@@ -16,5 +15,7 @@ namespace StocksApp.Core.Domain.Entities
         public uint Quantity { get; set; }
         [Range(1, 100000)]
         public double Price { get; set; }
+        public Guid UserId { get; set; }
+        public ApplicationUser User { get; set; }
     }
 }

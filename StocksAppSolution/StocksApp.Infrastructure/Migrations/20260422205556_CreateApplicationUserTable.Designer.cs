@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StocksApp.Infrastructure;
@@ -11,9 +12,11 @@ using StocksApp.Infrastructure;
 namespace StocksApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260422205556_CreateApplicationUserTable")]
+    partial class CreateApplicationUserTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -28,9 +31,6 @@ namespace StocksApp.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("BuyOrderId")
-                        .HasColumnType("uuid");
-
                     b.Property<double>("CashBalance")
                         .HasColumnType("double precision");
 
@@ -39,9 +39,6 @@ namespace StocksApp.Infrastructure.Migrations
 
                     b.Property<string>("PasswordHash")
                         .HasColumnType("text");
-
-                    b.Property<Guid>("SellOrderId")
-                        .HasColumnType("uuid");
 
                     b.Property<string>("UserName")
                         .HasColumnType("text");
@@ -74,12 +71,7 @@ namespace StocksApp.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("BuyOrderID");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("BuyOrder", (string)null);
                 });
@@ -99,10 +91,6 @@ namespace StocksApp.Infrastructure.Migrations
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("SellOrderStatus")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.Property<string>("StockName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -111,43 +99,9 @@ namespace StocksApp.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("SellOrderID");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("SellOrder", (string)null);
-                });
-
-            modelBuilder.Entity("StocksApp.Core.Domain.Entities.BuyOrder", b =>
-                {
-                    b.HasOne("StocksApp.Core.Domain.Entities.ApplicationUser", "User")
-                        .WithMany("BuyOrders")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("StocksApp.Core.Domain.Entities.SellOrder", b =>
-                {
-                    b.HasOne("StocksApp.Core.Domain.Entities.ApplicationUser", "User")
-                        .WithMany("SellOrders")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("StocksApp.Core.Domain.Entities.ApplicationUser", b =>
-                {
-                    b.Navigation("BuyOrders");
-
-                    b.Navigation("SellOrders");
                 });
 #pragma warning restore 612, 618
         }

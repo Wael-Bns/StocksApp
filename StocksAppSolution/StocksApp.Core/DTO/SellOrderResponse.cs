@@ -1,4 +1,5 @@
 ﻿using StocksApp.Core.Domain.Entities;
+using StocksApp.Core.Enums;
 
 namespace StocksApp.Core.DTO
 {
@@ -11,6 +12,7 @@ namespace StocksApp.Core.DTO
         public uint Quantity { get; set; }
         public double Price { get; set; }
         public double TradeAmount { get; set; }
+        public string SellOrderStatus { get; set; } = SellOrderStatusEnum.Pending.ToString();
     }
     public static class SellOrderResponseExtension
     {
@@ -24,7 +26,8 @@ namespace StocksApp.Core.DTO
                 DateAndTimeOfOrder = sellOrder.DateAndTimeOfOrder,
                 Price = sellOrder.Price,
                 Quantity = sellOrder.Quantity,
-                TradeAmount = sellOrder.Quantity * sellOrder.Price
+                TradeAmount = sellOrder.Quantity * sellOrder.Price,
+                SellOrderStatus = sellOrder.SellOrderStatus
             };
         }
     }
