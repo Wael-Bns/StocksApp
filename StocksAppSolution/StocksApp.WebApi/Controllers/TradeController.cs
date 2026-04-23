@@ -82,6 +82,7 @@ namespace StocksApp.WebApi.Controllers
             {
                 return BadRequest(ModelState);
             }
+            sellOrderRequest.SellOrderStatus = Core.Enums.SellOrderStatusEnum.Pending;
             SellOrderResponse sellOrderResponse = await _stockService.CreateSellOrder(sellOrderRequest);
             return Ok(sellOrderResponse);
         }

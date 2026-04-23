@@ -14,6 +14,12 @@ namespace StocksApp.Core.Services
         {
             _orderRepository = orderRepository;
         }
+
+        public Task<bool> CancelSellOrder(Guid sellOrderId)
+        {
+            throw new NotImplementedException();
+        }
+
         public async Task<BuyOrderResponse> CreateBuyOrder(BuyOrderRequest? buyOrderRequest)
         {
             if(buyOrderRequest == null)

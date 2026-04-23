@@ -17,6 +17,12 @@ namespace StocksApp.Core.ServiceContracts
         /// <returns>Returns the created object</returns>
         Task<SellOrderResponse> CreateSellOrder(SellOrderRequest? sellOrderRequest);
         /// <summary>
+        /// Marks a sell order as cancelled
+        /// </summary>
+        /// <param name="sellOrderId">The sell order to cancel</param>
+        /// <returns>A boolean indicating if the sell order is successfully cancelled.</returns>
+        Task<bool> CancelSellOrder(Guid sellOrderId);
+        /// <summary>
         /// Get the list of buy orders saved in the database
         /// </summary>
         /// <returns></returns>

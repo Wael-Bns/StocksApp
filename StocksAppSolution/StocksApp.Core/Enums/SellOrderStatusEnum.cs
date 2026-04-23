@@ -3,7 +3,7 @@
     public enum SellOrderStatusEnum
     {
         Pending,
-        Completed,
+        Executed,
         Cancelled
     }
 }

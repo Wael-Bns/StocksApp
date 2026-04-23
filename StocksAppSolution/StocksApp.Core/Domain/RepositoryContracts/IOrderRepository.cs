@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using StocksApp.Core.Domain.Entities;
+﻿using StocksApp.Core.Domain.Entities;
+using StocksApp.Core.Enums;
 
 namespace StocksApp.Core.Domain.RepositoryContracts
 {
@@ -16,5 +14,8 @@ namespace StocksApp.Core.Domain.RepositoryContracts
         Task<SellOrder?> GetSellOrder(Guid sellOrderId);
         Task<BuyOrder> AddBuyOrderAsync(BuyOrder buyOrder);
         Task<SellOrder> AddSellOrderAsync(SellOrder sellOrder);
+        Task<bool> UpdateSellOrder(SellOrder sellOrder);
+        Task ExecuteSellOrderAsync(SellOrder sellOrder, ApplicationUser user, double proceeds);
+
     }
 }

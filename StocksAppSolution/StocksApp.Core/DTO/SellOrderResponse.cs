@@ -3,7 +3,7 @@ using StocksApp.Core.Enums;
 
 namespace StocksApp.Core.DTO
 {
-    public class SellOrderResponse
+    public class SellOrderResponse : IComparable<SellOrderResponse>
     {
         public Guid SellOrderID { get; set; }
         public string? StockSymbol { get; set; }
@@ -13,6 +13,19 @@ namespace StocksApp.Core.DTO
         public double Price { get; set; }
         public double TradeAmount { get; set; }
         public string SellOrderStatus { get; set; } = SellOrderStatusEnum.Pending.ToString();
+
+        public int CompareTo(SellOrderResponse? other)
+        {
+            if(other == null)
+            {
+                return 1;
+            }
+            if(Price == other.Price)
+            {
+                return DateAndTimeOfOrder < other.DateAndTimeOfOrder ? 1 : -1;
+            }
+            return Price < other.Price ? 1 : -1;
+        }
     }
     public static class SellOrderResponseExtension
     {
