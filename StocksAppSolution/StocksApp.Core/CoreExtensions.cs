@@ -11,10 +11,12 @@ namespace StocksApp.Core
             services.AddScoped<IFinnHubService, FinnhubService>();
 
             services.AddScoped<IStockService, StockService>();
-            
+
             services.AddScoped<ITradeExecutionService, TradeExecutionService>();
-            
+
             services.AddScoped<IFinnhubWebSocketService, FinnhubWebSocketService>();
+
+            services.AddScoped<IApplicationUserService, ApplicationUserService>();
 
             return services;
         }

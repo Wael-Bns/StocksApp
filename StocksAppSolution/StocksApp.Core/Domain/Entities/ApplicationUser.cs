@@ -11,8 +11,6 @@ namespace StocksApp.Core.Domain.Entities
         public string? Email { get; set; }
         public string? PasswordHash { get; set; }
         public double CashBalance { get; set; } = 100000;
-        public Guid BuyOrderId { get; set; }
-        public Guid SellOrderId { get; set; }
         public ICollection<BuyOrder>? BuyOrders { get; set; }
         public ICollection<SellOrder>? SellOrders { get; set; }
     }

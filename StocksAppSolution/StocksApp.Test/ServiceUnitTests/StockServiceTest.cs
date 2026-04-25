@@ -7,7 +7,7 @@ using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 using Xunit;
 
-namespace StocksApp.Test.ServiceTests
+namespace StocksApp.Test.ServiceUnitTests
 {
     public class StockServiceTest
     {

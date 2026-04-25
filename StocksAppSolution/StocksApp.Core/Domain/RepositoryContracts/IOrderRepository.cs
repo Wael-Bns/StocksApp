@@ -16,6 +16,5 @@ namespace StocksApp.Core.Domain.RepositoryContracts
         Task<SellOrder> AddSellOrderAsync(SellOrder sellOrder);
         Task<bool> UpdateSellOrder(SellOrder sellOrder);
         Task ExecuteSellOrderAsync(SellOrder sellOrder, ApplicationUser user, double proceeds);
-
     }
 }

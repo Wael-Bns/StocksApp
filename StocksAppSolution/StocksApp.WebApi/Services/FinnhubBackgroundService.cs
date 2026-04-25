@@ -1,32 +1,31 @@
-using System;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.SignalR;
 using StocksApp.Core.Domain.MessageQueueContracts;
+using StocksApp.Core.Hubs;
 using StocksApp.Core.ServiceContracts;
 
 namespace StocksApp.WebApi.Services
 {
-    public class FinnhubBackgroundService : BackgroundService
+    public class OrdersBookBackgroundService : BackgroundService
     {
         private readonly IFinnhubWebSocketService _webSocketService;
-        private readonly ILogger<FinnhubBackgroundService> _logger;
+        private readonly ILogger<OrdersBookBackgroundService> _logger;
         private readonly ISellOrdersStore _sellOrderStore;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly IHubContext<TradeHub> _tradeHub;
 
-        public FinnhubBackgroundService(
+        public OrdersBookBackgroundService(
             IFinnhubWebSocketService webSocketService,
-            ILogger<FinnhubBackgroundService> logger,
+            ILogger<OrdersBookBackgroundService> logger,
             ISellOrdersStore sellOrderStore,
-            IServiceScopeFactory scopeFactory)
+            IServiceScopeFactory scopeFactory,
+            IHubContext<TradeHub> tradeHub)
         {
             _webSocketService = webSocketService;
             _logger = logger;
             _sellOrderStore = sellOrderStore;
             _scopeFactory = scopeFactory;
+            _tradeHub = tradeHub;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -36,7 +35,7 @@ namespace StocksApp.WebApi.Services
             // Use a lambda to avoid 'async void' crash risks. Catch everything locally.
             _webSocketService.OnMessageReceived += async (sender, message) =>
             {
-                try { await ProcessMessageSafeAsync(message); }
+                try { await ProcessMessageAsync(message); }
                 catch (Exception ex) { _logger.LogError(ex, "Fatal error in message stream"); }
             };
 
@@ -56,7 +55,7 @@ namespace StocksApp.WebApi.Services
             await _webSocketService.DisconnectAsync(stoppingToken);
         }
 
-        private async Task ProcessMessageSafeAsync(string message)
+        private async Task ProcessMessageAsync(string message)
         {
             using var document = JsonDocument.Parse(message);
             var root = document.RootElement;
