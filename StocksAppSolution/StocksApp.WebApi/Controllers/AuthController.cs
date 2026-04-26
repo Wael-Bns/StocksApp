@@ -12,7 +12,7 @@ namespace StocksApp.WebApi.Controllers
             _authenticationService = authenticationService;
         }
 
-        [HttpPost("register")]
+        [HttpPost]
         public async Task<ActionResult<ApplicationUserResponse>> Register([FromBody] ApplicationUserRegisterDTO registerDTO)
         {
             if (!ModelState.IsValid)

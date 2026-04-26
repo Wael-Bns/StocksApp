@@ -8,7 +8,7 @@ using Xunit;
 
 namespace StocksApp.Test.ControllersUnitTests
 {
-    public class AuthControllerTest
+    public class AuthControllerUnitTest
     {
         private readonly Mock<IApplicationUserService> _applicationUserServiceMock;
         private readonly IApplicationUserService _applicationUserService;
@@ -26,7 +26,7 @@ namespace StocksApp.Test.ControllersUnitTests
             Email = "test@example.com",
             CashBalance = 100000
         };
-        public AuthControllerTest()
+        public AuthControllerUnitTest()
         {
             _applicationUserServiceMock = new Mock<IApplicationUserService>();
             _applicationUserService = _applicationUserServiceMock.Object;

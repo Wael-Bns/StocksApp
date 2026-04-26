@@ -9,7 +9,7 @@ using Xunit;
 
 namespace StocksApp.Test.ServiceUnitTests
 {
-    public class StockServiceTest
+    public class StockServiceUnitTest
     {
         private readonly IStockService _stockService;
         private readonly IOrderRepository _orderRepository;
@@ -33,7 +33,7 @@ namespace StocksApp.Test.ServiceUnitTests
             Price = 100,
         };
 
-        public StockServiceTest()
+        public StockServiceUnitTest()
         {
             // Mock the IOrderRepository
             _orderRepositoryMock = new Mock<IOrderRepository>();

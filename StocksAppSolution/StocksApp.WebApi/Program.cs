@@ -42,3 +42,5 @@ app.UseSwaggerUI(c =>
 });
 
 app.Run();
+
+public partial class Program { } // Makes this class accessible for integration testing purposes.

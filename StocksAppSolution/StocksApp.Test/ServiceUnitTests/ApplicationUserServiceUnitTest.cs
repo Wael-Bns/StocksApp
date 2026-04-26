@@ -8,7 +8,7 @@ using Xunit;
 
 namespace StocksApp.Test.ServiceUnitTests
 {
-    public class ApplicationUserServiceTest
+    public class ApplicationUserServiceUnitTest
     {
         private readonly IUserRepository _userRepository;
         private readonly Mock<IUserRepository> _userRepositoryMock;
@@ -29,7 +29,7 @@ namespace StocksApp.Test.ServiceUnitTests
             PasswordHash = "hashedpassword",
             CashBalance = 100000
         };
-        public ApplicationUserServiceTest()
+        public ApplicationUserServiceUnitTest()
         {
             _userRepositoryMock = new Mock<IUserRepository>();
             _userRepository = _userRepositoryMock.Object;
