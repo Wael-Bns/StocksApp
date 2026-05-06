@@ -14,7 +14,7 @@ namespace StocksApp.Core
 
             services.AddScoped<IUserService, UserService>();
 
-            services.AddTransient<IJwtService, JwtService>();
+            services.AddTransient<ITokenService, JwtService>();
 
             services.AddTransient<IAuthService, AuthService>();
 
