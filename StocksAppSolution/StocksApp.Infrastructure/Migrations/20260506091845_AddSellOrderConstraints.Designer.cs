@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using StocksApp.Infrastructure;
@@ -11,9 +12,11 @@ using StocksApp.Infrastructure;
 namespace StocksApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260506091845_AddSellOrderConstraints")]
+    partial class AddSellOrderConstraints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -45,12 +48,7 @@ namespace StocksApp.Infrastructure.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("BuyOrderID");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("BuyOrder", null, t =>
                         {
@@ -83,12 +81,7 @@ namespace StocksApp.Infrastructure.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("SellOrderID");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("SellOrder", null, t =>
                         {
@@ -96,58 +89,6 @@ namespace StocksApp.Infrastructure.Migrations
 
                             t.HasCheckConstraint("CK_SellOrder_Quantity", "\"Quantity\" > 0");
                         });
-                });
-
-            modelBuilder.Entity("StocksApp.Core.Domain.Entities.User", b =>
-                {
-                    b.Property<Guid>("UserId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("CashBalance")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("Email")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserName")
-                        .HasColumnType("text");
-
-                    b.HasKey("UserId");
-
-                    b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("StocksApp.Core.Domain.Entities.BuyOrder", b =>
-                {
-                    b.HasOne("StocksApp.Core.Domain.Entities.User", "User")
-                        .WithMany("BuyOrders")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("StocksApp.Core.Domain.Entities.SellOrder", b =>
-                {
-                    b.HasOne("StocksApp.Core.Domain.Entities.User", "User")
-                        .WithMany("SellOrders")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("StocksApp.Core.Domain.Entities.User", b =>
-                {
-                    b.Navigation("BuyOrders");
-
-                    b.Navigation("SellOrders");
                 });
 #pragma warning restore 612, 618
         }
