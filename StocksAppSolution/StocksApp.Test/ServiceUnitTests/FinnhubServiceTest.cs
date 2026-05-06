@@ -1,4 +1,4 @@
-﻿namespace StocksApp.Test.ServiceTests
+﻿namespace StocksApp.Test.ServiceUnitTests
 {
     public class FinnhubServiceTest
     {
