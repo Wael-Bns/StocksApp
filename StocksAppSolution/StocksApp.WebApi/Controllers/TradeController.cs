@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using StocksApp.Core.DTO;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.WebApi.Constants;
 using StocksApp.WebApi.Options;
 using StocksApp.Core.HttpClientAbstractions;
+using StocksApp.Core.DTO.StockDTO;
 
 namespace StocksApp.WebApi.Controllers
 {

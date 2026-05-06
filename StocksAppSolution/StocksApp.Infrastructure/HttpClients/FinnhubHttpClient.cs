@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using StocksApp.Core.DTO;
+using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.HttpClientAbstractions;
 
 namespace StocksApp.Infrastructure.Services

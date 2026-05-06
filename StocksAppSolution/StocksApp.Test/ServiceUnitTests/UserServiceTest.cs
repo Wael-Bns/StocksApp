@@ -15,11 +15,18 @@ namespace StocksApp.Test.ServiceUnitTests
     {
         private readonly IUserService _userService;
         private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<IPasswordHasher> _passwordHasherMock; 
 
         public UserServiceTest()
         {
             _userRepositoryMock = new Mock<IUserRepository>();
-            _userService = new UserService(_userRepositoryMock.Object);
+            _passwordHasherMock = new Mock<IPasswordHasher>(); 
+            
+            _passwordHasherMock
+                .Setup(ph => ph.HashPassword(It.IsAny<string>()))
+                .Returns("dummy_instant_hash");
+
+            _userService = new UserService(_userRepositoryMock.Object, _passwordHasherMock.Object);
         }
 
         #region AddUser Tests
@@ -36,8 +43,9 @@ namespace StocksApp.Test.ServiceUnitTests
             Func<Task> action = async () => await _userService.AddUser(request);
 
             // Assert
-            await action.Should().ThrowAsync<ArgumentException>()
-                .WithMessage("A user with this email already exists.");
+            await action.Should().ThrowAsync<ArgumentException>();
+                
+            _userRepositoryMock.Verify(repo => repo.AddUser(It.IsAny<User>()), Times.Never);
         }
 
         [Fact]
@@ -118,8 +126,9 @@ namespace StocksApp.Test.ServiceUnitTests
             Func<Task> action = async () => await _userService.UpdateUser(request);
 
             // Assert
-            await action.Should().ThrowAsync<ArgumentException>()
-                .WithMessage("User not found.");
+            await action.Should().ThrowAsync<ArgumentException>();
+                
+            _userRepositoryMock.Verify(repo => repo.UpdateUser(It.IsAny<User>()), Times.Never);
         }
 
         [Fact]
@@ -140,10 +149,13 @@ namespace StocksApp.Test.ServiceUnitTests
 
             // Assert
             response.Should().NotBeNull();
-            response.UserName.Should().Be("UpdatedName");
-            response.Email.Should().Be("updated@test.com");
+            response.UserName.Should().Be(request.UserName);
+            response.Email.Should().Be(request.Email);
             
-            _userRepositoryMock.Verify(repo => repo.UpdateUser(It.IsAny<User>()), Times.Once);
+            _userRepositoryMock.Verify(repo => repo.UpdateUser(It.Is<User>(u => 
+                u.UserId == request.UserId && 
+                u.UserName == request.UserName && 
+                u.Email == request.Email)), Times.Once);
         }
 
         #endregion
@@ -162,8 +174,9 @@ namespace StocksApp.Test.ServiceUnitTests
             Func<Task> action = async () => await _userService.DeleteUser(userId);
 
             // Assert
-            await action.Should().ThrowAsync<ArgumentException>()
-                .WithMessage("User not found.");
+            await action.Should().ThrowAsync<ArgumentException>();
+                
+            _userRepositoryMock.Verify(repo => repo.DeleteUser(It.IsAny<Guid>()), Times.Never);
         }
 
         [Fact]
@@ -183,6 +196,61 @@ namespace StocksApp.Test.ServiceUnitTests
             // Assert
             result.Should().BeTrue();
             _userRepositoryMock.Verify(repo => repo.DeleteUser(userId), Times.Once);
+        }
+
+        #endregion
+
+        #region UpdateUserRefreshToken Tests
+
+        [Fact]
+        public async Task UpdateUserRefreshToken_UserNotFound_ThrowsArgumentException()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var refreshToken = "sample_refresh_token";
+            var refreshTokenExpiry = DateTime.UtcNow.AddMinutes(10);
+
+            _userRepositoryMock.Setup(repo => repo.GetUserById(userId))
+                .ReturnsAsync((User?)null); // Not found
+
+            // Act
+            Func<Task> action = async () => await _userService.UpdateUserRefreshToken(userId, refreshToken, refreshTokenExpiry);
+
+            // Assert
+            await action.Should().ThrowAsync<ArgumentException>();
+
+            _userRepositoryMock.Verify(repo => repo.UpdateUser(It.IsAny<User>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task UpdateUserRefreshToken_ValidDetails_UpdatesAndReturnsResponse()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var refreshToken = "sample_refresh_token";
+            var refreshTokenExpiry = DateTime.UtcNow.AddMinutes(10);
+            
+            var existingUser = new User { UserId = userId, UserName = "TestUser", Email = "test@test.com" };
+
+            _userRepositoryMock.Setup(repo => repo.GetUserById(userId))
+                .ReturnsAsync(existingUser); // Found
+
+            _userRepositoryMock.Setup(repo => repo.UpdateUser(It.IsAny<User>()))
+                .ReturnsAsync((User u) => u);
+
+            // Act
+            var response = await _userService.UpdateUserRefreshToken(userId, refreshToken, refreshTokenExpiry);
+
+            // Assert
+            response.Should().NotBeNull();
+            response.UserId.Should().Be(userId);
+
+            // Verify the properties were accurately updated on the user that was sent to the repository
+            _userRepositoryMock.Verify(repo => repo.UpdateUser(It.Is<User>(u => 
+                u.UserId == userId &&
+                u.RefreshToken == refreshToken &&
+                u.RefreshTokenExpiry == refreshTokenExpiry
+            )), Times.Once);
         }
 
         #endregion

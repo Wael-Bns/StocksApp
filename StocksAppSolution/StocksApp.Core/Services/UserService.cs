@@ -7,10 +7,12 @@ namespace StocksApp.Core.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, IPasswordHasher passwordHasher)
         {
             _userRepository = userRepository;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<UserResponse> AddUser(UserAddRequest request)
@@ -23,7 +25,7 @@ namespace StocksApp.Core.Services
 
             var user = request.ToUser();
 
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password); 
+            user.PasswordHash = _passwordHasher.HashPassword(request.Password); 
 
             var createdUser = await _userRepository.AddUser(user);
 
@@ -42,17 +44,17 @@ namespace StocksApp.Core.Services
             return user?.ToUserResponse();
         }
 
-        public async Task<UserResponse> UpdateUser(UserUpdateRequest request)
+        public async Task<UserResponse> UpdateUser(UserUpdateRequest userUpdateRequest)
         {
-            var existingUser = await _userRepository.GetUserById(request.UserId);
+            var existingUser = await _userRepository.GetUserById(userUpdateRequest.UserId);
             if (existingUser == null)
             {
                 throw new ArgumentException("User not found.");
             }
 
             // Update allowed properties
-            existingUser.UserName = request.UserName;
-            existingUser.Email = request.Email;
+            existingUser.UserName = userUpdateRequest.UserName;
+            existingUser.Email = userUpdateRequest.Email;
 
             var updatedUser = await _userRepository.UpdateUser(existingUser);
 
@@ -68,6 +70,21 @@ namespace StocksApp.Core.Services
             }
 
             return await _userRepository.DeleteUser(userId);
+        }
+        public async Task<UserResponse> UpdateUserRefreshToken(Guid userId, string refreshToken, DateTime refreshTokenExpiry)
+        {
+            var existingUser = await _userRepository.GetUserById(userId);
+            if (existingUser == null)
+            {
+                throw new ArgumentException("User not found.");
+            }
+
+            existingUser.RefreshToken = refreshToken;
+            existingUser.RefreshTokenExpiry = refreshTokenExpiry;
+
+            var updatedUser = await _userRepository.UpdateUser(existingUser);
+
+            return updatedUser.ToUserResponse();
         }
     }
 }

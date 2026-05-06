@@ -1,4 +1,4 @@
-﻿using StocksApp.Core.DTO;
+﻿using StocksApp.Core.DTO.StockDTO;
 
 namespace StocksApp.Core.HttpClientAbstractions
 {

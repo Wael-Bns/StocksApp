@@ -40,21 +40,9 @@ namespace StocksApp.Infrastructure.Repositories
 
         public async Task<User> UpdateUser(User user)
         {
-            var matchingUser = await _db.Users.FirstOrDefaultAsync(u => u.UserId == user.UserId);
-
-            if (matchingUser == null)
-            {
-                return user; // Or throw an exception
-            }
-
-            // Update allowed properties
-            matchingUser.UserName = user.UserName;
-            matchingUser.Email = user.Email;
-            matchingUser.PasswordHash = user.PasswordHash;
-            matchingUser.CashBalance = user.CashBalance;
-
+            _db.Users.Update(user);
             await _db.SaveChangesAsync();
-            return matchingUser;
+            return user;
         }
     }
 }

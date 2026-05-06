@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -41,6 +42,13 @@ namespace StocksApp.Core.Services
             JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
             string jwtToken = tokenHandler.WriteToken(tokenGenerator);
             return jwtToken;
+        }
+        public string GenerateRefreshToken()
+        {
+            byte[] bytes = new byte[64];
+            using var randomGenerator = RandomNumberGenerator.Create();
+            randomGenerator.GetBytes(bytes);
+            return Convert.ToBase64String(bytes);
         }
     }
 }
