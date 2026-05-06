@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StocksApp.Core.Options;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 
@@ -12,11 +11,11 @@ namespace StocksApp.Core
         {
             services.AddHttpClient<IFinnHubService, FinnhubService>();
 
-            services.Configure<TradeOptions>(configuration.GetSection("TradingOptions"));
-
             services.AddScoped<IStockService, StockService>();
 
             services.AddScoped<IUserService, UserService>();
+
+            services.AddTransient<IJwtService, JwtService>();
 
             return services;
         }
