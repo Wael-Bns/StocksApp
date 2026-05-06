@@ -1,5 +1,5 @@
 ﻿
-namespace StocksApp.WebApi.Options
+namespace StocksApp.Core.Options
 {
     public class TradeOptions
     {

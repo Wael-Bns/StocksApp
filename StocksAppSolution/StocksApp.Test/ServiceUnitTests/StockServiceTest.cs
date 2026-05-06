@@ -2,7 +2,8 @@
 using Moq;
 using StocksApp.Core.Domain.Entities;
 using StocksApp.Core.Domain.RepositoryContracts;
-using StocksApp.Core.DTO;
+using StocksApp.Core.DTO.BuyOrderDTO;
+using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 using Xunit;

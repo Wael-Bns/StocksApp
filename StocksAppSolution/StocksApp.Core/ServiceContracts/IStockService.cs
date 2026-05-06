@@ -1,4 +1,5 @@
-﻿using StocksApp.Core.DTO;
+﻿using StocksApp.Core.DTO.BuyOrderDTO;
+using StocksApp.Core.DTO.SellOrderDTO;
 
 namespace StocksApp.Core.ServiceContracts
 {
