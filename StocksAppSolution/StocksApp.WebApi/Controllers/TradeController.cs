@@ -6,16 +6,17 @@ using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.WebApi.Constants;
 using StocksApp.WebApi.Options;
+using StocksApp.Core.HttpClientAbstractions;
 
 namespace StocksApp.WebApi.Controllers
 {
     public class TradeController : CommonControllerBase
     {
-        private readonly IFinnHubService _finnHubService;
+        private readonly IFinnHubHttpClient _finnHubService;
         private readonly IStockService _stockService;
         private readonly IOptions<TradeOptions> _tradeOptions;
 
-        public TradeController(IFinnHubService finnHubService, IStockService stockService, IOptions<TradeOptions> tradeOptions)
+        public TradeController(IFinnHubHttpClient finnHubService, IStockService stockService, IOptions<TradeOptions> tradeOptions)
         {
             _finnHubService = finnHubService;
             _stockService = stockService;

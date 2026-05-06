@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StocksApp.Core.HttpClientAbstractions;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 
@@ -9,7 +10,6 @@ namespace StocksApp.Core
     {
         public static IServiceCollection AddCore(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddHttpClient<IFinnHubService, FinnhubService>();
 
             services.AddScoped<IStockService, StockService>();
 

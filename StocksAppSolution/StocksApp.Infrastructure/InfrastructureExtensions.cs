@@ -2,7 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StocksApp.Core.Domain.RepositoryContracts;
+using StocksApp.Core.HttpClientAbstractions;
 using StocksApp.Infrastructure.Repositories;
+using StocksApp.Infrastructure.Services;
 
 namespace StocksApp.Infrastructure
 {
@@ -10,6 +12,7 @@ namespace StocksApp.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddHttpClient<IFinnHubHttpClient, FinnhubHttpClient>();
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddDbContext<ApplicationDbContext>(options =>
             {

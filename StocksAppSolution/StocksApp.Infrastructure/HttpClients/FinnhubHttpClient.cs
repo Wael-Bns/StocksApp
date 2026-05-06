@@ -1,17 +1,17 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using StocksApp.Core.DTO;
-using StocksApp.Core.ServiceContracts;
+using StocksApp.Core.HttpClientAbstractions;
 
-namespace StocksApp.Core.Services
+namespace StocksApp.Infrastructure.Services
 {
-    public class FinnhubService : IFinnHubService
+    public class FinnhubHttpClient : IFinnHubHttpClient
     {
         private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
         private readonly string _apiKey;
 
-        public FinnhubService(IConfiguration configuration, HttpClient httpClient)
+        public FinnhubHttpClient(IConfiguration configuration, HttpClient httpClient)
         {
             _configuration = configuration;
             _httpClient = httpClient;

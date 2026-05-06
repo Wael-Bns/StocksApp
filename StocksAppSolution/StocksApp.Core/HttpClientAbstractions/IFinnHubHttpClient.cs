@@ -1,9 +1,8 @@
-﻿
-using StocksApp.Core.DTO;
+﻿using StocksApp.Core.DTO;
 
-namespace StocksApp.Core.ServiceContracts
+namespace StocksApp.Core.HttpClientAbstractions
 {
-    public interface IFinnHubService
+    public interface IFinnHubHttpClient
     {
         /// <summary>
         /// Get general information of a company based on the stock symbol.
