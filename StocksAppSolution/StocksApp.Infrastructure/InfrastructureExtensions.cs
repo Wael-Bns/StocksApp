@@ -14,6 +14,7 @@ namespace StocksApp.Infrastructure
         {
             services.AddHttpClient<IFinnHubHttpClient, FinnhubHttpClient>();
             services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
             services.AddDbContext<ApplicationDbContext>(options =>
             {
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));

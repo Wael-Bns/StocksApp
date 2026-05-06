@@ -1,4 +1,4 @@
-﻿/*using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using StocksApp.Core.Domain.Entities;
 
@@ -39,9 +39,8 @@ namespace StocksApp.Infrastructure.Configurations
 
             builder.ToTable(t =>
             {
-                t.HasCheckConstraint("CK_User_CashBalance_NonNegative", "[CashBalance] >= 0");
+                t.HasCheckConstraint("CK_User_CashBalance_NonNegative", "\"CashBalance\" >= 0");
             });
         }
     }
 }
-*/

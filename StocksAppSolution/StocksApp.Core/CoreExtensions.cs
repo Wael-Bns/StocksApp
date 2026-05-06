@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StocksApp.Core.HttpClientAbstractions;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 
@@ -16,6 +15,8 @@ namespace StocksApp.Core
             services.AddScoped<IUserService, UserService>();
 
             services.AddTransient<IJwtService, JwtService>();
+
+            services.AddTransient<IAuthService, AuthService>();
 
             return services;
         }
