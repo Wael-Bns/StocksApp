@@ -2,7 +2,6 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StocksApp.Core.Options;
@@ -20,7 +19,7 @@ namespace StocksApp.Core.Services
 
         public string CreateAccessToken(Guid userId, string username, string email)
         {
-            DateTime expiration = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_jwtOptions.EXPIRATION_MINUTES));
+            DateTime expiration = DateTime.UtcNow.AddMinutes(_jwtOptions.EXPIRATION_MINUTES);
             Claim[] claims = new Claim[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
