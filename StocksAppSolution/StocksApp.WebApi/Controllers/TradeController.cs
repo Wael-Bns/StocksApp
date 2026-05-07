@@ -23,14 +23,14 @@ namespace StocksApp.WebApi.Controllers
             _tradeOptions = tradeOptions;
         }
 
-        [HttpGet]
+        [HttpGet("search-stocks")]
         public async Task<IActionResult> SearchStocks(string query)
         {
             var res = await _finnHubService.SearchStocks(query);
             return Ok(res);
         }
 
-        [HttpGet("{stockSymbol?}")]
+        [HttpGet("trade-info/{stockSymbol?}")]
         public async Task<IActionResult> GetTradeInfo([FromRoute] string? stockSymbol)
         {
             try
@@ -60,7 +60,7 @@ namespace StocksApp.WebApi.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("buyorder")]
         public async Task<IActionResult> BuyOrder(BuyOrderRequest buyOrderRequest)
         {
             if (buyOrderRequest == null)
@@ -74,7 +74,7 @@ namespace StocksApp.WebApi.Controllers
             BuyOrderResponse buyOrderResponse = await _stockService.CreateBuyOrder(buyOrderRequest);
             return Ok(buyOrderResponse);
         }
-        [HttpPost]
+        [HttpPost("sellorder")]
         public async Task<IActionResult> SellOrder(SellOrderRequest sellOrderRequest)
         {
             if (sellOrderRequest == null)
@@ -88,13 +88,13 @@ namespace StocksApp.WebApi.Controllers
             SellOrderResponse sellOrderResponse = await _stockService.CreateSellOrder(sellOrderRequest);
             return Ok(sellOrderResponse);
         }
-        [HttpGet]
+        [HttpGet("allbuyorders")]
         public async Task<IActionResult> GetAllBuyOrders()
         {
             List<BuyOrderResponse> buyOrders = await _stockService.GetAllBuyOrders();
             return Ok(buyOrders);
         }
-        [HttpGet]
+        [HttpGet("allsellorders")]
         public async Task<IActionResult> GetAllSellOrders()
         {
             List<SellOrderResponse> sellOrders = await _stockService.GetAllSellOrders();

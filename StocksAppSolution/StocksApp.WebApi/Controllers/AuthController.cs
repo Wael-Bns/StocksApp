@@ -14,7 +14,7 @@ namespace StocksApp.WebApi.Controllers
             _authenticationService = authenticationService;
         }
 
-        [HttpPost]
+        [HttpPost("register")]
         [AllowAnonymous]
         public async Task<ActionResult<AuthenticationResponse>> Register([FromBody] UserAddRequest registerRequest)
         {
@@ -29,7 +29,7 @@ namespace StocksApp.WebApi.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         [AllowAnonymous]
         public async Task<ActionResult<AuthenticationResponse>> Login([FromBody] LoginRequest loginRequest)
         {
@@ -44,7 +44,7 @@ namespace StocksApp.WebApi.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("generate-new-access-token")]
         public async Task<IActionResult> GenerateNewAccessToken([FromBody] TokenModel tokenModel)
         {
             try
