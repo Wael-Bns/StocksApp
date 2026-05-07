@@ -25,7 +25,6 @@ namespace StocksApp.Core.Services
                 new Claim(JwtRegisteredClaimNames.Email, email),
                 new Claim(JwtRegisteredClaimNames.Name, username),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
                 new Claim(ClaimTypes.Name, username)
             };
             SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"]!));
@@ -55,7 +54,7 @@ namespace StocksApp.Core.Services
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
-                ValidateAudience = true,
+                ValidateAudience = false,
                 ValidAudience = _configuration["JWT:Audience"],
                 ValidateIssuer = true,
                 ValidIssuer = _configuration["JWT:Issuer"],
