@@ -64,3 +64,5 @@ app.UseSwaggerUI(c =>
 });
 
 app.Run();
+
+public partial class Program { } // For integration testing purposes
