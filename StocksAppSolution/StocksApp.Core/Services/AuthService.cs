@@ -1,8 +1,10 @@
 ﻿using System.Security.Claims;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StocksApp.Core.DTO.AuthenticationDTO;
 using StocksApp.Core.DTO.UsersDTO;
+using StocksApp.Core.Options;
 using StocksApp.Core.ServiceContracts;
 
 namespace StocksApp.Core.Services
@@ -11,14 +13,18 @@ namespace StocksApp.Core.Services
     {
         private readonly IUserService _userService;
         private readonly ITokenService _jwtService;
-        private readonly IConfiguration _configuration;
         private readonly IPasswordHasher _passwordHasher;
-        public AuthService(IUserService userService, ITokenService jwtService, IConfiguration configuration, IPasswordHasher passwordHasher)
+        private readonly RefreshTokenOptions _refreshTokenOptions;
+        public AuthService(IUserService userService,
+            ITokenService jwtService,
+            IConfiguration configuration,
+            IPasswordHasher passwordHasher,
+            IOptions<RefreshTokenOptions> refreshTokenOptions)
         {
             _userService = userService;
             _jwtService = jwtService;
-            _configuration = configuration;
             _passwordHasher = passwordHasher;
+            _refreshTokenOptions = refreshTokenOptions.Value;
         }
 
         public async Task<AuthenticationResponse> RegisterAsync(UserAddRequest registerRequest)
@@ -29,7 +35,7 @@ namespace StocksApp.Core.Services
             // generate jwt token and refresh token
             string jwtToken = _jwtService.CreateAccessToken(userResponse.UserId, userResponse.UserName, userResponse.Email);
             string refreshToken = _jwtService.GenerateRefreshToken();
-            DateTime refreshTokenExpiry = DateTime.UtcNow.AddMinutes(Convert.ToInt32(_configuration["RefreshToken:EXPIRATION_MINUTES"]));
+            DateTime refreshTokenExpiry = DateTime.UtcNow.AddMinutes(_refreshTokenOptions.EXPIRATION_MINUTES);
 
             // update the user refresh token and refresh token expiry in the database
             await _userService.UpdateUserRefreshToken(userResponse.UserId, refreshToken, refreshTokenExpiry);
@@ -57,7 +63,7 @@ namespace StocksApp.Core.Services
             }
             string jwtToken = _jwtService.CreateAccessToken(user.UserId, user.UserName, user.Email);
             string refreshToken = _jwtService.GenerateRefreshToken();
-            DateTime refreshTokenExpiry = DateTime.UtcNow.AddMinutes(Convert.ToInt32(_configuration["RefreshToken:EXPIRATION_MINUTES"]));
+            DateTime refreshTokenExpiry = DateTime.UtcNow.AddMinutes(_refreshTokenOptions.EXPIRATION_MINUTES);
 
             // update the user refresh token and refresh token expiry in the database
             await _userService.UpdateUserRefreshToken(user.UserId, refreshToken, refreshTokenExpiry);
@@ -100,7 +106,7 @@ namespace StocksApp.Core.Services
             string newAccessToken = _jwtService.CreateAccessToken(userResponse.UserId, userResponse.UserName, userResponse.Email);
             string newRefreshToken = _jwtService.GenerateRefreshToken();
             
-            DateTime newRefreshTokenExpiry = DateTime.UtcNow.AddMinutes(Convert.ToInt32(_configuration["RefreshToken:EXPIRATION_MINUTES"]));
+            DateTime newRefreshTokenExpiry = DateTime.UtcNow.AddMinutes(_refreshTokenOptions.EXPIRATION_MINUTES);
 
             await _userService.UpdateUserRefreshToken(userResponse.UserId, newRefreshToken, newRefreshTokenExpiry);
 

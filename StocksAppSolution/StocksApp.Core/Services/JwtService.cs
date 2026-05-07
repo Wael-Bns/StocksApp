@@ -3,22 +3,24 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using StocksApp.Core.Options;
 using StocksApp.Core.ServiceContracts;
 
 namespace StocksApp.Core.Services
 {
     public class JwtService : ITokenService
     {
-        private readonly IConfiguration _configuration;
-        public JwtService(IConfiguration configuration)
+        private readonly JwtOptions _jwtOptions;
+        public JwtService(IOptions<JwtOptions> jwtOptions)
         {
-            _configuration = configuration;
+            _jwtOptions = jwtOptions.Value;
         }
 
         public string CreateAccessToken(Guid userId, string username, string email)
         {
-            DateTime expiration = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_configuration["JWT:EXPIRATION_MINUTES"]));
+            DateTime expiration = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_jwtOptions.EXPIRATION_MINUTES));
             Claim[] claims = new Claim[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
@@ -27,12 +29,12 @@ namespace StocksApp.Core.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Name, username)
             };
-            SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"]!));
+            SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
             SigningCredentials credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             JwtSecurityToken tokenGenerator = new JwtSecurityToken(
-                issuer: _configuration["JWT:Issuer"],
-                audience: _configuration["JWT:Audience"],
+                issuer: _jwtOptions.Issuer,
+                audience: _jwtOptions.Audience,
                 claims: claims,
                 expires: expiration,
                 signingCredentials: credentials
@@ -54,12 +56,12 @@ namespace StocksApp.Core.Services
         {
             var tokenValidationParameters = new TokenValidationParameters
             {
-                ValidateAudience = false,
-                ValidAudience = _configuration["JWT:Audience"],
+                ValidateAudience = true,
+                ValidAudience = _jwtOptions.Audience,
                 ValidateIssuer = true,
-                ValidIssuer = _configuration["JWT:Issuer"],
+                ValidIssuer = _jwtOptions.Issuer,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"]!)),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key)),
                 ValidateLifetime = false
             };
             

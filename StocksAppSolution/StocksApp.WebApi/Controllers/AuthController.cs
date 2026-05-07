@@ -45,6 +45,7 @@ namespace StocksApp.WebApi.Controllers
         }
 
         [HttpPost("generate-new-access-token")]
+        [AllowAnonymous]
         public async Task<IActionResult> GenerateNewAccessToken([FromBody] TokenModel tokenModel)
         {
             try
