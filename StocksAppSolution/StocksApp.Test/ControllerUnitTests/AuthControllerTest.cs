@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Moq;
 using StocksApp.Core.DTO.AuthenticationDTO;
 using StocksApp.Core.DTO.UsersDTO;
@@ -41,7 +42,24 @@ namespace StocksApp.Test.ControllerUnitTests
         }
 
         [Fact]
-        public async Task Register_ServiceThrowsException_ReturnsProblem()
+        public async Task Register_ArgumentException_ReturnsConflict()
+        {
+            // Arrange
+            var registerRequest = new UserAddRequest { UserName = "TestUser", Email = "test@test.com", Password = "Password123" };
+
+            _authServiceMock.Setup(x => x.RegisterAsync(registerRequest))
+                .ThrowsAsync(new ArgumentException("A user with this email already exists."));
+
+            // Act
+            var result = await _authController.Register(registerRequest);
+
+            // Assert
+            var conflictResult = result.Result.Should().BeOfType<ConflictObjectResult>().Subject;
+            conflictResult.Value.Should().Be("A user with this email already exists.");
+        }
+
+        [Fact]
+        public async Task Register_GenericException_ReturnsProblem()
         {
             // Arrange
             var registerRequest = new UserAddRequest { UserName = "TestUser", Email = "test@test.com", Password = "Password123" };
@@ -54,7 +72,7 @@ namespace StocksApp.Test.ControllerUnitTests
 
             // Assert
             var problemResult = result.Result.Should().BeOfType<ObjectResult>().Subject;
-            problemResult.StatusCode.Should().Be(500); // Problem() returns 500 status by default
+            problemResult.StatusCode.Should().Be(500); 
         }
 
         #endregion
@@ -80,13 +98,30 @@ namespace StocksApp.Test.ControllerUnitTests
         }
 
         [Fact]
-        public async Task Login_ServiceThrowsException_ReturnsProblem()
+        public async Task Login_ArgumentException_ReturnsUnauthorized()
         {
             // Arrange
             var loginRequest = new LoginRequest { Email = "invalid@test.com", Password = "Password123" };
 
             _authServiceMock.Setup(x => x.LoginAsync(loginRequest))
                 .ThrowsAsync(new ArgumentException("Invalid email"));
+
+            // Act
+            var result = await _authController.Login(loginRequest);
+
+            // Assert
+            var unauthorizedResult = result.Result.Should().BeOfType<UnauthorizedObjectResult>().Subject;
+            unauthorizedResult.Value.Should().Be("Invalid email");
+        }
+
+        [Fact]
+        public async Task Login_GenericException_ReturnsProblem()
+        {
+            // Arrange
+            var loginRequest = new LoginRequest { Email = "valid@test.com", Password = "Password123" };
+
+            _authServiceMock.Setup(x => x.LoginAsync(loginRequest))
+                .ThrowsAsync(new Exception("Database exploded"));
 
             // Act
             var result = await _authController.Login(loginRequest);
@@ -119,20 +154,54 @@ namespace StocksApp.Test.ControllerUnitTests
         }
 
         [Fact]
-        public async Task GenerateNewAccessToken_ServiceThrowsException_ReturnsBadRequest()
+        public async Task GenerateNewAccessToken_SecurityTokenException_ReturnsUnauthorized()
         {
             // Arrange
             var tokenModel = new TokenModel { Token = "invalid", RefreshToken = "invalid" };
 
             _authServiceMock.Setup(x => x.GenerateNewAccessTokenAsync(tokenModel))
-                .ThrowsAsync(new ArgumentException("Invalid refresh token"));
+                .ThrowsAsync(new SecurityTokenException("Invalid token"));
+
+            // Act
+            var result = await _authController.GenerateNewAccessToken(tokenModel);
+
+            // Assert
+            var unauthorizedResult = result.Should().BeOfType<UnauthorizedObjectResult>().Subject;
+            unauthorizedResult.Value.Should().Be("Invalid token");
+        }
+
+        [Fact]
+        public async Task GenerateNewAccessToken_ArgumentException_ReturnsBadRequest()
+        {
+            // Arrange
+            var tokenModel = new TokenModel { Token = "invalid", RefreshToken = "invalid" };
+
+            _authServiceMock.Setup(x => x.GenerateNewAccessTokenAsync(tokenModel))
+                .ThrowsAsync(new ArgumentException("Invalid client request"));
 
             // Act
             var result = await _authController.GenerateNewAccessToken(tokenModel);
 
             // Assert
             var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            badRequestResult.Value.Should().Be("Invalid refresh token");
+            badRequestResult.Value.Should().Be("Invalid client request");
+        }
+        
+        [Fact]
+        public async Task GenerateNewAccessToken_GenericException_ReturnsProblem()
+        {
+            // Arrange
+            var tokenModel = new TokenModel { Token = "valid", RefreshToken = "valid" };
+
+            _authServiceMock.Setup(x => x.GenerateNewAccessTokenAsync(tokenModel))
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act
+            var result = await _authController.GenerateNewAccessToken(tokenModel);
+
+            // Assert
+            var problemResult = result.Should().BeOfType<ObjectResult>().Subject;
+            problemResult.StatusCode.Should().Be(500);
         }
 
         #endregion
