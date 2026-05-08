@@ -33,7 +33,6 @@ namespace StocksApp.WebApi.Hubs
 
                 if (newCount == 1)
                 {
-                    _logger.LogInformation("Subscribing to symbol: {symbol}", symbol);
                     await _finnhubWebSocketClient.SubscribeAsync(symbol);
                 }
 
@@ -62,7 +61,6 @@ namespace StocksApp.WebApi.Hubs
                     if (newCount <= 0)
                     {
                         SubscriptionCounts.TryRemove(symbol, out _);
-                        _logger.LogInformation("Unsubscribing from symbol: {symbol} as there are no more subscribers", symbol);
                         await _finnhubWebSocketClient.UnsubscribeAsync(symbol);
                     }
                 }

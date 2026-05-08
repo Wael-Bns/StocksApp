@@ -43,23 +43,33 @@ namespace StocksApp.Infrastructure.WebSocketClients
         public async Task ReceiveAsync(CancellationToken cancellationToken = default)
         {
             byte[] buffer = new byte[4096];
+
             while (_socket.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested)
             {
-                var result = await _socket.ReceiveAsync(
-                    new ArraySegment<byte>(buffer),
-                    cancellationToken);
-                if (result.MessageType == WebSocketMessageType.Close)
+                using var messageStream = new MemoryStream();
+                WebSocketReceiveResult result;
+
+                do
                 {
-                    await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
-                    _logger.LogInformation("WebSocket connection closed.");
-                }
-                else
-                {
-                    string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                    if (OnMessageReceived != null)
+                    result = await _socket.ReceiveAsync(
+                        new ArraySegment<byte>(buffer),
+                        cancellationToken);
+
+                    if (result.MessageType == WebSocketMessageType.Close)
                     {
-                        await OnMessageReceived.Invoke(message);
+                        await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
+                        _logger.LogInformation("WebSocket connection closed.");
+                        return;
                     }
+
+                    messageStream.Write(buffer, 0, result.Count);
+                }
+                while (!result.EndOfMessage);
+
+                string message = Encoding.UTF8.GetString(messageStream.ToArray());
+                if (OnMessageReceived != null)
+                {
+                    await OnMessageReceived.Invoke(message);
                 }
             }
         }
