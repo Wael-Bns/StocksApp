@@ -1,0 +1,83 @@
+﻿using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using StocksApp.Core.WebSocketClientAstractions;
+
+namespace StocksApp.Infrastructure.WebSocketClients
+{
+    public class FinnhubWebSocketClient : IFinnhubWebSocketClient
+    {
+        private readonly ClientWebSocket _socket = new ClientWebSocket();
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<FinnhubWebSocketClient> _logger;
+        public event Func<string, Task>? OnMessageReceived;
+        public FinnhubWebSocketClient(IConfiguration configuration, ILogger<FinnhubWebSocketClient> logger)
+        {
+            _configuration = configuration;
+            _logger = logger;
+        }
+        public async Task ConnectAsync(CancellationToken cancellationToken = default)
+        {
+            string token = _configuration["FinnhubApiKey"]!;
+            var uri = new Uri($"wss://ws.finnhub.io?token={token}");
+            await _socket.ConnectAsync(uri, cancellationToken);
+            _logger.LogInformation("Connected to finnhub websocket .");
+        }
+        public async Task SubscribeAsync(string symbol, CancellationToken cancellationToken = default)
+        {
+            var payload = new
+            {
+                type = "subscribe",
+                symbol = symbol
+            };
+            string jsonPayload = JsonSerializer.Serialize(payload);
+            byte[] bytes = Encoding.UTF8.GetBytes(jsonPayload);
+            await _socket.SendAsync(
+                    bytes,
+                    WebSocketMessageType.Text,
+                    true, cancellationToken);
+            _logger.LogInformation("Subscribed to stock symbol: {Symbol}", symbol);
+        }
+        public async Task ReceiveAsync(CancellationToken cancellationToken = default)
+        {
+            byte[] buffer = new byte[4096];
+            while (_socket.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested)
+            {
+                var result = await _socket.ReceiveAsync(
+                    new ArraySegment<byte>(buffer),
+                    cancellationToken);
+                if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
+                    _logger.LogInformation("WebSocket connection closed.");
+                }
+                else
+                {
+                    string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    _logger.LogInformation("Received message: {Message}", message);
+                    if (OnMessageReceived != null)
+                    {
+                        await OnMessageReceived.Invoke(message);
+                    }
+                }
+            }
+        }
+        public async Task UnsubscribeAsync(string symbol, CancellationToken cancellationToken = default)
+        {
+            var payload = new
+            {
+                type = "unsubscribe",
+                symbol = symbol
+            };
+            string jsonPayload = JsonSerializer.Serialize(payload);
+            byte[] bytes = Encoding.UTF8.GetBytes(jsonPayload);
+            await _socket.SendAsync(
+                    bytes,
+                    WebSocketMessageType.Text,
+                    true, cancellationToken);
+            _logger.LogInformation("Unsubscribed from stock symbol: {Symbol}", symbol);
+        }
+    }
+}

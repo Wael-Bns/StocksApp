@@ -4,8 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using StocksApp.Core.Domain.RepositoryContracts;
 using StocksApp.Core.HttpClientAbstractions;
 using StocksApp.Infrastructure.Repositories;
+using StocksApp.Infrastructure.HttpClients;
 using StocksApp.Infrastructure.Services;
 using StocksApp.Core.ServiceContracts;
+using StocksApp.Core.WebSocketClientAstractions;
+using StocksApp.Infrastructure.WebSocketClients;
 
 namespace StocksApp.Infrastructure
 {
@@ -20,6 +23,8 @@ namespace StocksApp.Infrastructure
             services.AddScoped<IUserRepository, UserRepository>();
 
             services.AddTransient<IPasswordHasher, BCryptPasswordHasher>();
+
+            services.AddSingleton<IFinnhubWebSocketClient, FinnhubWebSocketClient>();
 
             services.AddDbContext<ApplicationDbContext>(options =>
             {

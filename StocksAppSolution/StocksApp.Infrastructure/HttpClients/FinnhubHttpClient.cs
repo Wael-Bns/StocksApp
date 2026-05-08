@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.HttpClientAbstractions;
 
-namespace StocksApp.Infrastructure.Services
+namespace StocksApp.Infrastructure.HttpClients
 {
     public class FinnhubHttpClient : IFinnHubHttpClient
     {
