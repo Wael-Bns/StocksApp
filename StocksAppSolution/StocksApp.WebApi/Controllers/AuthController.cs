@@ -7,6 +7,7 @@ using StocksApp.Core.ServiceContracts;
 
 namespace StocksApp.WebApi.Controllers
 {
+    [Route("api/auth")]
     public class AuthController : CommonControllerBase
     {
         private readonly IAuthService _authenticationService;

@@ -10,6 +10,7 @@ using StocksApp.Core.DTO.StockDTO;
 
 namespace StocksApp.WebApi.Controllers
 {
+    [Route("api/trade")]
     public class TradeController : CommonControllerBase
     {
         private readonly IFinnHubHttpClient _finnHubService;

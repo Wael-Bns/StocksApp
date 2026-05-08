@@ -56,7 +56,6 @@ namespace StocksApp.Infrastructure.WebSocketClients
                 else
                 {
                     string message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                    _logger.LogInformation("Received message: {Message}", message);
                     if (OnMessageReceived != null)
                     {
                         await OnMessageReceived.Invoke(message);
