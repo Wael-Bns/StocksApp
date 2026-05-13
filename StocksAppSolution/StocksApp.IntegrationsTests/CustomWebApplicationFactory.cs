@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+using Microsoft.Extensions.Hosting;
 using StocksApp.Infrastructure;
 
 namespace StocksApp.IntegrationTests
@@ -17,6 +17,13 @@ namespace StocksApp.IntegrationTests
 
             builder.ConfigureServices(services =>
             {
+                var hostedServices = services.Where(s => s.ServiceType == typeof(IHostedService)).ToList();
+
+                foreach(var hostedService in hostedServices)
+                {
+                    services.Remove(hostedService);
+                }
+
                 var descriptor = services.SingleOrDefault(temp =>
                 temp.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
 

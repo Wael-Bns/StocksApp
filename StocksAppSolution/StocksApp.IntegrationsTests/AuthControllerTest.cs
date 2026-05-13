@@ -5,7 +5,7 @@ using FluentAssertions;
 using StocksApp.Core.DTO.AuthenticationDTO;
 using StocksApp.Core.DTO.UsersDTO;
 using StocksApp.IntegrationTests;
-using Xunit;
+    using Xunit;
 
 namespace StocksApp.IntegrationsTests
 {
@@ -36,11 +36,11 @@ namespace StocksApp.IntegrationsTests
         [Fact]
         public async Task Register_ValidRequest_ReturnsOkAndToken()
         {
-            using var client = CreateFreshClient();
+            var client = CreateFreshClient();
             var registerRequest = new UserAddRequest 
             { 
-                UserName = "TestUser_RegisterValid", 
-                Email = "register_valid@test.com", 
+                UserName = "TestUser_RegisterValid",
+                Email = "register_valid@test.com",
                 Password = DefaultPassword 
             };
 
