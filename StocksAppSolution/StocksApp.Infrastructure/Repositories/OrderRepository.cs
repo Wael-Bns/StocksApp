@@ -27,15 +27,17 @@ namespace StocksApp.Infrastructure.Repositories
             return sellOrder;
         }
 
-        public async Task<IEnumerable<SellOrder>?> ExecuteSellOrders(double marketPrice)
+        public async Task<IEnumerable<SellOrder>?> ExecuteSellOrders(string stockSymbol, double marketPrice)
         {
             await using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
             {
                 IEnumerable<SellOrder> ordersToExecute = await _dbContext.SellOrders
+                    .Where(order => order.Status == (int)SellOrderStatus.Pending  
+                           && order.Price <= marketPrice
+                           && order.StockSymbol == stockSymbol)
                     .Include(order => order.User)
-                    .Where(order => order.Status == (int)SellOrderStatus.Pending && order.Price <= marketPrice)
                     .ToListAsync();
 
                 if (!ordersToExecute.Any())
