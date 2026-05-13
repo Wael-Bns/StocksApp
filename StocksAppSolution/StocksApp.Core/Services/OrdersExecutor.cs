@@ -15,10 +15,8 @@ namespace StocksApp.Core.Services
             _orderRepository = orderRepository;
             _logger = logger;
         }
-        public async Task<List<SellOrderResponse>?> ExecuteSellOrders(double marketPrice)
-        {
-            _logger.LogInformation("Executing sell orders with market price: {MarketPrice}", marketPrice);
-            
+        public async Task<List<SellOrderResponse>?> ExecuteSellOrders(string stockSymbol, double marketPrice)
+        {            
             IEnumerable<SellOrder>? executedSellOrders = await _orderRepository.ExecuteSellOrders(marketPrice);
             if(executedSellOrders == null)
             {
