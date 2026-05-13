@@ -17,7 +17,7 @@ namespace StocksApp.Core.Services
         }
         public async Task<List<SellOrderResponse>?> ExecuteSellOrders(string stockSymbol, double marketPrice)
         {            
-            IEnumerable<SellOrder>? executedSellOrders = await _orderRepository.ExecuteSellOrders(marketPrice);
+            IEnumerable<SellOrder>? executedSellOrders = await _orderRepository.ExecuteSellOrders(stockSymbol,marketPrice);
             if(executedSellOrders == null)
             {
                 _logger.LogInformation("No sell orders were executed.");
