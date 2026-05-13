@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StocksApp.Core.Domain.Entities;
 using StocksApp.Core.Domain.RepositoryContracts;
+using StocksApp.Core.Enums;
 
 namespace StocksApp.Infrastructure.Repositories
 {
@@ -24,6 +25,43 @@ namespace StocksApp.Infrastructure.Repositories
             await _dbContext.SellOrders.AddAsync(sellOrder);
             await _dbContext.SaveChangesAsync();
             return sellOrder;
+        }
+
+        public async Task<IEnumerable<SellOrder>?> ExecuteSellOrders(double marketPrice)
+        {
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+            try
+            {
+                IEnumerable<SellOrder> ordersToExecute = await _dbContext.SellOrders
+                    .Include(order => order.User)
+                    .Where(order => order.Status == (int)SellOrderStatus.Pending && order.Price <= marketPrice)
+                    .ToListAsync();
+
+                if (!ordersToExecute.Any())
+                {
+                    return null;
+                }
+
+                foreach (var order in ordersToExecute)
+                {
+                    order.Status = (int)SellOrderStatus.Executed;
+                    order.User.CashBalance += (order.Price * order.Quantity);
+                }
+
+                // 3. Save changes in a single batch
+                await _dbContext.SaveChangesAsync();
+
+                // 4. Commit transaction
+                await transaction.CommitAsync();
+
+                return ordersToExecute;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw; // Re-throw the exception after rolling back
+            }
         }
 
         public async Task<List<BuyOrder>> GetAllBuyOrdersAsync()

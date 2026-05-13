@@ -16,7 +16,7 @@ namespace StocksApp.Core.ServiceContracts
         /// </summary>
         /// <param name="sellOrderRequest"></param>
         /// <returns>Returns the created object</returns>
-        Task<SellOrderResponse> CreateSellOrder(SellOrderRequest? sellOrderRequest);
+        Task<SellOrderResponse> CreateSellOrder(SellOrderAddRequest? sellOrderRequest);
         /// <summary>
         /// Get the list of buy orders saved in the database
         /// </summary>

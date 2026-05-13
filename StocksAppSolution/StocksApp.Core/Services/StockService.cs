@@ -31,7 +31,7 @@ namespace StocksApp.Core.Services
             return createdBuyOrder.ToBuyOrderResponse();
         }
 
-        public async Task<SellOrderResponse> CreateSellOrder(SellOrderRequest? sellOrderRequest)
+        public async Task<SellOrderResponse> CreateSellOrder(SellOrderAddRequest? sellOrderRequest)
         {
             if (sellOrderRequest == null)
             {

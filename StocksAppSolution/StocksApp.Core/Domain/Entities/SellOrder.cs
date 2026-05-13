@@ -8,6 +8,7 @@
         public DateTime DateAndTimeOfOrder { get; set; }
         public uint Quantity { get; set; }
         public double Price { get; set; }
+        public int Status { get; set; }
         public Guid UserId { get; set; }
         public User User { get; set; }
     }

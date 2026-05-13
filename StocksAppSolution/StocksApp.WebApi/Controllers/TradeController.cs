@@ -76,7 +76,7 @@ namespace StocksApp.WebApi.Controllers
             return Ok(buyOrderResponse);
         }
         [HttpPost("sellorder")]
-        public async Task<IActionResult> SellOrder(SellOrderRequest sellOrderRequest)
+        public async Task<IActionResult> SellOrder(SellOrderAddRequest sellOrderRequest)
         {
             if (sellOrderRequest == null)
             {

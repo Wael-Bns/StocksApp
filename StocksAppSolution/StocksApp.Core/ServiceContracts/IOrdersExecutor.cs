@@ -1,0 +1,14 @@
+﻿using StocksApp.Core.DTO.SellOrderDTO;
+
+namespace StocksApp.Core.ServiceContracts
+{
+    public interface IOrdersExecutor
+    {
+        /// <summary>
+        /// Executes the sell orders based on the provided market price and returns a list of SellOrderResponse objects containing the details of the executed sell orders.
+        /// </summary>
+        /// <param name="marketPrice">The price under which the sell orders should be executed.</param>
+        /// <returns>A list of SellOrderResponse objects representing the executed sell orders, or null if no orders were executed.</returns>
+        Task<List<SellOrderResponse>?> ExecuteSellOrders(double marketPrice);
+    }
+}

@@ -25,7 +25,7 @@ namespace StocksApp.Test.ServiceUnitTests
             Price = 100,
         };
         // A sample SellOrderRequest object that can be used in multiple tests
-        private SellOrderRequest sellOrderRequest = new SellOrderRequest
+        private SellOrderAddRequest sellOrderRequest = new SellOrderAddRequest
         {
             StockName = "APPLE INC",
             StockSymbol = "AAPL",
@@ -188,7 +188,7 @@ namespace StocksApp.Test.ServiceUnitTests
         public async Task CreateSellOrder_NullRequest()
         {
             //Arrange 
-            SellOrderRequest? orderRequest = null;
+            SellOrderAddRequest? orderRequest = null;
             Func<Task> actual = async () =>
             {
                 SellOrderResponse response = await _stockService.CreateSellOrder(orderRequest);
