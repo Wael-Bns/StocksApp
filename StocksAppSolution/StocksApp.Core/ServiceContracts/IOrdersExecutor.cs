@@ -2,6 +2,9 @@
 
 namespace StocksApp.Core.ServiceContracts
 {
+    /// <summary>
+    /// This class is responsible for executing orders .
+    /// </summary>
     public interface IOrdersExecutor
     {
         /// <summary>

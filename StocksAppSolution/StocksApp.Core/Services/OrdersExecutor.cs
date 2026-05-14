@@ -20,7 +20,6 @@ namespace StocksApp.Core.Services
             IEnumerable<SellOrder>? executedSellOrders = await _orderRepository.ExecuteSellOrders(stockSymbol,marketPrice);
             if(executedSellOrders == null)
             {
-                _logger.LogInformation("No sell orders were executed.");
                 return null;
             }
             List<SellOrderResponse> sellOrderResponses = executedSellOrders.Select(sellorder => sellorder.ToSellOrderResponse()).ToList();
