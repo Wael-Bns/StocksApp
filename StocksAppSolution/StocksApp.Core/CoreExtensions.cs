@@ -19,8 +19,9 @@ namespace StocksApp.Core
 
             services.AddTransient<IAuthService, AuthService>();
 
-            services.AddSingleton<ISubscriptionsManager, SubscriptionsManager>();
+            services.AddScoped<IOrdersService, OrdersService>();
 
+            services.AddSingleton<ISubscriptionsManager, SubscriptionsManager>();
             // Configure Options pattern 
             services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 
