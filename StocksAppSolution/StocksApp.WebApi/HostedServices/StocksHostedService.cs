@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
+using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.WebSocketClientAbstractions;
 using StocksApp.WebApi.Hubs;
-using StocksApp.WebApi.Models;
 
 namespace StocksApp.WebApi.HostedServices
 {
@@ -26,24 +26,15 @@ namespace StocksApp.WebApi.HostedServices
             
             await _finnhubWebSocketClient.ReceiveAsync(stoppingToken);
         }
-        private async Task NotifySubscribers(string message)
+        private async Task NotifySubscribers(IReadOnlyCollection<PriceUpdateMessage> priceUpdates)
         {
-            try
+            if (priceUpdates != null)
             {
-                FinnhubTradeMessage? tradeMessage = JsonSerializer.Deserialize<FinnhubTradeMessage>(message);
-                if (tradeMessage?.Data != null)
+                foreach (var trade in priceUpdates)
                 {
-                    foreach (var trade in tradeMessage.Data)
-                    {
-                        await _stocksHub.Clients.Group(trade.Symbol)
-                            .SendAsync("ReceivePriceUpdate", trade.Price);
-                    }
+                    await _stocksHub.Clients.Group(trade.StockSymbol)
+                        .SendAsync("ReceivePriceUpdate", trade.Price);
                 }
-
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogError(ex, "Failed to deserialize message: {Message}", message);
             }
         }
     }

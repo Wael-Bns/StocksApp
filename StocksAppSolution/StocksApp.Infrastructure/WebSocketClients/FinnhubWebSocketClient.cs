@@ -3,7 +3,9 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.WebSocketClientAbstractions;
+using StocksApp.Infrastructure.Models;
 
 namespace StocksApp.Infrastructure.WebSocketClients
 {
@@ -12,7 +14,7 @@ namespace StocksApp.Infrastructure.WebSocketClients
         private readonly ClientWebSocket _socket = new ClientWebSocket();
         private readonly IConfiguration _configuration;
         private readonly ILogger<FinnhubWebSocketClient> _logger;
-        public event Func<string, Task>? OnMessageReceived;
+        public event Func<IReadOnlyCollection<PriceUpdateMessage>, Task>? OnMessageReceived;
         public FinnhubWebSocketClient(IConfiguration configuration, ILogger<FinnhubWebSocketClient> logger)
         {
             _configuration = configuration;
@@ -67,9 +69,12 @@ namespace StocksApp.Infrastructure.WebSocketClients
                 while (!result.EndOfMessage);
 
                 string message = Encoding.UTF8.GetString(messageStream.ToArray());
-                if (OnMessageReceived != null)
+                FinnhubTradeMessage? tradeMessage = JsonSerializer.Deserialize<FinnhubTradeMessage>(message);
+                IReadOnlyCollection<PriceUpdateMessage>? priceUpdates = tradeMessage?.ToPriceUpdateMessageList();
+                
+                if (priceUpdates != null && OnMessageReceived != null)
                 {
-                    await OnMessageReceived.Invoke(message);
+                    await OnMessageReceived.Invoke(priceUpdates);
                 }
             }
         }
