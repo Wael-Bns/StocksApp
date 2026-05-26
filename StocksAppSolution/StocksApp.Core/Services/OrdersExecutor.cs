@@ -27,7 +27,6 @@ namespace StocksApp.Core.Services
             _logger.LogInformation("Executed {Count} sell orders.", sellOrderResponses.Count);
 
             return sellOrderResponses;
-
         }
     }
 }

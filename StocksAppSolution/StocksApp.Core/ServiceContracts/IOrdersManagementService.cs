@@ -3,9 +3,9 @@
 namespace StocksApp.Core.ServiceContracts
 {
     /// <summary>
-    /// This class is responsible for handling all the business logic related to Orders (Buy and Sell).  
+    /// This class is responsible for managing bu and sell orders (CRUD operations and websocket subscriptions) .  
     /// </summary>
-    public interface IOrdersService
+    public interface IOrdersManagementService
     {
         Task<SellOrderResponse> AddSellOrder(SellOrderAddRequest sellOrderAddRequest);
     }

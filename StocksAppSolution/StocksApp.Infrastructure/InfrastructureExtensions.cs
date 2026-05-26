@@ -7,7 +7,7 @@ using StocksApp.Infrastructure.Repositories;
 using StocksApp.Infrastructure.HttpClients;
 using StocksApp.Infrastructure.Services;
 using StocksApp.Core.ServiceContracts;
-using StocksApp.Core.WebSocketClientAstractions;
+using StocksApp.Core.WebSocketClientAbstractions;
 using StocksApp.Infrastructure.WebSocketClients;
 
 namespace StocksApp.Infrastructure

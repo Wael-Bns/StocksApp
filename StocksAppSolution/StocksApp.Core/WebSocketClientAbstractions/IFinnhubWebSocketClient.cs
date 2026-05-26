@@ -1,5 +1,5 @@
 ﻿
-namespace StocksApp.Core.WebSocketClientAstractions
+namespace StocksApp.Core.WebSocketClientAbstractions
 {
     public interface IFinnhubWebSocketClient
     {

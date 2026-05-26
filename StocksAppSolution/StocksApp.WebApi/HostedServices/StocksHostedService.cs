@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.SignalR;
-using StocksApp.Core.WebSocketClientAstractions;
+using StocksApp.Core.WebSocketClientAbstractions;
 using StocksApp.WebApi.Hubs;
 using StocksApp.WebApi.Models;
 

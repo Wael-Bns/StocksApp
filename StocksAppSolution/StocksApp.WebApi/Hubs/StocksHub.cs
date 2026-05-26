@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.AspNetCore.SignalR;
-using StocksApp.Core.WebSocketClientAstractions;
+using StocksApp.Core.WebSocketClientAbstractions;
 
 namespace StocksApp.WebApi.Hubs
 {

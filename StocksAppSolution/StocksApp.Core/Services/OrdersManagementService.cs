@@ -6,11 +6,11 @@ using StocksApp.Core.ServiceContracts;
 
 namespace StocksApp.Core.Services
 {
-    public class OrdersService : IOrdersService
+    public class OrdersManagementService : IOrdersManagementService
     {
         private readonly ISubscriptionsManager _subscriptionsManager;
         private readonly IOrderRepository _orderRepository;
-        public OrdersService(ISubscriptionsManager subscriptionsManager, IOrderRepository orderRepository)
+        public OrdersManagementService(ISubscriptionsManager subscriptionsManager, IOrderRepository orderRepository)
         {
             _subscriptionsManager = subscriptionsManager;
             _orderRepository = orderRepository;

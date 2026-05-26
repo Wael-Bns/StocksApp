@@ -9,17 +9,17 @@ using FluentAssertions;
 
 namespace StocksApp.Test.ServiceUnitTests
 {
-    public class OrdersServiceTest
+    public class OrdersManagementServiceTest
     {
-        private readonly IOrdersService _ordersService;
+        private readonly IOrdersManagementService _ordersService;
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
         private readonly Mock<ISubscriptionsManager> _subscriptionsManagerMock;
 
-        public OrdersServiceTest()
+        public OrdersManagementServiceTest()
         {
             _orderRepositoryMock = new Mock<IOrderRepository>();
             _subscriptionsManagerMock = new Mock<ISubscriptionsManager>();
-            _ordersService = new OrdersService(_subscriptionsManagerMock.Object, _orderRepositoryMock.Object);
+            _ordersService = new OrdersManagementService(_subscriptionsManagerMock.Object, _orderRepositoryMock.Object);
         }
         [Fact]
         public async Task AddSellOrder_ShouldAddSellOrderAndSubscribeToStockSymbol()
