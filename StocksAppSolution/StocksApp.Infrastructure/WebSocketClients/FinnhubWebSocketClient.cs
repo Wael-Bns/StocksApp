@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using StocksApp.Core.DTO.StockDTO;
+using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.WebSocketClientAbstractions;
 using StocksApp.Infrastructure.Models;
 
@@ -14,11 +15,13 @@ namespace StocksApp.Infrastructure.WebSocketClients
         private readonly ClientWebSocket _socket = new ClientWebSocket();
         private readonly IConfiguration _configuration;
         private readonly ILogger<FinnhubWebSocketClient> _logger;
+        private readonly IStocksProcessor _stocksProcessor;
         public event Func<IReadOnlyCollection<PriceUpdateMessage>, Task>? OnMessageReceived;
-        public FinnhubWebSocketClient(IConfiguration configuration, ILogger<FinnhubWebSocketClient> logger)
+        public FinnhubWebSocketClient(IConfiguration configuration, ILogger<FinnhubWebSocketClient> logger, IStocksProcessor stocksProcessor)
         {
             _configuration = configuration;
             _logger = logger;
+            _stocksProcessor = stocksProcessor;
         }
         public async Task ConnectAsync(CancellationToken cancellationToken = default)
         {
@@ -72,6 +75,11 @@ namespace StocksApp.Infrastructure.WebSocketClients
                 FinnhubTradeMessage? tradeMessage = JsonSerializer.Deserialize<FinnhubTradeMessage>(message);
                 IReadOnlyCollection<PriceUpdateMessage>? priceUpdates = tradeMessage?.ToPriceUpdateMessageList();
                 
+                foreach(var update in priceUpdates ?? Array.Empty<PriceUpdateMessage>())
+                {
+                    await _stocksProcessor.EnqueueMessageAsync(update);
+                }
+
                 if (priceUpdates != null && OnMessageReceived != null)
                 {
                     await OnMessageReceived.Invoke(priceUpdates);
