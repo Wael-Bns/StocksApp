@@ -94,5 +94,10 @@ namespace StocksApp.Infrastructure.WebSocketClients
                     true, cancellationToken);
             _logger.LogInformation("Unsubscribed from stock symbol: {Symbol}", symbol);
         }
+
+        public async Task DisconnectAsync(CancellationToken cancellationToken = default)
+        {
+            await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
+        }
     }
 }

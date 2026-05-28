@@ -10,5 +10,6 @@ namespace StocksApp.Core.WebSocketClientAbstractions
         Task ReceiveAsync(CancellationToken cancellationToken = default);
         Task SubscribeAsync(string symbol, CancellationToken cancellationToken = default);
         Task UnsubscribeAsync(string symbol, CancellationToken cancellationToken = default);
+        Task DisconnectAsync(CancellationToken cancellationToken = default);
     }
 }

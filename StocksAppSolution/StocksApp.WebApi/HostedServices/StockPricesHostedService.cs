@@ -18,12 +18,21 @@ namespace StocksApp.WebApi.HostedServices
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Starting {ServiceName}...", nameof(StockPricesHostedService));
-            await _finnhubWebSocketClient.ConnectAsync(stoppingToken);
+            try
+            {
+                _logger.LogInformation("Starting {ServiceName}...", nameof(StockPricesHostedService));
+                await _finnhubWebSocketClient.ConnectAsync(stoppingToken);
 
-            _finnhubWebSocketClient.OnMessageReceived += async (message) => await NotifySubscribers(message);
+                _finnhubWebSocketClient.OnMessageReceived += async (message) => await NotifySubscribers(message);
             
-            await _finnhubWebSocketClient.ReceiveAsync(stoppingToken);
+                await _finnhubWebSocketClient.ReceiveAsync(stoppingToken);
+            }
+            finally
+            {
+                _finnhubWebSocketClient.OnMessageReceived -= async (message) => await NotifySubscribers(message);
+                await _finnhubWebSocketClient.DisconnectAsync(CancellationToken.None);
+                _logger.LogInformation("{ServiceName} stopped.", nameof(StockPricesHostedService));
+            }
         }
         private async Task NotifySubscribers(IReadOnlyCollection<PriceUpdateMessage> priceUpdates)
         {
