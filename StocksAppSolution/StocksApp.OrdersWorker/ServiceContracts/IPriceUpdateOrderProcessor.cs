@@ -1,11 +1,11 @@
 ﻿using StocksApp.Core.DTO.StockDTO;
 
-namespace StocksApp.Core.ServiceContracts
+namespace StocksApp.OrdersWorker.ServiceContracts
 {
     /// <summary>
     /// Responsible for executing the orders based on the updated stock prices.
     /// </summary>
-    public interface IStocksProcessor
+    public interface IPriceUpdateOrderProcessor
     {
         Task EnqueueMessageAsync(PriceUpdateMessage priceUpdateMessage);
         Task StartAsync(CancellationToken cancellationToken = default);

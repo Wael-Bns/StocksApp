@@ -23,8 +23,6 @@ namespace StocksApp.Core
 
             services.AddScoped<IOrdersManagementService, OrdersManagementService>();
 
-            services.AddSingleton<IStocksProcessor, StocksProcessor>();
-
             services.AddSingleton<ISubscriptionsManager, SubscriptionsManager>();
             // Configure Options pattern 
             services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));

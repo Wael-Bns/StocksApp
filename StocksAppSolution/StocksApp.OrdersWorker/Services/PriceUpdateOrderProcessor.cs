@@ -1,18 +1,16 @@
-﻿using System.Numerics;
-using System.Threading.Channels;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using System.Threading.Channels;
 using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.ServiceContracts;
+using StocksApp.OrdersWorker.ServiceContracts;
 
-namespace StocksApp.Core.Services
+namespace StocksApp.OrdersWorker.Services
 {
-    public class StocksProcessor : IStocksProcessor
+    internal class PriceUpdateOrderProcessor : IPriceUpdateOrderProcessor
     {
         private readonly Channel<PriceUpdateMessage> _channel;
         private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<StocksProcessor> _logger;
-        public StocksProcessor(IServiceProvider serviceProvider, ILogger<StocksProcessor> logger)
+        private readonly ILogger<PriceUpdateOrderProcessor> _logger;
+        public PriceUpdateOrderProcessor(IServiceProvider serviceProvider, ILogger<PriceUpdateOrderProcessor> logger)
         {
             _channel = Channel.CreateBounded<PriceUpdateMessage>(new BoundedChannelOptions(100)
             {

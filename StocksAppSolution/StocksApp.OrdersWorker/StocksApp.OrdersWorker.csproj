@@ -12,4 +12,9 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\StocksApp.Core\StocksApp.Core.csproj" />
+    <ProjectReference Include="..\StocksApp.Infrastructure\StocksApp.Infrastructure.csproj" />
+  </ItemGroup>
 </Project>

@@ -43,7 +43,6 @@ namespace StocksApp.WebApi
             });
 
             services.AddHostedService<StockPricesHostedService>();
-            services.AddHostedService<OrdersWorker>();
 
             return services;
         }
