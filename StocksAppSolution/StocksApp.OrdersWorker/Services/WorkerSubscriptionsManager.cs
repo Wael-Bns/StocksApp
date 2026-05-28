@@ -18,7 +18,7 @@ namespace StocksApp.OrdersWorker.Services
             _finnhubWebSocketClient = finnhubWebSocketClient;
             _subscribedStockSymbols = new HashSet<string>();
         }
-        public async Task RefreshSubscriptionsPeriodically(CancellationToken cancellationToken)
+        public async Task RefreshSubscriptionsPeriodically(TimeSpan timeSpan, CancellationToken cancellationToken)
         {
             while(!cancellationToken.IsCancellationRequested)
             {
@@ -35,7 +35,7 @@ namespace StocksApp.OrdersWorker.Services
                     }
                 }
 
-                await Task.Delay(TimeSpan.FromMinutes(1), cancellationToken);
+                await Task.Delay(timeSpan, cancellationToken);
             }
         }
     }

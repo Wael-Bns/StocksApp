@@ -5,6 +5,6 @@
     /// </summary>
     public interface IWorkerSubscriptionsManager
     {
-        Task RefreshSubscriptionsPeriodically(CancellationToken cancellationToken);
+        Task RefreshSubscriptionsPeriodically(TimeSpan timeSpan,CancellationToken cancellationToken);
     }
 }

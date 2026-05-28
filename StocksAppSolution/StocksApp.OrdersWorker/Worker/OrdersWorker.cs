@@ -2,7 +2,7 @@ using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.WebSocketClientAbstractions;
 using StocksApp.OrdersWorker.ServiceContracts;
 
-namespace StocksApp.OrdersWorker
+namespace StocksApp.OrdersWorker.Worker
 {
     public class OrdersWorker : BackgroundService
     {
@@ -33,7 +33,7 @@ namespace StocksApp.OrdersWorker
 
                 _finnhubWebSocketClient.OnMessageReceived += ProcessPriceUpdates;
 
-                var subscriptionsRefreshTask = _workerSubscriptionsManager.RefreshSubscriptionsPeriodically(stoppingToken);
+                var subscriptionsRefreshTask = _workerSubscriptionsManager.RefreshSubscriptionsPeriodically(TimeSpan.FromMinutes(1),stoppingToken);
             
                 var priceUpdateProcessorTask = _priceUpdateOrderProcessor.StartAsync(stoppingToken);
             
