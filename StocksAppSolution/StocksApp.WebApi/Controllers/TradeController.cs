@@ -10,6 +10,7 @@ using StocksApp.Core.DTO.StockDTO;
 
 namespace StocksApp.WebApi.Controllers
 {
+    [ApiController]
     [Route("api/trade")]
     public class TradeController : CommonControllerBase
     {

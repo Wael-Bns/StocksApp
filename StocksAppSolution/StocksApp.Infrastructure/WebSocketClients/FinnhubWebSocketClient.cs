@@ -97,7 +97,10 @@ namespace StocksApp.Infrastructure.WebSocketClients
 
         public async Task DisconnectAsync(CancellationToken cancellationToken = default)
         {
-            await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
+            if (_socket.State is WebSocketState.Open or WebSocketState.CloseReceived)
+            {
+                await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
+            }
         }
     }
 }

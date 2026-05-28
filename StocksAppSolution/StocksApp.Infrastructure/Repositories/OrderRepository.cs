@@ -81,6 +81,17 @@ namespace StocksApp.Infrastructure.Repositories
             return _dbContext.BuyOrders.FirstOrDefaultAsync(order => order.BuyOrderID == orderID);
         }
 
+        public async Task<List<string>> GetPendingSellOrderSymbols()
+        {
+            var symbols = await _dbContext.SellOrders.
+                Where(order => order.Status == (int)SellOrderStatus.Pending)
+                .AsNoTracking()
+                .Select(order => order.StockSymbol!)
+                .Distinct()
+                .ToListAsync();
+            return symbols;
+        }
+
         public Task<SellOrder?> GetSellOrder(Guid orderID)
         {
             return _dbContext.SellOrders.FirstOrDefaultAsync(order => order.SellOrderID == orderID);

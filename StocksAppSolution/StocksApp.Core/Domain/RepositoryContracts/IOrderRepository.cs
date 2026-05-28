@@ -14,5 +14,6 @@ namespace StocksApp.Core.Domain.RepositoryContracts
         Task<BuyOrder> AddBuyOrderAsync(BuyOrder buyOrder);
         Task<SellOrder> AddSellOrderAsync(SellOrder sellOrder);
         Task<IEnumerable<SellOrder>?> ExecuteSellOrders(string stockSymbol, double marketPrice);
+        Task<List<string>> GetPendingSellOrderSymbols();
     }
 }

@@ -7,6 +7,7 @@ using StocksApp.Infrastructure;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSingleton<IPriceUpdateOrderProcessor, PriceUpdateOrderProcessor>();
+builder.Services.AddSingleton<IWorkerSubscriptionsManager, WorkerSubscriptionsManager>();
 builder.Services.AddHostedService<OrdersWorker>();
 builder.Services
     .AddInfrastructure(builder.Configuration)

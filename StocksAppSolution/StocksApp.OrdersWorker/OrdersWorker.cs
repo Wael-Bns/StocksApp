@@ -8,25 +8,49 @@ namespace StocksApp.OrdersWorker
     {
         private readonly ILogger<OrdersWorker> _logger;
         private readonly IFinnhubWebSocketClient _finnhubWebSocketClient;
+        private readonly IWorkerSubscriptionsManager _workerSubscriptionsManager;
         private readonly IPriceUpdateOrderProcessor _priceUpdateOrderProcessor;
 
-        public OrdersWorker(ILogger<OrdersWorker> logger, IFinnhubWebSocketClient finnhubWebSocketClient, IPriceUpdateOrderProcessor priceUpdateOrderProcessor)
+        public OrdersWorker(
+            ILogger<OrdersWorker> logger, 
+            IFinnhubWebSocketClient finnhubWebSocketClient, 
+            IPriceUpdateOrderProcessor priceUpdateOrderProcessor,
+            IWorkerSubscriptionsManager workerSubscriptionsManager)
         {
             _logger = logger;
             _finnhubWebSocketClient = finnhubWebSocketClient;
             _priceUpdateOrderProcessor = priceUpdateOrderProcessor;
+            _workerSubscriptionsManager = workerSubscriptionsManager;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Starting OrdersWorker at: {time}", DateTimeOffset.Now);
-            await _finnhubWebSocketClient.ConnectAsync(stoppingToken);
+            try
+            {
 
-            // TO DO: Subscribe to the stock symbols you want to track. 
+                _logger.LogInformation("Starting {ServiceName} at: {time}", nameof(OrdersWorker), DateTimeOffset.Now);
+                await _finnhubWebSocketClient.ConnectAsync(stoppingToken); 
 
-            _finnhubWebSocketClient.OnMessageReceived += async (priceUpdates) => await ProcessPriceUpdates(priceUpdates);
+                _finnhubWebSocketClient.OnMessageReceived += ProcessPriceUpdates;
 
-            await _priceUpdateOrderProcessor.StartAsync(stoppingToken);
+                var subscriptionsRefreshTask = _workerSubscriptionsManager.RefreshSubscriptionsPeriodically(stoppingToken);
+            
+                var priceUpdateProcessorTask = _priceUpdateOrderProcessor.StartAsync(stoppingToken);
+            
+                var finnhubTask = _finnhubWebSocketClient.ReceiveAsync(stoppingToken);
+
+                await Task.WhenAll(subscriptionsRefreshTask, finnhubTask, priceUpdateProcessorTask);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred in {ServiceName}: {Message}", nameof(OrdersWorker), ex.Message);
+            }
+            finally
+            {
+                _finnhubWebSocketClient.OnMessageReceived -= ProcessPriceUpdates;
+                await _finnhubWebSocketClient.DisconnectAsync(CancellationToken.None);
+                _logger.LogInformation("{ServiceName} stopped at: {time}",nameof(OrdersWorker), DateTimeOffset.Now);
+            }
         }
         private async Task ProcessPriceUpdates(IReadOnlyCollection<PriceUpdateMessage> priceUpdates)
         {
