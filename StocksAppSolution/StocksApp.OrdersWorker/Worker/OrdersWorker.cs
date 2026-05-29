@@ -33,11 +33,11 @@ namespace StocksApp.OrdersWorker.Worker
                 
                 _finnhubWebSocketClient.OnMessageReceived += ProcessPriceUpdates;
 
-                var subscriptionsRefreshTask = _workerSubscriptionsManager.RefreshSubscriptionsPeriodically(TimeSpan.FromMinutes(1),stoppingToken);
+                var finnhubTask = _finnhubWebSocketClient.ReceiveAsync(stoppingToken);
             
                 var priceUpdateProcessorTask = _priceUpdateOrderProcessor.StartAsync(stoppingToken);
             
-                var finnhubTask = _finnhubWebSocketClient.ReceiveAsync(stoppingToken);
+                var subscriptionsRefreshTask = _workerSubscriptionsManager.RefreshSubscriptionsPeriodically(TimeSpan.FromMinutes(1),stoppingToken);
 
                 await Task.WhenAll(subscriptionsRefreshTask, finnhubTask, priceUpdateProcessorTask);
             }
