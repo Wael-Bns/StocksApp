@@ -8,6 +8,7 @@ using StocksApp.WebApi.Options;
 using StocksApp.Core.HttpClientAbstractions;
 using StocksApp.Core.DTO.StockDTO;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace StocksApp.WebApi.Controllers
 {
@@ -70,7 +71,7 @@ namespace StocksApp.WebApi.Controllers
             {
                 return BadRequest("Buy order request cannot be null.");
             }
-            var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdClaim, out Guid userId))
             {
                 return Unauthorized();
@@ -92,7 +93,7 @@ namespace StocksApp.WebApi.Controllers
             {
                 return BadRequest("Sell order request cannot be null.");
             }
-            var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(userIdClaim, out Guid userId))
             {
                 return Unauthorized();
