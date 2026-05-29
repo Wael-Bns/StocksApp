@@ -29,7 +29,7 @@ namespace StocksApp.Core.DTO.SellOrderDTO
                 DateAndTimeOfOrder = DateAndTimeOfOrder,
                 Price = Price,
                 Quantity = Quantity,
-                Status = (int)SellOrderStatus.Pending,
+                Status = SellOrderStatus.Pending,
                 UserId = UserId
             };
         }

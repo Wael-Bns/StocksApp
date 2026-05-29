@@ -34,7 +34,7 @@ namespace StocksApp.Infrastructure.Repositories
             try
             {
                 IEnumerable<SellOrder> ordersToExecute = await _dbContext.SellOrders
-                    .Where(order => order.Status == (int)SellOrderStatus.Pending  
+                    .Where(order => order.Status == SellOrderStatus.Pending  
                            && order.Price <= marketPrice
                            && order.StockSymbol == stockSymbol)
                     .Include(order => order.User)
@@ -47,7 +47,7 @@ namespace StocksApp.Infrastructure.Repositories
 
                 foreach (var order in ordersToExecute)
                 {
-                    order.Status = (int)SellOrderStatus.Executed;
+                    order.Status = SellOrderStatus.Executed;
                     order.User.CashBalance += (order.Price * order.Quantity);
                 }
 
@@ -84,7 +84,7 @@ namespace StocksApp.Infrastructure.Repositories
         public async Task<List<string>> GetPendingSellOrderSymbols()
         {
             var symbols = await _dbContext.SellOrders.
-                Where(order => order.Status == (int)SellOrderStatus.Pending)
+                Where(order => order.Status == SellOrderStatus.Pending)
                 .AsNoTracking()
                 .Select(order => order.StockSymbol!)
                 .Distinct()

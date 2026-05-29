@@ -59,7 +59,7 @@ namespace StocksApp.Test.ServiceUnitTests
                     DateAndTimeOfOrder = DateTime.UtcNow,
                     Price = 140,
                     Quantity = 10,
-                    Status = (int)SellOrderStatus.Executed,
+                    Status = SellOrderStatus.Executed,
                     UserId = Guid.NewGuid(),
                     User = new User()
                 }

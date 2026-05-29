@@ -29,8 +29,8 @@ namespace StocksApp.OrdersWorker.Worker
             {
 
                 _logger.LogInformation("Starting {ServiceName} at: {time}", nameof(OrdersWorker), DateTimeOffset.Now);
-                await _finnhubWebSocketClient.ConnectAsync(stoppingToken); 
-
+                await _finnhubWebSocketClient.ConnectAsync(stoppingToken);
+                
                 _finnhubWebSocketClient.OnMessageReceived += ProcessPriceUpdates;
 
                 var subscriptionsRefreshTask = _workerSubscriptionsManager.RefreshSubscriptionsPeriodically(TimeSpan.FromMinutes(1),stoppingToken);
