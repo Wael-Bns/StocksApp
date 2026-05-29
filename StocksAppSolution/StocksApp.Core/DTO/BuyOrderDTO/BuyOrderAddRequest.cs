@@ -4,7 +4,7 @@ using StocksApp.Core.Domain.Entities;
 
 namespace StocksApp.Core.DTO.BuyOrderDTO
 {
-    public class BuyOrderRequest
+    public class BuyOrderAddRequest
     {
         [Required(ErrorMessage = "Required Stock symbol")]
         public string? StockSymbol { get; set; }
@@ -16,6 +16,8 @@ namespace StocksApp.Core.DTO.BuyOrderDTO
         public uint Quantity { get; set; }
         [Range(1, 10000, ErrorMessage = "Quantity should be between 1 and 100000")]
         public double Price { get; set; }
+        [Required(ErrorMessage = "User is not recognized")]
+        public Guid UserId { get; set; }
 
         public BuyOrder ToBuyOrder()
         {
@@ -26,7 +28,8 @@ namespace StocksApp.Core.DTO.BuyOrderDTO
                 StockName = StockName,
                 DateAndTimeOfOrder = DateAndTimeOfOrder,
                 Price = Price,
-                Quantity = Quantity
+                Quantity = Quantity,
+                UserId = UserId
             };
         }
     }

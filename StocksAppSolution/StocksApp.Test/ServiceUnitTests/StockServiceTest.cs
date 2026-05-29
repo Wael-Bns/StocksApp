@@ -14,15 +14,18 @@ namespace StocksApp.Test.ServiceUnitTests
     {
         private readonly IStockService _stockService;
         private readonly IOrderRepository _orderRepository;
+        private readonly ISubscriptionsManager _subscriptionsManager;
+        private readonly Mock<ISubscriptionsManager> _subscriptionsManagerMock;
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
         // A sample BuyOrderRequest object that can be used in multiple tests
-        private BuyOrderRequest buyOrderRequest = new BuyOrderRequest
+        private BuyOrderAddRequest buyOrderRequest = new BuyOrderAddRequest
         {
             StockName = "APPLE INC",
             StockSymbol = "AAPL",
             Quantity = 250,
             DateAndTimeOfOrder = DateTime.Now,
             Price = 100,
+            UserId = new Guid("EB608896-7E47-44A6-9395-5D4EEE695044")
         };
         // A sample SellOrderRequest object that can be used in multiple tests
         private SellOrderAddRequest sellOrderRequest = new SellOrderAddRequest
@@ -32,6 +35,7 @@ namespace StocksApp.Test.ServiceUnitTests
             Quantity = 250,
             DateAndTimeOfOrder = DateTime.Now,
             Price = 100,
+            UserId = new Guid("EB608896-7E47-44A6-9395-5D4EEE695044")
         };
 
         public StockServiceTest()
@@ -39,8 +43,10 @@ namespace StocksApp.Test.ServiceUnitTests
             // Mock the IOrderRepository
             _orderRepositoryMock = new Mock<IOrderRepository>();
             _orderRepository = _orderRepositoryMock.Object;
+            _subscriptionsManagerMock = new Mock<ISubscriptionsManager>();
+            _subscriptionsManager = _subscriptionsManagerMock.Object;
             // Pass the mocked repository to the Service
-            _stockService = new StockService(_orderRepository);
+            _stockService = new StockService(_orderRepository, _subscriptionsManager);
         }
         private void MockAddBuyOrder(BuyOrder buyOrder)
         {
@@ -68,7 +74,7 @@ namespace StocksApp.Test.ServiceUnitTests
         public async Task CreateBuyOrder_NullRequest()
         {
             //Arrange 
-            BuyOrderRequest? orderRequest = null;
+            BuyOrderAddRequest? orderRequest = null;
             Func<Task> actual = async () =>
             {
                 BuyOrderResponse response = await _stockService.CreateBuyOrder(orderRequest);
@@ -301,6 +307,7 @@ namespace StocksApp.Test.ServiceUnitTests
             SellOrderResponse actual = await _stockService.CreateSellOrder(sellOrderRequest);
             // Assert
             actual.Should().BeEquivalentTo(expected);
+            _subscriptionsManagerMock.Verify(manager => manager.AddStockSymbol(sellOrderRequest.StockSymbol!), Times.Once);
             actual.SellOrderID.Should().NotBeEmpty();
         }
         #endregion

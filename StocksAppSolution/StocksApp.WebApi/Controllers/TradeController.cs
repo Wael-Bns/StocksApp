@@ -7,6 +7,7 @@ using StocksApp.WebApi.Constants;
 using StocksApp.WebApi.Options;
 using StocksApp.Core.HttpClientAbstractions;
 using StocksApp.Core.DTO.StockDTO;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace StocksApp.WebApi.Controllers
 {
@@ -63,12 +64,20 @@ namespace StocksApp.WebApi.Controllers
         }
 
         [HttpPost("buyorder")]
-        public async Task<IActionResult> BuyOrder(BuyOrderRequest buyOrderRequest)
+        public async Task<IActionResult> BuyOrder(BuyOrderAddRequest buyOrderRequest)
         {
             if (buyOrderRequest == null)
             {
                 return BadRequest("Buy order request cannot be null.");
             }
+            var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (!Guid.TryParse(userIdClaim, out Guid userId))
+            {
+                return Unauthorized();
+            }
+
+            buyOrderRequest.UserId = userId;
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -83,6 +92,14 @@ namespace StocksApp.WebApi.Controllers
             {
                 return BadRequest("Sell order request cannot be null.");
             }
+            var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (!Guid.TryParse(userIdClaim, out Guid userId))
+            {
+                return Unauthorized();
+            }
+
+            sellOrderRequest.UserId = userId;
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);

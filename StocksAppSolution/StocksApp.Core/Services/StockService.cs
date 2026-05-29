@@ -10,39 +10,43 @@ namespace StocksApp.Core.Services
     public class StockService : IStockService
     {
         private readonly IOrderRepository _orderRepository;
+        private readonly ISubscriptionsManager _subscriptionsManager;
 
-        public StockService(IOrderRepository orderRepository)
+        public StockService(IOrderRepository orderRepository, ISubscriptionsManager subscriptionsManager)
         {
             _orderRepository = orderRepository;
+            _subscriptionsManager = subscriptionsManager;
         }
-        public async Task<BuyOrderResponse> CreateBuyOrder(BuyOrderRequest? buyOrderRequest)
+        public async Task<BuyOrderResponse> CreateBuyOrder(BuyOrderAddRequest? buyOrderAddRequest)
         {
-            if(buyOrderRequest == null)
+            if(buyOrderAddRequest == null)
             {
-                throw new ArgumentNullException(nameof(buyOrderRequest));
+                throw new ArgumentNullException(nameof(buyOrderAddRequest));
             }
             // Validate the model 
-            ValidationHelper.ModelValidation(buyOrderRequest);
+            ValidationHelper.ModelValidation(buyOrderAddRequest);
 
-            var buyOrder = buyOrderRequest.ToBuyOrder();
+            var buyOrder = buyOrderAddRequest.ToBuyOrder();
             
             BuyOrder createdBuyOrder = await _orderRepository.AddBuyOrderAsync(buyOrder);
 
             return createdBuyOrder.ToBuyOrderResponse();
         }
 
-        public async Task<SellOrderResponse> CreateSellOrder(SellOrderAddRequest? sellOrderRequest)
+        public async Task<SellOrderResponse> CreateSellOrder(SellOrderAddRequest? sellOrderAddRequest)
         {
-            if (sellOrderRequest == null)
+            if (sellOrderAddRequest == null)
             {
-                throw new ArgumentNullException(nameof(sellOrderRequest));
+                throw new ArgumentNullException(nameof(sellOrderAddRequest));
             }
             // Validate the model 
-            ValidationHelper.ModelValidation(sellOrderRequest);
+            ValidationHelper.ModelValidation(sellOrderAddRequest);
 
-            var sellOrder = sellOrderRequest.ToSellOrder();
+            var sellOrder = sellOrderAddRequest.ToSellOrder();
 
             SellOrder createdSellOrder = await _orderRepository.AddSellOrderAsync(sellOrder);
+
+            await _subscriptionsManager.AddStockSymbol(sellOrderAddRequest.StockSymbol!);
 
             return createdSellOrder.ToSellOrderResponse();
         }
