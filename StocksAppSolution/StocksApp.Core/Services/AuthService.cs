@@ -29,15 +29,12 @@ namespace StocksApp.Core.Services
 
         public async Task<AuthenticationResponse> RegisterAsync(UserAddRequest registerRequest)
         {
-            // add the user to the database
             UserResponse userResponse = await _userService.AddUser(registerRequest);
 
-            // generate jwt token and refresh token
             string jwtToken = _jwtService.CreateAccessToken(userResponse.UserId, userResponse.UserName, userResponse.Email);
             string refreshToken = _jwtService.GenerateRefreshToken();
             DateTime refreshTokenExpiry = DateTime.UtcNow.AddMinutes(_refreshTokenOptions.EXPIRATION_MINUTES);
 
-            // update the user refresh token and refresh token expiry in the database
             await _userService.UpdateUserRefreshToken(userResponse.UserId, refreshToken, refreshTokenExpiry);
             
             return new AuthenticationResponse
@@ -51,12 +48,12 @@ namespace StocksApp.Core.Services
         }
         public async Task<AuthenticationResponse> LoginAsync(LoginRequest loginRequest)
         {
-            UserResponse? user = await _userService.GetUserByEmail(loginRequest.Email);
+            UserResponse? user = await _userService.GetUserByEmail(loginRequest.Email!);
             if(user == null)
             {
                 throw new InvalidEmailException();
             }
-            bool isPasswordValid = _passwordHasher.VerifyPassword(loginRequest.Password, user.PasswordHash);
+            bool isPasswordValid = _passwordHasher.VerifyPassword(loginRequest.Password!, user.PasswordHash);
             if(!isPasswordValid)
             {
                 throw new InvalidPasswordException();
