@@ -1,26 +1,26 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.HttpClientAbstractions;
+using StocksApp.Infrastructure.Options;
 
 namespace StocksApp.Infrastructure.Services
 {
     public class FinnhubHttpClient : IFinnHubHttpClient
     {
-        private readonly IConfiguration _configuration;
         private readonly HttpClient _httpClient;
-        private readonly string _apiKey;
+        private readonly IOptions<FinnhubOptions> _finnhubOptions;
 
-        public FinnhubHttpClient(IConfiguration configuration, HttpClient httpClient)
+        public FinnhubHttpClient(IOptions<FinnhubOptions> finnhubOptions, HttpClient httpClient)
         {
-            _configuration = configuration;
+            _finnhubOptions = finnhubOptions;
             _httpClient = httpClient;
-            _apiKey = _configuration["FinnhubApiKey"]!;
         }
 
         public async Task<StockQuoteDTO?> GetStockQuote(string stockSymbol)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync($"quote?symbol={stockSymbol}&token={_apiKey}");
+            HttpResponseMessage response = await _httpClient.GetAsync($"quote?symbol={stockSymbol}&token={_finnhubOptions.Value.ApiKey}");
             if (response.IsSuccessStatusCode)
             {
                 string jsonResponse = await response.Content.ReadAsStringAsync();
@@ -35,7 +35,7 @@ namespace StocksApp.Infrastructure.Services
 
         public async Task<CompanyProfileDTO?> GetCompanyProfile(string stockSymbol)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync($"stock/profile2?symbol={stockSymbol}&token={_apiKey}");
+            HttpResponseMessage response = await _httpClient.GetAsync($"stock/profile2?symbol={stockSymbol}&token={_finnhubOptions.Value.ApiKey}");
             if (response.IsSuccessStatusCode)
             {
                 string jsonResponse = await response.Content.ReadAsStringAsync();

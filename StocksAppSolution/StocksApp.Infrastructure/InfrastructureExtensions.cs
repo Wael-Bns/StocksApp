@@ -6,6 +6,7 @@ using StocksApp.Core.HttpClientAbstractions;
 using StocksApp.Infrastructure.Repositories;
 using StocksApp.Infrastructure.Services;
 using StocksApp.Core.ServiceContracts;
+using StocksApp.Infrastructure.Options;
 
 namespace StocksApp.Infrastructure
 {
@@ -16,6 +17,11 @@ namespace StocksApp.Infrastructure
             services.AddHttpClient<IFinnHubHttpClient, FinnhubHttpClient>(options =>
             {
                 options.BaseAddress = new Uri("https://finnhub.io/api/v1/");
+            });
+
+            services.Configure<FinnhubOptions>(options =>
+            {
+                options.ApiKey = configuration["FinnhubApiKey"] ?? throw new ArgumentNullException("FinnhubApiKey configuration is missing.");
             });
             
             services.AddScoped<IOrderRepository, OrderRepository>();
