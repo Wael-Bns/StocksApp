@@ -1,11 +1,11 @@
 using System.Security.Claims;
 using FluentAssertions;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using StocksApp.Core.DTO.AuthenticationDTO;
 using StocksApp.Core.DTO.UsersDTO;
+using StocksApp.Core.Exceptions;
 using StocksApp.Core.Options;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
@@ -15,6 +15,18 @@ namespace StocksApp.Test.ServiceUnitTests
 {
     public class AuthServiceTest
     {
+        private const string TestEmail = "test@test.com";
+        private const string TestUserName = "TestUser";
+        private const string TestPassword = "Password123";
+        private const string WrongPassword = "WrongPassword";
+        private const string PasswordHash = "password_hash";
+        private const string AccessToken = "access_token";
+        private const string RefreshToken = "refresh_token";
+        private const string NewAccessToken = "new_access_token";
+        private const string NewRefreshToken = "new_refresh_token";
+        private const string DifferentRefreshToken = "different_refresh_token";
+        private static readonly Guid TestUserId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
         private readonly IAuthService _authService;
         private readonly Mock<IUserService> _userServiceMock;
         private readonly Mock<ITokenService> _tokenServiceMock;
@@ -31,7 +43,6 @@ namespace StocksApp.Test.ServiceUnitTests
             _authService = new AuthService(
                 _userServiceMock.Object,
                 _tokenServiceMock.Object,
-                Mock.Of<IConfiguration>(),
                 _passwordHasherMock.Object,
                 Options.Create(_refreshTokenOptions));
         }
@@ -41,18 +52,16 @@ namespace StocksApp.Test.ServiceUnitTests
         [Fact]
         public async Task RegisterAsync_ValidRequest_ReturnsAuthenticationResponse()
         {
-            var request = new UserAddRequest { UserName = "TestUser", Email = "test@test.com", Password = "Password123" };
-            var userResponse = new UserResponse { UserId = Guid.NewGuid(), UserName = request.UserName!, Email = request.Email! };
+            var request = new UserAddRequest { UserName = TestUserName, Email = TestEmail, Password = TestPassword };
+            var userResponse = new UserResponse { UserId = TestUserId, UserName = request.UserName!, Email = request.Email! };
 
             _userServiceMock.Setup(s => s.AddUser(request)).ReturnsAsync(userResponse);
             _tokenServiceMock.Setup(s => s.CreateAccessToken(userResponse.UserId, userResponse.UserName, userResponse.Email))
-                .Returns("jwt_token");
-            _tokenServiceMock.Setup(s => s.GenerateRefreshToken()).Returns("refresh_token");
+                .Returns(AccessToken);
+            _tokenServiceMock.Setup(s => s.GenerateRefreshToken()).Returns(RefreshToken);
 
-            DateTime? capturedExpiry = null;
             _userServiceMock
                 .Setup(s => s.UpdateUserRefreshToken(userResponse.UserId, It.IsAny<string>(), It.IsAny<DateTime>()))
-                .Callback<Guid, string, DateTime>((_, _, expiry) => capturedExpiry = expiry)
                 .ReturnsAsync(userResponse);
 
             AuthenticationResponse response = await _authService.RegisterAsync(request);
@@ -60,11 +69,12 @@ namespace StocksApp.Test.ServiceUnitTests
             response.Should().NotBeNull();
             response.UserName.Should().Be(userResponse.UserName);
             response.Email.Should().Be(userResponse.Email);
-            response.Token.Should().NotBeNullOrWhiteSpace();
-            response.RefreshToken.Should().NotBeNullOrWhiteSpace();
-            response.RefreshTokenExpiry.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1));
+            response.Token.Should().Be(AccessToken);
+            response.RefreshToken.Should().Be(RefreshToken);
 
-            capturedExpiry.Should().NotBeNull();
+            _userServiceMock.Verify(
+                s => s.UpdateUserRefreshToken(userResponse.UserId, RefreshToken, It.IsAny<DateTime>()),
+                Times.Once);
         }
 
         #endregion
@@ -72,26 +82,26 @@ namespace StocksApp.Test.ServiceUnitTests
         #region Login Tests
 
         [Fact]
-        public async Task LoginAsync_InvalidEmail_ThrowsArgumentException()
+        public async Task LoginAsync_InvalidEmail_ThrowsClientException()
         {
-            var loginRequest = new LoginRequest { Email = "invalid@test.com", Password = "Password123" };
+            var loginRequest = new LoginRequest { Email = "invalid@test.com", Password = TestPassword };
             _userServiceMock.Setup(s => s.GetUserByEmail(loginRequest.Email!)).ReturnsAsync((UserResponse?)null);
 
             Func<Task> action = async () => await _authService.LoginAsync(loginRequest);
 
-            await action.Should().ThrowAsync<ArgumentException>();
+            await action.Should().ThrowAsync<ClientException>();
         }
 
         [Fact]
-        public async Task LoginAsync_InvalidPassword_ThrowsArgumentException()
+        public async Task LoginAsync_InvalidPassword_ThrowsClientException()
         {
-            var loginRequest = new LoginRequest { Email = "test@test.com", Password = "WrongPassword" };
+            var loginRequest = new LoginRequest { Email = TestEmail, Password = WrongPassword };
             var userResponse = new UserResponse
             {
-                UserId = Guid.NewGuid(),
-                UserName = "TestUser",
+                UserId = TestUserId,
+                UserName = TestUserName,
                 Email = loginRequest.Email!,
-                PasswordHash = "hash"
+                PasswordHash = PasswordHash
             };
 
             _userServiceMock.Setup(s => s.GetUserByEmail(loginRequest.Email!)).ReturnsAsync(userResponse);
@@ -99,26 +109,26 @@ namespace StocksApp.Test.ServiceUnitTests
 
             Func<Task> action = async () => await _authService.LoginAsync(loginRequest);
 
-            await action.Should().ThrowAsync<ArgumentException>();
+            await action.Should().ThrowAsync<ClientException>();
         }
 
         [Fact]
         public async Task LoginAsync_ValidCredentials_ReturnsAuthenticationResponse()
         {
-            var loginRequest = new LoginRequest { Email = "test@test.com", Password = "Password123" };
+            var loginRequest = new LoginRequest { Email = TestEmail, Password = TestPassword };
             var userResponse = new UserResponse
             {
-                UserId = Guid.NewGuid(),
-                UserName = "TestUser",
+                UserId = TestUserId,
+                UserName = TestUserName,
                 Email = loginRequest.Email!,
-                PasswordHash = "hash"
+                PasswordHash = PasswordHash
             };
 
             _userServiceMock.Setup(s => s.GetUserByEmail(loginRequest.Email!)).ReturnsAsync(userResponse);
             _passwordHasherMock.Setup(p => p.VerifyPassword(loginRequest.Password!, userResponse.PasswordHash)).Returns(true);
             _tokenServiceMock.Setup(s => s.CreateAccessToken(userResponse.UserId, userResponse.UserName, userResponse.Email))
-                .Returns("jwt_token");
-            _tokenServiceMock.Setup(s => s.GenerateRefreshToken()).Returns("refresh_token");
+                .Returns(AccessToken);
+            _tokenServiceMock.Setup(s => s.GenerateRefreshToken()).Returns(RefreshToken);
             _userServiceMock
                 .Setup(s => s.UpdateUserRefreshToken(userResponse.UserId, It.IsAny<string>(), It.IsAny<DateTime>()))
                 .ReturnsAsync(userResponse);
@@ -128,9 +138,11 @@ namespace StocksApp.Test.ServiceUnitTests
             response.Should().NotBeNull();
             response.UserName.Should().Be(userResponse.UserName);
             response.Email.Should().Be(userResponse.Email);
-            response.Token.Should().NotBeNullOrWhiteSpace();
-            response.RefreshToken.Should().NotBeNullOrWhiteSpace();
-            response.RefreshTokenExpiry.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1));
+            response.Token.Should().Be(AccessToken);
+            response.RefreshToken.Should().Be(RefreshToken);
+            _userServiceMock.Verify(
+                s => s.UpdateUserRefreshToken(userResponse.UserId, RefreshToken, It.IsAny<DateTime>()),
+                Times.Once);
         }
 
         #endregion
@@ -140,7 +152,7 @@ namespace StocksApp.Test.ServiceUnitTests
         [Fact]
         public async Task GenerateNewAccessTokenAsync_InvalidRequest_ThrowsArgumentException()
         {
-            var tokenModel = new TokenModel { Token = string.Empty, RefreshToken = "refresh" };
+            var tokenModel = new TokenModel { Token = string.Empty, RefreshToken = RefreshToken };
 
             Func<Task> action = async () => await _authService.GenerateNewAccessTokenAsync(tokenModel);
 
@@ -148,17 +160,78 @@ namespace StocksApp.Test.ServiceUnitTests
         }
 
         [Fact]
+        public async Task GenerateNewAccessTokenAsync_InvalidAccessToken_ThrowsSecurityTokenException()
+        {
+            var tokenModel = CreateTokenModel();
+
+            _tokenServiceMock.Setup(s => s.GetPrincipalFromAccessToken(tokenModel.Token)).Returns((ClaimsPrincipal?)null);
+
+            Func<Task> action = async () => await _authService.GenerateNewAccessTokenAsync(tokenModel);
+
+            await action.Should().ThrowAsync<SecurityTokenException>();
+        }
+
+        [Fact]
+        public async Task GenerateNewAccessTokenAsync_AccessTokenWithoutEmail_ThrowsSecurityTokenException()
+        {
+            var tokenModel = CreateTokenModel();
+            var principal = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, TestUserName) }));
+
+            _tokenServiceMock.Setup(s => s.GetPrincipalFromAccessToken(tokenModel.Token)).Returns(principal);
+
+            Func<Task> action = async () => await _authService.GenerateNewAccessTokenAsync(tokenModel);
+
+            await action.Should().ThrowAsync<SecurityTokenException>();
+        }
+
+        [Fact]
+        public async Task GenerateNewAccessTokenAsync_UserNotFound_ThrowsSecurityTokenException()
+        {
+            var tokenModel = CreateTokenModel();
+            var principal = CreatePrincipal(TestEmail);
+
+            _tokenServiceMock.Setup(s => s.GetPrincipalFromAccessToken(tokenModel.Token)).Returns(principal);
+            _userServiceMock.Setup(s => s.GetUserByEmail(TestEmail)).ReturnsAsync((UserResponse?)null);
+
+            Func<Task> action = async () => await _authService.GenerateNewAccessTokenAsync(tokenModel);
+
+            await action.Should().ThrowAsync<SecurityTokenException>();
+        }
+
+        [Fact]
         public async Task GenerateNewAccessTokenAsync_InvalidRefreshToken_ThrowsSecurityTokenException()
         {
-            var tokenModel = new TokenModel { Token = "token", RefreshToken = "refresh" };
-            var principal = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Email, "test@test.com") }));
+            var tokenModel = CreateTokenModel();
+            var principal = CreatePrincipal(TestEmail);
             var userResponse = new UserResponse
             {
-                UserId = Guid.NewGuid(),
-                UserName = "TestUser",
-                Email = "test@test.com",
-                RefreshToken = "different_refresh",
+                UserId = TestUserId,
+                UserName = TestUserName,
+                Email = TestEmail,
+                RefreshToken = DifferentRefreshToken,
                 RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(10)
+            };
+
+            _tokenServiceMock.Setup(s => s.GetPrincipalFromAccessToken(tokenModel.Token)).Returns(principal);
+            _userServiceMock.Setup(s => s.GetUserByEmail(userResponse.Email)).ReturnsAsync(userResponse);
+
+            Func<Task> action = async () => await _authService.GenerateNewAccessTokenAsync(tokenModel);
+
+            await action.Should().ThrowAsync<SecurityTokenException>();
+        }
+
+        [Fact]
+        public async Task GenerateNewAccessTokenAsync_ExpiredRefreshToken_ThrowsSecurityTokenException()
+        {
+            var tokenModel = CreateTokenModel();
+            var principal = CreatePrincipal(TestEmail);
+            var userResponse = new UserResponse
+            {
+                UserId = TestUserId,
+                UserName = TestUserName,
+                Email = TestEmail,
+                RefreshToken = tokenModel.RefreshToken,
+                RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(-1)
             };
 
             _tokenServiceMock.Setup(s => s.GetPrincipalFromAccessToken(tokenModel.Token)).Returns(principal);
@@ -172,22 +245,22 @@ namespace StocksApp.Test.ServiceUnitTests
         [Fact]
         public async Task GenerateNewAccessTokenAsync_ValidRequest_ReturnsAuthenticationResponse()
         {
-            var tokenModel = new TokenModel { Token = "token", RefreshToken = "refresh" };
-            var principal = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Email, "test@test.com") }));
+            var tokenModel = CreateTokenModel();
+            var principal = CreatePrincipal(TestEmail);
             var userResponse = new UserResponse
             {
-                UserId = Guid.NewGuid(),
-                UserName = "TestUser",
-                Email = "test@test.com",
-                RefreshToken = "refresh",
+                UserId = TestUserId,
+                UserName = TestUserName,
+                Email = TestEmail,
+                RefreshToken = tokenModel.RefreshToken,
                 RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(10)
             };
 
             _tokenServiceMock.Setup(s => s.GetPrincipalFromAccessToken(tokenModel.Token)).Returns(principal);
             _userServiceMock.Setup(s => s.GetUserByEmail(userResponse.Email)).ReturnsAsync(userResponse);
             _tokenServiceMock.Setup(s => s.CreateAccessToken(userResponse.UserId, userResponse.UserName, userResponse.Email))
-                .Returns("new_access");
-            _tokenServiceMock.Setup(s => s.GenerateRefreshToken()).Returns("new_refresh");
+                .Returns(NewAccessToken);
+            _tokenServiceMock.Setup(s => s.GenerateRefreshToken()).Returns(NewRefreshToken);
             _userServiceMock
                 .Setup(s => s.UpdateUserRefreshToken(userResponse.UserId, It.IsAny<string>(), It.IsAny<DateTime>()))
                 .ReturnsAsync(userResponse);
@@ -197,9 +270,26 @@ namespace StocksApp.Test.ServiceUnitTests
             response.Should().NotBeNull();
             response.UserName.Should().Be(userResponse.UserName);
             response.Email.Should().Be(userResponse.Email);
-            response.Token.Should().NotBeNullOrWhiteSpace();
-            response.RefreshToken.Should().NotBeNullOrWhiteSpace();
+            response.Token.Should().Be(NewAccessToken);
+            response.RefreshToken.Should().Be(NewRefreshToken);
             response.RefreshTokenExpiry.Should().BeAfter(DateTime.UtcNow.AddMinutes(-1));
+            _userServiceMock.Verify(
+                s => s.UpdateUserRefreshToken(userResponse.UserId, NewRefreshToken, It.IsAny<DateTime>()),
+                Times.Once);
+        }
+
+        private static TokenModel CreateTokenModel()
+        {
+            return new TokenModel
+            {
+                Token = AccessToken,
+                RefreshToken = RefreshToken
+            };
+        }
+
+        private static ClaimsPrincipal CreatePrincipal(string email)
+        {
+            return new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Email, email) }));
         }
 
         #endregion
