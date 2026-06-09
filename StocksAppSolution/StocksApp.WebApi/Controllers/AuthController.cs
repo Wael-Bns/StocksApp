@@ -7,7 +7,10 @@ using StocksApp.Core.ServiceContracts;
 
 namespace StocksApp.WebApi.Controllers
 {
-    public class AuthController : CommonControllerBase
+    [ApiController]
+    [Route("api/[controller]")]
+    [AllowAnonymous]
+    public class AuthController : ControllerBase
     {
         private readonly IAuthService _authenticationService;
         public AuthController(IAuthService authenticationService)
@@ -16,67 +19,24 @@ namespace StocksApp.WebApi.Controllers
         }
 
         [HttpPost("register")]
-        [AllowAnonymous]
         public async Task<ActionResult<AuthenticationResponse>> Register([FromBody] UserAddRequest registerRequest)
         {
-            try
-            {
-                AuthenticationResponse response = await _authenticationService.RegisterAsync(registerRequest);
-                return Ok(response);
-            }
-            catch (ArgumentException ex)
-            {
-                // Typically "A user with this email already exists."
-                return Conflict(ex.Message); 
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.Message);
-            }
+            AuthenticationResponse response = await _authenticationService.RegisterAsync(registerRequest);
+            return Ok(response);
         }
 
         [HttpPost("login")]
-        [AllowAnonymous]
         public async Task<ActionResult<AuthenticationResponse>> Login([FromBody] LoginRequest loginRequest)
         {
-            try
-            {
-                AuthenticationResponse response = await _authenticationService.LoginAsync(loginRequest);
-                return Ok(response);
-            }
-            catch (ArgumentException ex)
-            {
-                // Thrown for "Invalid email" or "Invalid password"
-                return Unauthorized(ex.Message); 
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.Message);
-            }
+            AuthenticationResponse response = await _authenticationService.LoginAsync(loginRequest);
+            return Ok(response);
         }
 
         [HttpPost("generate-new-access-token")]
-        [AllowAnonymous]
         public async Task<IActionResult> GenerateNewAccessToken([FromBody] TokenModel tokenModel)
         {
-            try
-            {
-                AuthenticationResponse response = await _authenticationService.GenerateNewAccessTokenAsync(tokenModel);
-                return Ok(response);
-            }
-            catch (SecurityTokenException ex)
-            {
-                // Invalid or tampered refresh/access tokens
-                return Unauthorized(ex.Message);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.Message);
-            }
+            AuthenticationResponse response = await _authenticationService.GenerateNewAccessTokenAsync(tokenModel);
+            return Ok(response);
         }
     }
 }

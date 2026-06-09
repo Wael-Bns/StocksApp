@@ -1,6 +1,7 @@
 using StocksApp.Core.DTO.UsersDTO;
 using StocksApp.Core.Domain.RepositoryContracts;
 using StocksApp.Core.ServiceContracts;
+using StocksApp.Core.Exceptions;
 
 namespace StocksApp.Core.Services
 {
@@ -20,12 +21,12 @@ namespace StocksApp.Core.Services
             var existingUser = await _userRepository.GetUserByEmail(request.Email!);
             if (existingUser != null)
             {
-                throw new ArgumentException("A user with this email already exists.");
+                throw new EmailAlreadyExistsException();
             }
 
             var user = request.ToUser();
 
-            user.PasswordHash = _passwordHasher.HashPassword(request.Password); 
+            user.PasswordHash = _passwordHasher.HashPassword(request.Password!); 
 
             var createdUser = await _userRepository.AddUser(user);
 
@@ -49,7 +50,14 @@ namespace StocksApp.Core.Services
             var existingUser = await _userRepository.GetUserById(userUpdateRequest.UserId);
             if (existingUser == null)
             {
-                throw new ArgumentException("User not found.");
+                throw new UserNotFoundException();
+            }
+
+            var userWithSameEmail = await _userRepository.GetUserByEmail(userUpdateRequest.Email!);
+            
+            if(userWithSameEmail != null && userWithSameEmail.UserId != userUpdateRequest.UserId)
+            {
+                throw new EmailAlreadyExistsException();
             }
 
             // Update allowed properties
@@ -66,7 +74,7 @@ namespace StocksApp.Core.Services
             var existingUser = await _userRepository.GetUserById(userId);
             if (existingUser == null)
             {
-                throw new ArgumentException("User not found.");
+                throw new UserNotFoundException();
             }
 
             return await _userRepository.DeleteUser(userId);
@@ -76,7 +84,7 @@ namespace StocksApp.Core.Services
             var existingUser = await _userRepository.GetUserById(userId);
             if (existingUser == null)
             {
-                throw new ArgumentException("User not found.");
+                throw new UserNotFoundException();
             }
 
             existingUser.RefreshToken = refreshToken;

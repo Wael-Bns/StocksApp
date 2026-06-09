@@ -34,7 +34,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.2" />
   </ItemGroup>
 	<ItemGroup>
-		<InternalsVisibleTo Include="StocksApp.IntegrationTests"/>
+		<InternalsVisibleTo Include="StocksApp.IntegrationTests" />
 	</ItemGroup>
 
 </Project>

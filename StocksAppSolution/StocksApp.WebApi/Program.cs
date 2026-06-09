@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using StocksApp.Core;
 using StocksApp.Infrastructure;
+using StocksApp.WebApi.Middlewares;
 using StocksApp.WebApi.Options;
 
 
@@ -45,6 +46,8 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+
+app.UseExceptionHandlingMiddleware();
 
 app.UseHttpsRedirection();
 

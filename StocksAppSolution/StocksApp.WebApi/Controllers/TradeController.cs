@@ -7,10 +7,14 @@ using StocksApp.WebApi.Constants;
 using StocksApp.WebApi.Options;
 using StocksApp.Core.HttpClientAbstractions;
 using StocksApp.Core.DTO.StockDTO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace StocksApp.WebApi.Controllers
 {
-    public class TradeController : CommonControllerBase
+    [ApiController]
+    [Route("api/[controller]")]
+    [Authorize]
+    public class TradeController : ControllerBase
     {
         private readonly IFinnHubHttpClient _finnHubService;
         private readonly IStockService _stockService;
