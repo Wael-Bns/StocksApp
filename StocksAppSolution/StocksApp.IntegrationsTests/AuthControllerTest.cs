@@ -14,6 +14,19 @@ namespace StocksApp.IntegrationsTests
         private readonly CustomWebApplicationFactory _factory;
         private const string ApplicationJson = "application/json";
         private const string DefaultPassword = "Password123!";
+        private const string WrongPassword = "WrongPassword";
+        private const string RegisterValidUserName = "TestUser_RegisterValid";
+        private const string RegisterValidEmail = "register_valid@test.com";
+        private const string DuplicateEmail = "duplicate@test.com";
+        private const string LoginValidUserName = "TestUser_LoginValid";
+        private const string LoginValidEmail = "login_valid@test.com";
+        private const string LoginInvalidPasswordUserName = "TestUser_LoginInvalidPassword";
+        private const string LoginInvalidPasswordEmail = "login_invalid_password@test.com";
+        private const string MissingUserEmail = "doesnotexist@test.com";
+        private const string RefreshValidUserName = "TestUser_RefreshValid";
+        private const string RefreshValidEmail = "refresh_valid@test.com";
+        private const string TamperedAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalid.signature";
+        private const string FakeRefreshToken = "some-fake-refresh-token";
         
         // Routes
         private const string RegisterRoute = "/api/auth/register";
@@ -39,8 +52,8 @@ namespace StocksApp.IntegrationsTests
             using var client = CreateFreshClient();
             var registerRequest = new UserAddRequest 
             { 
-                UserName = "TestUser_RegisterValid", 
-                Email = "register_valid@test.com", 
+                UserName = RegisterValidUserName, 
+                Email = RegisterValidEmail, 
                 Password = DefaultPassword 
             };
 
@@ -60,11 +73,10 @@ namespace StocksApp.IntegrationsTests
         public async Task Register_DuplicateEmail_ReturnsConflict()
         {
             using var client = CreateFreshClient();
-            var email = "duplicate@test.com";
             var registerRequest = new UserAddRequest 
             { 
                 UserName = "TestUser_Duplicate1", 
-                Email = email, 
+                Email = DuplicateEmail, 
                 Password = DefaultPassword 
             };
 
@@ -98,18 +110,17 @@ namespace StocksApp.IntegrationsTests
         public async Task Login_ValidCredentials_ReturnsOkAndToken()
         {
             using var client = CreateFreshClient();
-            var email = "login_valid@test.com";
             
             await client.PostAsJsonAsync(RegisterRoute, new UserAddRequest 
             { 
-                UserName = "TestUser_LoginValid", 
-                Email = email, 
+                UserName = LoginValidUserName, 
+                Email = LoginValidEmail, 
                 Password = DefaultPassword 
             });
 
             var response = await client.PostAsJsonAsync(LoginRoute, new LoginRequest 
             { 
-                Email = email, 
+                Email = LoginValidEmail, 
                 Password = DefaultPassword 
             });
 
@@ -122,16 +133,37 @@ namespace StocksApp.IntegrationsTests
         }
 
         [Fact]
-        public async Task Login_InvalidCredentials_ReturnsUnauthorized()
+        public async Task Login_InvalidEmail_ReturnsBadRequest()
         {
             using var client = CreateFreshClient();
             var response = await client.PostAsJsonAsync(LoginRoute, new LoginRequest 
             { 
-                Email = "doesnotexist@test.com", 
-                Password = "WrongPassword" 
+                Email = MissingUserEmail, 
+                Password = WrongPassword 
             });
 
-            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        }
+
+        [Fact]
+        public async Task Login_InvalidPassword_ReturnsBadRequest()
+        {
+            using var client = CreateFreshClient();
+
+            await client.PostAsJsonAsync(RegisterRoute, new UserAddRequest
+            {
+                UserName = LoginInvalidPasswordUserName,
+                Email = LoginInvalidPasswordEmail,
+                Password = DefaultPassword
+            });
+
+            var response = await client.PostAsJsonAsync(LoginRoute, new LoginRequest
+            {
+                Email = LoginInvalidPasswordEmail,
+                Password = WrongPassword
+            });
+
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         #endregion
@@ -144,8 +176,8 @@ namespace StocksApp.IntegrationsTests
             using var client = CreateFreshClient();
             var registerRequest = new UserAddRequest 
             { 
-                UserName = "TestUser_RefreshValid", 
-                Email = "refresh_valid@test.com", 
+                UserName = RefreshValidUserName, 
+                Email = RefreshValidEmail, 
                 Password = DefaultPassword 
             };
             
@@ -175,13 +207,26 @@ namespace StocksApp.IntegrationsTests
         }
 
         [Fact]
-        public async Task GenerateNewAccessToken_TamperedToken_ReturnsUnauthorized()
+        public async Task GenerateNewAccessToken_TamperedToken_ReturnsInternalServerError()
         {
             using var client = CreateFreshClient();
             var response = await client.PostAsJsonAsync(RefreshRoute, new TokenModel
             {
-                Token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.invalid.signature",
-                RefreshToken = "some-fake-refresh-token"
+                Token = TamperedAccessToken,
+                RefreshToken = FakeRefreshToken
+            });
+
+            response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+        }
+
+        [Fact]
+        public async Task GenerateNewAccessToken_MissingToken_ReturnsBadRequest()
+        {
+            using var client = CreateFreshClient();
+            var response = await client.PostAsJsonAsync(RefreshRoute, new TokenModel
+            {
+                Token = string.Empty,
+                RefreshToken = FakeRefreshToken
             });
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);

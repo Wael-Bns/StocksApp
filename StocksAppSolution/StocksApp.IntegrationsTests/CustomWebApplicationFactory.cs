@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+using Microsoft.Extensions.Logging;
 using StocksApp.Infrastructure;
 
 namespace StocksApp.IntegrationTests
@@ -14,6 +14,7 @@ namespace StocksApp.IntegrationTests
             base.ConfigureWebHost(builder);
 
             builder.UseEnvironment("Test");
+            builder.ConfigureLogging(logging => logging.ClearProviders());
 
             builder.ConfigureServices(services =>
             {
