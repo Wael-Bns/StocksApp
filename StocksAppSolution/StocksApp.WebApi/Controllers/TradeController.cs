@@ -26,10 +26,6 @@ namespace StocksApp.WebApi.Controllers
         public async Task<IActionResult> GetTradeInfo([FromRoute] string stockSymbol)
         {
             var stockInformations = await _stockService.GetStockInformations(stockSymbol);
-            if (stockInformations == null)
-            {
-                return NotFound($"No trade information found for stock symbol: {stockSymbol}");
-            }
             return Ok(stockInformations);
         }
 
