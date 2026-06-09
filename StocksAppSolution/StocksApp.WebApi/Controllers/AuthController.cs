@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using StocksApp.Core.DTO.AuthenticationDTO;
 using StocksApp.Core.DTO.UsersDTO;
 using StocksApp.Core.ServiceContracts;

@@ -13,7 +13,10 @@ namespace StocksApp.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddHttpClient<IFinnHubHttpClient, FinnhubHttpClient>();
+            services.AddHttpClient<IFinnHubHttpClient, FinnhubHttpClient>(options =>
+            {
+                options.BaseAddress = new Uri("https://finnhub.io/api/v1/");
+            });
             
             services.AddScoped<IOrderRepository, OrderRepository>();
             

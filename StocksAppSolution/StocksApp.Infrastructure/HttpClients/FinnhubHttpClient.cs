@@ -15,74 +15,108 @@ namespace StocksApp.Infrastructure.Services
         {
             _configuration = configuration;
             _httpClient = httpClient;
-            _apiKey = _configuration["FinnhubApiKey"];
-        }
-        private string BuildUrl(string endpoint, string stockSymbol)
-        {
-            return $"https://finnhub.io/api/v1/{endpoint}?symbol={stockSymbol}&token={_apiKey}";
-        }
-        private async Task<T> GetData<T>(string url)
-        {
-            var response = await _httpClient.GetAsync(url);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new Exception($"Failed to fetch company profile.\n Status code: {response.StatusCode}");
-            }
-            try
-            {
-                string json = await response.Content.ReadAsStringAsync();
-                var companyProfile = JsonConvert.DeserializeObject<T>(json);
-                return companyProfile;
-            }
-            catch(Exception ex)
-            {
-                throw new Exception($"Error deserializing company profile: {ex.Message}");
-            }
-        }
-        public async Task<Dictionary<string, object>?> GetCompanyProfile(string stockSymbol) 
-        {
-            if(string.IsNullOrEmpty(stockSymbol))
-            {
-                throw new ArgumentException("Stock symbol cannot be empty or null", nameof(stockSymbol));
-            }
-            
-            string url = BuildUrl("stock/profile2", stockSymbol);
-
-            var companyData = await GetData<Dictionary<string, object>>(url);
-
-            return companyData;
+            _apiKey = _configuration["FinnhubApiKey"]!;
         }
 
-        public async Task<Dictionary<string, object>?> GetStockPriceQuote(string stockSymbol)
+        public async Task<StockQuoteDTO?> GetStockQuote(string stockSymbol)
         {
-            if (string.IsNullOrEmpty(stockSymbol))
+            HttpResponseMessage response = await _httpClient.GetAsync($"quote?symbol={stockSymbol}&token={_apiKey}");
+            if (response.IsSuccessStatusCode)
             {
-                throw new ArgumentException("Stock symbol cannot be empty or null", nameof(stockSymbol));
-            }
-            string url = BuildUrl("quote", stockSymbol);
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+                StockQuoteResponse? stockQuoteResponse = JsonConvert.DeserializeObject<StockQuoteResponse>(jsonResponse);
+                
+                if(stockQuoteResponse == null) { return null; }
 
-            var companyData = await GetData<Dictionary<string,object>>(url);
-            return companyData;
+                return new StockQuoteDTO { CurrentPrice = stockQuoteResponse.CurrentPrice };
+            }
+            return null;
         }
 
-        public async Task<List<Stock>> SearchStocks(string query)
+        public async Task<CompanyProfileDTO?> GetCompanyProfile(string stockSymbol)
         {
-            string url = $"https://finnhub.io/api/v1/search?q={query}&exchange=US&token={_configuration["FinnhubApiKey"]}";
-            Dictionary<string, object> searchResults = await GetData<Dictionary<string, object>>(url);
-            List<Dictionary<string, object>> results = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(searchResults["result"].ToString());
-
-            List<Stock> stocks = [];
-            for(int i=0;i<results.Count;i++)
+            HttpResponseMessage response = await _httpClient.GetAsync($"stock/profile2?symbol={stockSymbol}&token={_apiKey}");
+            if (response.IsSuccessStatusCode)
             {
-                stocks.Add(new Stock
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+                
+                CompanyProfileResponse? companyProfileResponse = JsonConvert.DeserializeObject<CompanyProfileResponse>(jsonResponse);
+                
+                if (companyProfileResponse == null) { return null; }
+                return new CompanyProfileDTO
                 {
-                    StockSymbol = results[i]["symbol"] as string,
-                    StockName = results[i]["description"] as string
-                });
+                    Country = companyProfileResponse.Country,
+                    Name = companyProfileResponse.Name,
+                    Currency = companyProfileResponse.Currency,
+                    Industry = companyProfileResponse.FinnhubIndustry,
+                    Exchange = companyProfileResponse.Exchange,
+                    Logo = companyProfileResponse.Logo,
+                    Ticker = companyProfileResponse.Ticker,
+                    WebUrl = companyProfileResponse.WebUrl,
+                    FinnhubIndustry = companyProfileResponse.FinnhubIndustry
+                };
             }
+            return null;
+        }
 
-            return stocks;
+        private class StockQuoteResponse
+        {
+            [JsonProperty("c")]
+            public decimal CurrentPrice { get; set; }
+
+            [JsonProperty("h")]
+            public decimal HighPrice { get; set; }
+
+            [JsonProperty("l")]
+            public decimal LowPrice { get; set; }
+
+            [JsonProperty("o")]
+            public decimal OpenPrice { get; set; }
+
+            [JsonProperty("pc")]
+            public decimal PreviousClosePrice { get; set; }
+
+            [JsonProperty("t")]
+            public long Timestamp { get; set; }
+        }
+
+        private class CompanyProfileResponse
+        {
+            [JsonProperty("country")]
+            public string? Country { get; set; }
+
+            [JsonProperty("currency")]
+            public string? Currency { get; set; }
+
+            [JsonProperty("exchange")]
+            public string? Exchange { get; set; }
+
+            [JsonProperty("ipo")]
+            public string? Ipo { get; set; }
+
+            [JsonProperty("marketCapitalization")]
+            public decimal MarketCapitalization { get; set; }
+
+            [JsonProperty("name")]
+            public string? Name { get; set; }
+
+            [JsonProperty("phone")]
+            public string? Phone { get; set; }
+
+            [JsonProperty("shareOutstanding")]
+            public decimal ShareOutstanding { get; set; }
+
+            [JsonProperty("ticker")]
+            public string? Ticker { get; set; }
+
+            [JsonProperty("weburl")]
+            public string? WebUrl { get; set; }
+
+            [JsonProperty("logo")]
+            public string? Logo { get; set; }
+
+            [JsonProperty("finnhubIndustry")]
+            public string? FinnhubIndustry { get; set; }
         }
     }
 }

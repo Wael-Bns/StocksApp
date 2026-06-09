@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using Microsoft.AspNetCore.Http;
 using StocksApp.Core.Exceptions;
 
 namespace StocksApp.WebApi.Middlewares
