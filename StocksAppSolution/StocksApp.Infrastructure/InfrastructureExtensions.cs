@@ -30,9 +30,16 @@ namespace StocksApp.Infrastructure
 
             services.AddTransient<IPasswordHasher, BCryptPasswordHasher>();
 
+            string connectionStringTemplate = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("No connection string was provided");
+            string connectionString = connectionStringTemplate
+                                        .Replace("$POSTGRES_HOST", Environment.GetEnvironmentVariable("POSTGRES_HOST"))
+                                        .Replace("$POSTGRES_PORT", Environment.GetEnvironmentVariable("POSTGRES_PORT"))
+                                        .Replace("$POSTGRES_USER", Environment.GetEnvironmentVariable("POSTGRES_USER"))
+                                        .Replace("$POSTGRES_PASSWORD", Environment.GetEnvironmentVariable("POSTGRES_PASSWORD"))
+                                        .Replace("$POSTGRES_DB", Environment.GetEnvironmentVariable("POSTGRES_DB"));
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+                options.UseNpgsql(connectionString);
             });
 
             return services;
