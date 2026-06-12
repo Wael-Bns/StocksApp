@@ -35,7 +35,7 @@ builder.Services.AddAuthentication(options =>
 
 
 builder.Services.AddCore(builder.Configuration)
-                .AddInfrastructure(builder.Configuration);
+                .AddInfrastructure(builder.Configuration, builder.Environment);
 
 builder.Services.Configure<TradeOptions>(builder.Configuration.GetSection("TradingOptions"));
 

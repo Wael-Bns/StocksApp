@@ -5,14 +5,23 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StocksApp.Infrastructure;
 
-namespace StocksApp.IntegrationTests
+namespace StocksApp.IntegrationsTests.Factory
 {
-    public class CustomWebApplicationFactory : WebApplicationFactory<Program>
+    public class CustomWebApplicationFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
+        private readonly PostgresDbManager _postgresDbManager = new();
+        public async Task InitializeAsync()
+        {
+            await _postgresDbManager.InitializeAsync();
+            _ = Server;
+            await _postgresDbManager.ApplyMigrationsAsync(Services);
+        }
+        public async Task ResetDatabaseAsync()
+        {
+            await _postgresDbManager.ResetAsync();
+        }
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            base.ConfigureWebHost(builder);
-
             builder.UseEnvironment("Test");
             builder.ConfigureLogging(logging => logging.ClearProviders());
 
@@ -27,9 +36,15 @@ namespace StocksApp.IntegrationTests
                 }
                 services.AddDbContext<ApplicationDbContext>(options =>
                 {
-                    options.UseInMemoryDatabase("TestDb");
+                    options.UseNpgsql(_postgresDbManager.ConnectionString);
                 });
             });
+        }
+
+        async Task IAsyncLifetime.DisposeAsync()
+        {
+            await _postgresDbManager.DisposeAsync();
+            await base.DisposeAsync();
         }
     }
 }
