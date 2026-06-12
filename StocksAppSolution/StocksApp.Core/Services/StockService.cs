@@ -1,33 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using StocksApp.Core.Domain.Entities;
+using StocksApp.Core.Domain.RepositoryContracts;
 using StocksApp.Core.DTO;
+using StocksApp.Core.Helpers;
 using StocksApp.Core.ServiceContracts;
 
 namespace StocksApp.Core.Services
 {
     public class StockService : IStockService
     {
-        public Task<BuyOrderResponse> CreateBuyOrder(BuyOrderRequest? buyOrderRequest)
+        private readonly IOrderRepository _orderRepository;
+
+        public StockService(IOrderRepository orderRepository)
         {
-            throw new NotImplementedException();
+            _orderRepository = orderRepository;
+        }
+        public async Task<BuyOrderResponse> CreateBuyOrder(BuyOrderRequest? buyOrderRequest)
+        {
+            if(buyOrderRequest == null)
+            {
+                throw new ArgumentNullException(nameof(buyOrderRequest));
+            }
+            // Validate the model 
+            ValidationHelper.ModelValidation(buyOrderRequest);
+
+            var buyOrder = buyOrderRequest.ToBuyOrder();
+            
+            BuyOrder createdBuyOrder = await _orderRepository.AddBuyOrderAsync(buyOrder);
+
+            return createdBuyOrder.ToBuyOrderResponse();
         }
 
-        public Task<SellOrderResponse> CreateSellOrder(SellOrderRequest? sellOrderRequest)
+        public async Task<SellOrderResponse> CreateSellOrder(SellOrderRequest? sellOrderRequest)
         {
-            throw new NotImplementedException();
+            if (sellOrderRequest == null)
+            {
+                throw new ArgumentNullException(nameof(sellOrderRequest));
+            }
+            // Validate the model 
+            ValidationHelper.ModelValidation(sellOrderRequest);
+
+            var sellOrder = sellOrderRequest.ToSellOrder();
+
+            SellOrder createdSellOrder = await _orderRepository.AddSellOrderAsync(sellOrder);
+
+            return createdSellOrder.ToSellOrderResponse();
         }
 
-        public Task<List<BuyOrderResponse>> GetAllBuyOrders()
+        public async Task<List<BuyOrderResponse>> GetAllBuyOrders()
         {
-            throw new NotImplementedException();
+            List<BuyOrder> orderRequests = await _orderRepository.GetAllBuyOrdersAsync();
+            return orderRequests.Select(o => o.ToBuyOrderResponse()).ToList();
         }
 
-        public Task<List<SellOrderResponse>> GetAllSellOrders()
+        public async Task<List<SellOrderResponse>> GetAllSellOrders()
         {
-            throw new NotImplementedException();
+            List<SellOrder> sellOrderRequests = await _orderRepository.GetAllSellOrdersAsync();
+            return sellOrderRequests.Select(o => o.ToSellOrderResponse()).ToList();
         }
     }
 }
