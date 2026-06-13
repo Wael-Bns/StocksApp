@@ -2,9 +2,9 @@
 using StocksApp.Core.CustomValidationAttributes;
 using StocksApp.Core.Domain.Entities;
 
-namespace StocksApp.Core.DTO
+namespace StocksApp.Core.DTO.SellOrderDTO
 {
-    public class BuyOrderRequest
+    public class SellOrderRequest
     {
         [Required(ErrorMessage = "Required Stock symbol")]
         public string? StockSymbol { get; set; }
@@ -12,18 +12,18 @@ namespace StocksApp.Core.DTO
         public string? StockName { get; set; }
         [MinDate("2000-01-01")]
         public DateTime DateAndTimeOfOrder { get; set; }
-        [Range(1, 10000,ErrorMessage ="Quantity should be between 1 and 100000")]
+        [Range(1, 10000, ErrorMessage = "Quantity should be between 1 and 100000")]
         public uint Quantity { get; set; }
         [Range(1, 10000, ErrorMessage = "Quantity should be between 1 and 100000")]
         public double Price { get; set; }
-
-        public BuyOrder ToBuyOrder()
+        
+        public SellOrder ToSellOrder()
         {
-            return new BuyOrder
+            return new SellOrder
             {
-                BuyOrderID = Guid.NewGuid(),
-                StockSymbol = StockSymbol,
+                SellOrderID = Guid.NewGuid(),
                 StockName = StockName,
+                StockSymbol = StockSymbol,
                 DateAndTimeOfOrder = DateAndTimeOfOrder,
                 Price = Price,
                 Quantity = Quantity
