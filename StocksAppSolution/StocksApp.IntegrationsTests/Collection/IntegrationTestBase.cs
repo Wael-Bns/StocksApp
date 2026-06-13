@@ -6,7 +6,7 @@ namespace StocksApp.IntegrationsTests.Collection
     public abstract class IntegrationTestBase : IAsyncLifetime
     {
         protected readonly CustomWebApplicationFactory Factory;
-        protected HttpClient Client { get; private set; } = default!;
+        protected HttpClient Client { get; private set; }
         protected IntegrationTestBase(CustomWebApplicationFactory factory)
         {
             Factory = factory;

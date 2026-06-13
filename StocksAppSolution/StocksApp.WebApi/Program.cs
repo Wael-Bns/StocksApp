@@ -58,13 +58,15 @@ app.UseAuthorization();
 app.MapControllers();
 
 //Add Swagger middleware
-app.UseSwagger();
-
-app.UseSwaggerUI(c =>
+if(app.Environment.IsDevelopment())
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API");
-    c.RoutePrefix = "swagger"; 
-});
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API");
+        c.RoutePrefix = "swagger"; 
+    });
+}
 
 app.Run();
 

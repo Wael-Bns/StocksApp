@@ -3,8 +3,8 @@
 namespace StocksApp.IntegrationsTests.Collection
 {
     [CollectionDefinition(Name, DisableParallelization = true)]
-    public class IntegrationTestsCollection : ICollectionFixture<CustomWebApplicationFactory>
+    public class ExpiredTokenCollection : ICollectionFixture<ExpiredTokenWebApplicationFactory>
     {
-        public const string Name = "IntegrationTests";
+        public const string Name = "ExpiredToken";
     }
 }
