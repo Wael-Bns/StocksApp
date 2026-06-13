@@ -9,6 +9,7 @@ resources:
 
 variables:
   linuxImageName: ubuntu-latest
+  windowsImageName: windows-latest
   imageRepository: stocksappwebapi
   tag: $(Build.BuildId)
   resourceGroupServiceConnectionName: stocksapp-rgServiceConnection
@@ -50,3 +51,26 @@ stages:
               containerRegistry: $(acrName)
               tags: |
                 $(tag)
+  - stage: Test
+    displayName: Test and publish results stage
+    jobs:
+      - job: RunTest
+        displayName: Run unit and integration tests
+        pool:
+          vmImage: $(linuxImageName) 
+        steps:
+          - task: DotNetCoreCLI@2
+            displayName: Restore NuGet Packages
+            inputs:
+              command: 'restore'
+              projects: '$(Build.SourcesDirectory)/StocksAppSolution/*.sln'
+
+          - task: DotNetCoreCLI@2
+            displayName: Run Tests
+            inputs:
+              command: 'test'
+              # Finds any project file ending with Tests/test in its name
+              projects: |
+                $(Build.SourcesDirectory)/StocksAppSolution/StocksApp.Test/*.csproj
+                $(Build.SourcesDirectory)/StocksAppSolution/StocksApp.IntegrationTests/*.csproj
+              arguments: '--configuration Release --collect:"XPlat Code Coverage"'
