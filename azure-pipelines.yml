@@ -13,7 +13,8 @@ variables:
   tag: $(Build.BuildId)
   resourceGroupServiceConnectionName: stocksapp-rgServiceConnection
   keyVaultName: kv-stocksapp
-  dockerFilePath: $(Build.SourcesDirectory)/StocksApp.WebApi/Dockerfile
+  buildContext: $(Build.SourcesDirectory)/StocksAppSolution
+  dockerFilePath: $(Build.SourcesDirectory)/StocksAppSolution/StocksApp.WebApi/Dockerfile
   acrName: stocksapp-acrServiceConnection
 
 stages:
@@ -45,7 +46,7 @@ stages:
               command: buildAndPush
               repository: $(imageRepository)
               dockerfile: $(dockerFilePath)
-              buildContext: '$(Build.SourcesDirectory)'
+              buildContext: $(buildContext)
               containerRegistry: $(acrName)
               tags: |
                 $(tag)
