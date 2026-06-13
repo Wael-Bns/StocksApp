@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.HttpClientAbstractions;

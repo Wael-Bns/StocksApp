@@ -1,29 +1,29 @@
 ﻿using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using StocksApp.Core.DTO.StockDTO;
-using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.WebSocketClientAbstractions;
 using StocksApp.Infrastructure.Models;
+using StocksApp.Infrastructure.Options;
 
 namespace StocksApp.Infrastructure.WebSocketClients
 {
     public class FinnhubWebSocketClient : IFinnhubWebSocketClient
     {
         private readonly ClientWebSocket _socket = new ClientWebSocket();
-        private readonly IConfiguration _configuration;
+        private readonly FinnhubOptions _finnhubOptions;
         private readonly ILogger<FinnhubWebSocketClient> _logger;
         public event Func<IReadOnlyCollection<PriceUpdateMessage>, Task>? OnMessageReceived;
-        public FinnhubWebSocketClient(IConfiguration configuration, ILogger<FinnhubWebSocketClient> logger)
+        public FinnhubWebSocketClient(ILogger<FinnhubWebSocketClient> logger, IOptions<FinnhubOptions> finnhubOptions)
         {
-            _configuration = configuration;
             _logger = logger;
+            _finnhubOptions = finnhubOptions.Value;
         }
         public async Task ConnectAsync(CancellationToken cancellationToken = default)
         {
-            string token = _configuration["FinnhubApiKey"]!;
+            string token = _finnhubOptions.ApiKey;
             var uri = new Uri($"wss://ws.finnhub.io?token={token}");
             await _socket.ConnectAsync(uri, cancellationToken);
             _logger.LogInformation("Connected to finnhub websocket .");

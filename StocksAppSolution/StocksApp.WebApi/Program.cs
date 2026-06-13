@@ -1,46 +1,16 @@
 using StocksApp.Core;
 using StocksApp.Infrastructure;
 using StocksApp.WebApi;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using StocksApp.WebApi.Hubs;
 using StocksApp.WebApi.Middlewares;
-using StocksApp.WebApi.Options;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
 
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-builder.Services.AddControllers();
-
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["JWT:Issuer"],
-        ValidAudience = builder.Configuration["JWT:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["JWT:Key"]!))
-    };
-});
-
-
 builder.Services.AddWebApi(builder.Configuration)
                 .AddCore(builder.Configuration)
                 .AddInfrastructure(builder.Configuration, builder.Environment);
-
-builder.Services.Configure<TradeOptions>(builder.Configuration.GetSection("TradingOptions"));
 
 // Configure Swagger for API documentation
 builder.Services.AddEndpointsApiExplorer();
