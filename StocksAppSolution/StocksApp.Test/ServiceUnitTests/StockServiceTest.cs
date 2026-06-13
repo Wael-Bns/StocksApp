@@ -4,6 +4,9 @@ using StocksApp.Core.Domain.Entities;
 using StocksApp.Core.Domain.RepositoryContracts;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
+using StocksApp.Core.DTO.StockDTO;
+using StocksApp.Core.Exceptions;
+using StocksApp.Core.HttpClientAbstractions;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 using Xunit;
@@ -17,6 +20,7 @@ namespace StocksApp.Test.ServiceUnitTests
         private readonly ISubscriptionsManager _subscriptionsManager;
         private readonly Mock<ISubscriptionsManager> _subscriptionsManagerMock;
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
+        private readonly Mock<IFinnHubHttpClient> _finnHubHttpClientMock;
         // A sample BuyOrderRequest object that can be used in multiple tests
         private BuyOrderAddRequest buyOrderRequest = new BuyOrderAddRequest
         {
@@ -40,13 +44,12 @@ namespace StocksApp.Test.ServiceUnitTests
 
         public StockServiceTest()
         {
-            // Mock the IOrderRepository
             _orderRepositoryMock = new Mock<IOrderRepository>();
+            _finnHubHttpClientMock = new Mock<IFinnHubHttpClient>();
             _orderRepository = _orderRepositoryMock.Object;
             _subscriptionsManagerMock = new Mock<ISubscriptionsManager>();
             _subscriptionsManager = _subscriptionsManagerMock.Object;
-            // Pass the mocked repository to the Service
-            _stockService = new StockService(_orderRepository, _subscriptionsManager);
+            _stockService = new StockService(_orderRepository, _finnHubHttpClientMock.Object, _subscriptionsManager);
         }
         private void MockAddBuyOrder(BuyOrder buyOrder)
         {
@@ -67,6 +70,16 @@ namespace StocksApp.Test.ServiceUnitTests
         {
             _orderRepositoryMock.Setup(repo => repo.GetAllSellOrdersAsync())
                 .ReturnsAsync(sellOrders);
+        }
+        private void MockGetStockQuote(StockQuoteDTO? stockQuote)
+        {
+            _finnHubHttpClientMock.Setup(client => client.GetStockQuote(It.IsAny<string>()))
+                .ReturnsAsync(stockQuote);
+        }
+        private void MockGetCompanyProfile(CompanyProfileDTO? companyProfile)
+        {
+            _finnHubHttpClientMock.Setup(client => client.GetCompanyProfile(It.IsAny<string>()))
+                .ReturnsAsync(companyProfile);
         }
 
         #region CreateBuyOrder
@@ -94,7 +107,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest);
             };
             // Assert
-            await actual.Should().ThrowAsync<ArgumentException>();
+            await actual.Should().ThrowAsync<InvalidPropertyException>();
         }
         [Fact]
         public async Task CreateBuyOrder_OrderQuantityMoreThanMaximum()
@@ -110,7 +123,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest);
             };
             // Assert
-            await actual.Should().ThrowAsync<ArgumentException>();
+            await actual.Should().ThrowAsync<InvalidPropertyException>();
         }
         [Fact]
         public async Task CreateBuyOrder_PriceLessThanMinimum()
@@ -125,7 +138,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest);
             };
             // Assert
-            await actual.Should().ThrowAsync<ArgumentException>();
+            await actual.Should().ThrowAsync<InvalidPropertyException>();
         }
         [Fact]
         public async Task CreateBuyOrder_PriceMoreThanMaximum()
@@ -141,7 +154,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest);
             };
             // Assert
-            await actual.Should().ThrowAsync<ArgumentException>();
+            await actual.Should().ThrowAsync<InvalidPropertyException>();
         }
         [Fact]
         public async Task CreateBuyOrder_NullStockSymbol()
@@ -156,7 +169,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest);
             };
             // Assert
-            await actual.Should().ThrowAsync<ArgumentException>();
+            await actual.Should().ThrowAsync<InvalidPropertyException>();
         }
         [Fact]
         public async Task CreateBuyOrder_DateLessThanMinimum()
@@ -171,7 +184,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest);
             };
             // Assert
-            await actual.Should().ThrowAsync<ArgumentException>();
+            await actual.Should().ThrowAsync<InvalidPropertyException>();
         }
         [Fact]
         public async Task CreateBuyOrder_ValidRequest()
@@ -215,7 +228,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest);
             };
             // Assert
-            await actual.Should().ThrowAsync<ArgumentException>();
+            await actual.Should().ThrowAsync<InvalidPropertyException>();
         }
         [Fact]
         public async Task CreateSellOrder_OrderQuantityMoreThanMaximum()
@@ -231,7 +244,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest);
             };
             // Assert
-            await actual.Should().ThrowAsync<ArgumentException>();
+            await actual.Should().ThrowAsync<InvalidPropertyException>();
         }
         [Fact]
         public async Task CreateSellOrder_PriceLessThanMinimum()
@@ -247,7 +260,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest);
             };
             // Assert
-            await actual.Should().ThrowAsync<ArgumentException>();
+            await actual.Should().ThrowAsync<InvalidPropertyException>();
         }
         [Fact]
         public async Task CreateSellOrder_PriceMoreThanMaximum()
@@ -263,7 +276,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest);
             };
             // Assert
-            await actual.Should().ThrowAsync<ArgumentException>();
+            await actual.Should().ThrowAsync<InvalidPropertyException>();
         }
         [Fact]
         public async Task CreateSellOrder_NullStockSymbol()
@@ -278,7 +291,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest);
             };
             // Assert
-            await actual.Should().ThrowAsync<ArgumentException>();
+            await actual.Should().ThrowAsync<InvalidPropertyException>();
         }
         [Fact]
         public async Task CreateSellOrder_DateLessThanMinimum()
@@ -293,7 +306,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest);
             };
             // Assert
-            await actual.Should().ThrowAsync<ArgumentException>();
+            await actual.Should().ThrowAsync<InvalidPropertyException>();
         }
         [Fact]
         public async Task CreateSellOrder_ValidRequest()
@@ -371,6 +384,111 @@ namespace StocksApp.Test.ServiceUnitTests
             // Assert
             actual.Should().BeEquivalentTo(expected);
 
+        }
+        #endregion
+
+        #region GetStockInformations
+        [Fact]
+        public async Task GetStockInformations_ValidSymbol_ReturnsStockInformations()
+        {
+            // Arrange
+            string stockSymbol = "AAPL";
+            StockQuoteDTO stockQuote = new StockQuoteDTO
+            {
+                CurrentPrice = 192.53m
+            };
+            CompanyProfileDTO companyProfile = new CompanyProfileDTO
+            {
+                Ticker = stockSymbol,
+                Name = "Apple Inc",
+                Currency = "USD",
+                Exchange = "NASDAQ NMS - GLOBAL MARKET",
+                WebUrl = "https://www.apple.com/",
+                FinnhubIndustry = "Technology",
+                Logo = "https://static2.finnhub.io/file/publicdatany/finnhubimage/stock_logo/AAPL.png"
+            };
+            StockInformations expected = new StockInformations
+            {
+                StockSymbol = companyProfile.Ticker,
+                StockName = companyProfile.Name,
+                Currency = companyProfile.Currency,
+                Exchange = companyProfile.Exchange,
+                WebUrl = companyProfile.WebUrl,
+                Industry = companyProfile.FinnhubIndustry,
+                PricePerShare = stockQuote.CurrentPrice,
+                Logo = companyProfile.Logo
+            };
+
+            MockGetStockQuote(stockQuote);
+            MockGetCompanyProfile(companyProfile);
+
+            // Act
+            StockInformations actual = await _stockService.GetStockInformations(stockSymbol);
+
+            // Assert
+            actual.Should().BeEquivalentTo(expected);
+            _finnHubHttpClientMock.Verify(client => client.GetStockQuote(stockSymbol), Times.Once);
+            _finnHubHttpClientMock.Verify(client => client.GetCompanyProfile(stockSymbol), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetStockInformations_NullStockQuote_ThrowsStockNotFoundException()
+        {
+            // Arrange
+            string stockSymbol = "INVALID";
+            MockGetStockQuote(null);
+            MockGetCompanyProfile(new CompanyProfileDTO
+            {
+                Ticker = stockSymbol,
+                Name = "Invalid Stock"
+            });
+
+            // Act
+            Func<Task> actual = async () => await _stockService.GetStockInformations(stockSymbol);
+
+            // Assert
+            await actual.Should().ThrowAsync<StockNotFoundException>()
+                .WithMessage($"Stock with symbol '{stockSymbol}' was not found.");
+        }
+
+        [Fact]
+        public async Task GetStockInformations_ZeroCurrentPrice_ThrowsStockNotFoundException()
+        {
+            // Arrange
+            string stockSymbol = "AAPL";
+            MockGetStockQuote(new StockQuoteDTO
+            {
+                CurrentPrice = 0
+            });
+            MockGetCompanyProfile(new CompanyProfileDTO
+            {
+                Ticker = stockSymbol,
+                Name = "Apple Inc"
+            });
+
+            // Act
+            Func<Task> actual = async () => await _stockService.GetStockInformations(stockSymbol);
+
+            // Assert
+            await actual.Should().ThrowAsync<StockNotFoundException>();
+        }
+
+        [Fact]
+        public async Task GetStockInformations_NullCompanyProfile_ThrowsStockNotFoundException()
+        {
+            // Arrange
+            string stockSymbol = "INVALID";
+            MockGetStockQuote(new StockQuoteDTO
+            {
+                CurrentPrice = 192.53m
+            });
+            MockGetCompanyProfile(null);
+
+            // Act
+            Func<Task> actual = async () => await _stockService.GetStockInformations(stockSymbol);
+
+            // Assert
+            await actual.Should().ThrowAsync<StockNotFoundException>();
         }
         #endregion
 

@@ -12,7 +12,7 @@ builder.Services.AddSingleton<IWorkerSubscriptionsManager, WorkerSubscriptionsMa
 builder.Services.AddHostedService<OrdersWorker>();
 
 builder.Services
-    .AddInfrastructure(builder.Configuration)
+    .AddInfrastructure(builder.Configuration, builder.Environment)
     .AddCore(builder.Configuration);
 
 var host = builder.Build();

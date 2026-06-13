@@ -1,5 +1,6 @@
 ﻿using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
+using StocksApp.Core.DTO.StockDTO;
 
 namespace StocksApp.Core.ServiceContracts
 {
@@ -27,5 +28,11 @@ namespace StocksApp.Core.ServiceContracts
         /// </summary>
         /// <returns></returns>
         Task<List<SellOrderResponse>> GetAllSellOrders();
+        /// <summary>
+        /// Returns the stock informations based on the provided stock symbol .
+        /// </summary>
+        /// <param name="stockSymbol">Symbol based on which informations are fetched .</param>
+        /// <returns>Stock informations</returns>
+        Task<StockInformations> GetStockInformations(string stockSymbol);
     }
 }

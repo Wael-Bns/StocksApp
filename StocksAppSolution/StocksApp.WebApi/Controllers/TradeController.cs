@@ -3,65 +3,31 @@ using Microsoft.Extensions.Options;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.ServiceContracts;
-using StocksApp.WebApi.Constants;
 using StocksApp.WebApi.Options;
-using StocksApp.Core.HttpClientAbstractions;
-using StocksApp.Core.DTO.StockDTO;
-using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 namespace StocksApp.WebApi.Controllers
 {
     [ApiController]
-    [Route("api/trade")]
-    public class TradeController : CommonControllerBase
+    [Route("api/[controller]")]
+    [Authorize]
+    public class TradeController : ControllerBase
     {
-        private readonly IFinnHubHttpClient _finnHubService;
         private readonly IStockService _stockService;
         private readonly IOptions<TradeOptions> _tradeOptions;
 
-        public TradeController(IFinnHubHttpClient finnHubService, IStockService stockService, IOptions<TradeOptions> tradeOptions)
+        public TradeController(IStockService stockService, IOptions<TradeOptions> tradeOptions)
         {
-            _finnHubService = finnHubService;
             _stockService = stockService;
             _tradeOptions = tradeOptions;
         }
 
-        [HttpGet("search-stocks")]
-        public async Task<IActionResult> SearchStocks(string query)
+        [HttpGet("trade-info/{stockSymbol=MSFT}")]
+        public async Task<IActionResult> GetTradeInfo([FromRoute] string stockSymbol)
         {
-            var res = await _finnHubService.SearchStocks(query);
-            return Ok(res);
-        }
-
-        [HttpGet("trade-info/{stockSymbol?}")]
-        public async Task<IActionResult> GetTradeInfo([FromRoute] string? stockSymbol)
-        {
-            try
-            {
-                if (stockSymbol == null)
-                {
-                    stockSymbol = _tradeOptions.Value.DefaultStockSymbol;
-                }
-                var companyProfile = await _finnHubService.GetCompanyProfile(stockSymbol);
-                var stockPriceQuote = await _finnHubService.GetStockPriceQuote(stockSymbol);
-                if (companyProfile == null || stockPriceQuote == null)
-                {
-                    return NotFound($"No trade information found for stock symbol: {stockSymbol}");
-                }
-                var stockTrade = new StockTrade
-                {
-                    StockName = companyProfile[FinnhubConstants.Name]?.ToString(),
-                    StockSymbol = companyProfile[FinnhubConstants.Ticker]?.ToString(),
-                    PricePerShare = stockPriceQuote[FinnhubConstants.CurrentPrice]?.ToString() != null ? Convert.ToDouble(stockPriceQuote[FinnhubConstants.CurrentPrice].ToString()) : 0,
-                    Logo = companyProfile[FinnhubConstants.Logo]?.ToString(),
-                };
-                return Ok(stockTrade);
-            }
-            catch (Exception ex)
-            {
-                return Problem(ex.Message);
-            }
+            var stockInformations = await _stockService.GetStockInformations(stockSymbol);
+            return Ok(stockInformations);
         }
 
         [HttpPost("buyorder")]
