@@ -32,22 +32,32 @@ namespace StocksApp.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<double>("Price")
-                        .HasColumnType("double precision");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
 
                     b.Property<string>("StockName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("StockSymbol")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("BuyOrderID");
 
-                    b.ToTable("BuyOrder", (string)null);
+                    b.HasIndex("UserId");
+
+                    b.ToTable("BuyOrder", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_BuyOrder_Price", "\"Price\" > 0");
+
+                            t.HasCheckConstraint("CK_BuyOrder_Quantity", "\"Quantity\" > 0");
+                        });
                 });
 
             modelBuilder.Entity("StocksApp.Core.Domain.Entities.SellOrder", b =>
@@ -60,22 +70,96 @@ namespace StocksApp.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<double>("Price")
-                        .HasColumnType("double precision");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
 
                     b.Property<string>("StockName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("StockSymbol")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("SellOrderID");
 
-                    b.ToTable("SellOrder", (string)null);
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SellOrder", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_SellOrder_Price", "\"Price\" > 0");
+
+                            t.HasCheckConstraint("CK_SellOrder_Quantity", "\"Quantity\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("StocksApp.Core.Domain.Entities.User", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("CashBalance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("RefreshTokenExpiry")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("User", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_User_CashBalance_NonNegative", "\"CashBalance\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("StocksApp.Core.Domain.Entities.BuyOrder", b =>
+                {
+                    b.HasOne("StocksApp.Core.Domain.Entities.User", "User")
+                        .WithMany("BuyOrders")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StocksApp.Core.Domain.Entities.SellOrder", b =>
+                {
+                    b.HasOne("StocksApp.Core.Domain.Entities.User", "User")
+                        .WithMany("SellOrders")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("StocksApp.Core.Domain.Entities.User", b =>
+                {
+                    b.Navigation("BuyOrders");
+
+                    b.Navigation("SellOrders");
                 });
 #pragma warning restore 612, 618
         }

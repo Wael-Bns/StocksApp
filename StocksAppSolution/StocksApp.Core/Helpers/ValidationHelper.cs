@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using StocksApp.Core.Exceptions;
 
 namespace StocksApp.Core.Helpers
 {
@@ -12,7 +13,8 @@ namespace StocksApp.Core.Helpers
 
             if (!isValid)
             {
-                throw new ArgumentException(validationResults.FirstOrDefault()?.ErrorMessage);
+                var errorMessages = validationResults.Select(vr => vr.ErrorMessage).ToList();
+                throw new InvalidPropertyException(string.Join(", ", errorMessages));
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿using StocksApp.Core.Domain.Entities;
 
-namespace StocksApp.Core.DTO
+namespace StocksApp.Core.DTO.SellOrderDTO
 {
     public class SellOrderResponse
     {
