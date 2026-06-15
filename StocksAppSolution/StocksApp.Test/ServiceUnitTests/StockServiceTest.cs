@@ -20,7 +20,7 @@ namespace StocksApp.Test.ServiceUnitTests
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
         private readonly Mock<IFinnHubHttpClient> _finnHubHttpClientMock;
         // A sample BuyOrderRequest object that can be used in multiple tests
-        private BuyOrderRequest buyOrderRequest = new BuyOrderRequest
+        private BuyOrderAddRequest buyOrderRequest = new BuyOrderAddRequest
         {
             StockName = "APPLE INC",
             StockSymbol = "AAPL",
@@ -29,7 +29,7 @@ namespace StocksApp.Test.ServiceUnitTests
             Price = 100,
         };
         // A sample SellOrderRequest object that can be used in multiple tests
-        private SellOrderRequest sellOrderRequest = new SellOrderRequest
+        private SellOrderAddRequest sellOrderRequest = new SellOrderAddRequest
         {
             StockName = "APPLE INC",
             StockSymbol = "AAPL",
@@ -83,7 +83,7 @@ namespace StocksApp.Test.ServiceUnitTests
         public async Task CreateBuyOrder_NullRequest()
         {
             //Arrange 
-            BuyOrderRequest? orderRequest = null;
+            BuyOrderAddRequest? orderRequest = null;
             Func<Task> actual = async () =>
             {
                 BuyOrderResponse response = await _stockService.CreateBuyOrder(orderRequest);
@@ -203,7 +203,7 @@ namespace StocksApp.Test.ServiceUnitTests
         public async Task CreateSellOrder_NullRequest()
         {
             //Arrange 
-            SellOrderRequest? orderRequest = null;
+            SellOrderAddRequest? orderRequest = null;
             Func<Task> actual = async () =>
             {
                 SellOrderResponse response = await _stockService.CreateSellOrder(orderRequest);

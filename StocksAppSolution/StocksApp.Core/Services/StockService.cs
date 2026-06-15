@@ -20,7 +20,7 @@ namespace StocksApp.Core.Services
             _orderRepository = orderRepository;
             _finnhubHttpClient = finnHubHttpClient;
         }
-        public async Task<BuyOrderResponse> CreateBuyOrder(BuyOrderRequest? buyOrderRequest)
+        public async Task<BuyOrderResponse> CreateBuyOrder(BuyOrderAddRequest? buyOrderRequest, Guid userId)
         {
             if(buyOrderRequest == null)
             {
@@ -30,13 +30,14 @@ namespace StocksApp.Core.Services
             ValidationHelper.ModelValidation(buyOrderRequest);
 
             var buyOrder = buyOrderRequest.ToBuyOrder();
+            buyOrder.UserId = userId;
             
             BuyOrder createdBuyOrder = await _orderRepository.AddBuyOrderAsync(buyOrder);
 
             return createdBuyOrder.ToBuyOrderResponse();
         }
 
-        public async Task<SellOrderResponse> CreateSellOrder(SellOrderRequest? sellOrderRequest)
+        public async Task<SellOrderResponse> CreateSellOrder(SellOrderAddRequest? sellOrderRequest, Guid userId)
         {
             if (sellOrderRequest == null)
             {
@@ -46,6 +47,7 @@ namespace StocksApp.Core.Services
             ValidationHelper.ModelValidation(sellOrderRequest);
 
             var sellOrder = sellOrderRequest.ToSellOrder();
+            sellOrder.UserId = userId;
 
             SellOrder createdSellOrder = await _orderRepository.AddSellOrderAsync(sellOrder);
 

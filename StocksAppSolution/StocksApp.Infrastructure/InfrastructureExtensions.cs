@@ -24,7 +24,7 @@ namespace StocksApp.Infrastructure
 
             services.Configure<FinnhubOptions>(options =>
             {
-                options.ApiKey = configuration["FinnhubApiKey"] ?? throw new ArgumentNullException("FinnhubApiKey configuration is missing.");
+                options.ApiKey = configuration["FinnhubApiKey"] ?? string.Empty;
             });
             
             services.AddScoped<IOrderRepository, OrderRepository>();
@@ -37,6 +37,7 @@ namespace StocksApp.Infrastructure
 
             if(!environment.IsEnvironment("Test"))
             {
+
                 string connectionStringTemplate = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("No connection string was provided");
                 string connectionString = connectionStringTemplate
                                             .Replace("$POSTGRES_HOST", Environment.GetEnvironmentVariable("POSTGRES_HOST"))

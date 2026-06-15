@@ -2,8 +2,11 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using StocksApp.Core.HttpClientAbstractions;
 using StocksApp.Infrastructure;
+using StocksApp.IntegrationsTests.Fakes;
 
 namespace StocksApp.IntegrationsTests.Factory
 {
@@ -25,19 +28,21 @@ namespace StocksApp.IntegrationsTests.Factory
             builder.UseEnvironment("Test");
             builder.ConfigureLogging(logging => logging.ClearProviders());
 
+            
+
             builder.ConfigureServices(services =>
             {
-                var descriptor = services.SingleOrDefault(temp =>
-                temp.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
+                services.RemoveAll<ApplicationDbContext>();
 
-                if (descriptor != null)
-                {
-                    services.Remove(descriptor);
-                }
                 services.AddDbContext<ApplicationDbContext>(options =>
                 {
                     options.UseNpgsql(_postgresDbManager.ConnectionString);
                 });
+
+                // 2. Replace Finnhub client
+                services.RemoveAll<IFinnHubHttpClient>();
+
+                services.AddScoped<IFinnHubHttpClient, FakeFinnhubHttpClient>();
             });
         }
 
