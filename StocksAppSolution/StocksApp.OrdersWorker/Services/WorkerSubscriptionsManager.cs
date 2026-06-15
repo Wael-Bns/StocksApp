@@ -8,13 +8,13 @@ namespace StocksApp.OrdersWorker.Services
     public class WorkerSubscriptionsManager : IWorkerSubscriptionsManager
     {
         private readonly ILogger<WorkerSubscriptionsManager> _logger;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IFinnhubWebSocketClient _finnhubWebSocketClient;
         private readonly HashSet<string> _subscribedStockSymbols;
-        public WorkerSubscriptionsManager(ILogger<WorkerSubscriptionsManager> logger, IServiceProvider serviceProvider, IFinnhubWebSocketClient finnhubWebSocketClient)
+        public WorkerSubscriptionsManager(ILogger<WorkerSubscriptionsManager> logger, IServiceScopeFactory serviceScopeFactory, IFinnhubWebSocketClient finnhubWebSocketClient)
         {
             _logger = logger;
-            _serviceProvider = serviceProvider;
+            _serviceScopeFactory = serviceScopeFactory;
             _finnhubWebSocketClient = finnhubWebSocketClient;
             _subscribedStockSymbols = new HashSet<string>();
         }
@@ -22,7 +22,7 @@ namespace StocksApp.OrdersWorker.Services
         {
             while(!cancellationToken.IsCancellationRequested)
             {
-                using var scope = _serviceProvider.CreateScope();
+                using var scope = _serviceScopeFactory.CreateScope();
                 var ordersRepository = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
                 var symbols = await ordersRepository.GetPendingSellOrderSymbols();
             

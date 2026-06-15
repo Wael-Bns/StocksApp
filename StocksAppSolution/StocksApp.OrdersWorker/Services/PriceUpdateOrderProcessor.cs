@@ -8,9 +8,9 @@ namespace StocksApp.OrdersWorker.Services
     internal class PriceUpdateOrderProcessor : IPriceUpdateOrderProcessor
     {
         private readonly Channel<PriceUpdateMessage> _channel;
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger<PriceUpdateOrderProcessor> _logger;
-        public PriceUpdateOrderProcessor(IServiceProvider serviceProvider, ILogger<PriceUpdateOrderProcessor> logger)
+        public PriceUpdateOrderProcessor(IServiceScopeFactory serviceScopeFactory, ILogger<PriceUpdateOrderProcessor> logger)
         {
             _channel = Channel.CreateBounded<PriceUpdateMessage>(new BoundedChannelOptions(100)
             {
@@ -19,7 +19,7 @@ namespace StocksApp.OrdersWorker.Services
                 SingleWriter = false
             });
             _logger = logger;
-            _serviceProvider = serviceProvider;
+            _serviceScopeFactory = serviceScopeFactory;
         }
         public async Task EnqueueMessageAsync(PriceUpdateMessage priceUpdateMessage)
         {
@@ -34,7 +34,7 @@ namespace StocksApp.OrdersWorker.Services
                 {
                     try
                     {
-                        using var scope = _serviceProvider.CreateScope();
+                        using var scope = _serviceScopeFactory.CreateScope();
                         var executor = scope.ServiceProvider.GetRequiredService<IOrdersExecutor>();
 
                         await executor.ExecuteSellOrders(message.StockSymbol, message.Price);

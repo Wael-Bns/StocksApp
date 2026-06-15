@@ -3,7 +3,7 @@
 namespace StocksApp.OrdersWorker.ServiceContracts
 {
     /// <summary>
-    /// Responsible for executing the orders based on the updated stock prices.
+    ///     Responsible for executing the orders based on the updated stock prices.
     /// </summary>
     public interface IPriceUpdateOrderProcessor
     {
