@@ -1,8 +1,8 @@
-﻿using StocksApp.Core.DTO.SellOrderDTO;
+﻿using StocksApp.Core.DTO.BuyOrderDTO;
 
-namespace StocksApp.Tests.Common.Builders
+namespace StocksApp.IntegrationsTests.ObjectsBuilders
 {
-    public class SellOrderRequestBuilder
+    public class BuyOrderRequestBuilder
     {
         private string _stockSymbol = "MSFT";
         private string _stockName = "Microsoft Corporation";
@@ -10,37 +10,37 @@ namespace StocksApp.Tests.Common.Builders
         private uint _quantity = 10;
         private double _price = 100;
 
-        public SellOrderRequestBuilder WithStockSymbol(string stockSymbol)
+        public BuyOrderRequestBuilder WithStockSymbol(string stockSymbol)
         {
             _stockSymbol = stockSymbol;
             return this;
         }
 
-        public SellOrderRequestBuilder WithStockName(string stockName)
+        public BuyOrderRequestBuilder WithStockName(string stockName)
         {
             _stockName = stockName;
             return this;
         }
 
-        public SellOrderRequestBuilder WithDateAndTimeOfOrder(DateTime dateAndTimeOfOrder)
+        public BuyOrderRequestBuilder WithDateAndTimeOfOrder(DateTime dateAndTimeOfOrder)
         {
             _dateAndTimeOfOrder = dateAndTimeOfOrder;
             return this;
         }
 
-        public SellOrderRequestBuilder WithQuantity(uint quantity)
+        public BuyOrderRequestBuilder WithQuantity(uint quantity)
         {
             _quantity = quantity;
             return this;
         }
 
-        public SellOrderRequestBuilder WithPrice(double price)
+        public BuyOrderRequestBuilder WithPrice(double price)
         {
             _price = price;
             return this;
         }
 
-        public SellOrderAddRequest Build() => new()
+        public BuyOrderAddRequest Build() => new()
         {
             StockSymbol = _stockSymbol,
             StockName = _stockName,

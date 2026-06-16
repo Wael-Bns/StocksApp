@@ -21,8 +21,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StocksApp.OrdersWorker", "S
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{81DDED9D-158B-E303-5F62-77A2896D2A5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StocksApp.Tests.Common", "..\StocksApp.Tests.Common\StocksApp.Tests.Common.csproj", "{1C12849E-45C3-4EA3-B9E5-3D485624A5DC}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,10 +55,6 @@ Global
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81DDED9D-158B-E303-5F62-77A2896D2A5A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1C12849E-45C3-4EA3-B9E5-3D485624A5DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1C12849E-45C3-4EA3-B9E5-3D485624A5DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1C12849E-45C3-4EA3-B9E5-3D485624A5DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1C12849E-45C3-4EA3-B9E5-3D485624A5DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -72,7 +66,6 @@ Global
 		{3CE55FC4-D633-47CB-9C8E-844650AADAE4} = {2F270526-02CA-45D8-AD23-BF588909C616}
 		{3C9CD296-C068-4200-A7CE-37A9DC3D2AC4} = {2F270526-02CA-45D8-AD23-BF588909C616}
 		{77E5E144-9375-45E8-B00D-5582718106EE} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{1C12849E-45C3-4EA3-B9E5-3D485624A5DC} = {2F270526-02CA-45D8-AD23-BF588909C616}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C6179D63-F3B6-4606-B081-2C54FBE0B8E0}

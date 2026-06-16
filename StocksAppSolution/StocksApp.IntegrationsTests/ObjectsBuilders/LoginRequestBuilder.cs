@@ -1,6 +1,6 @@
 ﻿using StocksApp.Core.DTO.AuthenticationDTO;
 
-namespace StocksApp.Tests.Common.Builders
+namespace StocksApp.IntegrationsTests.ObjectsBuilders
 {
     public class LoginRequestBuilder
     {
