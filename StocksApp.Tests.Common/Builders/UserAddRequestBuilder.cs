@@ -1,6 +1,6 @@
 ﻿using StocksApp.Core.DTO.UsersDTO;
 
-namespace StocksApp.IntegrationsTests.ObjectsBuilders
+namespace StocksApp.Tests.Common.Builders
 {
     public class UserAddRequestBuilder
     {
