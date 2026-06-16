@@ -7,7 +7,7 @@ using StocksApp.Core.DTO.StockDTO;
 using StocksApp.IntegrationsTests.Collection;
 using StocksApp.IntegrationsTests.Factory;
 using StocksApp.IntegrationsTests.Helpers;
-using StocksApp.IntegrationsTests.ObjectsBuilders;
+using StocksApp.Tests.Common.Builders;
 
 namespace StocksApp.IntegrationsTests.Tests
 {

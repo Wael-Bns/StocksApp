@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\StocksApp.Tests.Common\StocksApp.Tests.Common.csproj" />
     <ProjectReference Include="..\StocksApp.Core\StocksApp.Core.csproj" />
     <ProjectReference Include="..\StocksApp.Infrastructure\StocksApp.Infrastructure.csproj" />
     <ProjectReference Include="..\StocksApp.OrdersWorker\StocksApp.OrdersWorker.csproj" />
