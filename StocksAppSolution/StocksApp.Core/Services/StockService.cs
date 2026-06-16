@@ -1,5 +1,6 @@
 ﻿using StocksApp.Core.Domain.Entities;
 using StocksApp.Core.Domain.RepositoryContracts;
+using StocksApp.Core.Domain.Specifications;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.DTO.StockDTO;
@@ -22,11 +23,8 @@ namespace StocksApp.Core.Services
         }
         public async Task<BuyOrderResponse> CreateBuyOrder(BuyOrderAddRequest? buyOrderRequest, Guid userId)
         {
-            if(buyOrderRequest == null)
-            {
-                throw new ArgumentNullException(nameof(buyOrderRequest));
-            }
-            // Validate the model 
+            ArgumentNullException.ThrowIfNull(buyOrderRequest);
+
             ValidationHelper.ModelValidation(buyOrderRequest);
 
             var buyOrder = buyOrderRequest.ToBuyOrder();
@@ -39,11 +37,8 @@ namespace StocksApp.Core.Services
 
         public async Task<SellOrderResponse> CreateSellOrder(SellOrderAddRequest? sellOrderRequest, Guid userId)
         {
-            if (sellOrderRequest == null)
-            {
-                throw new ArgumentNullException(nameof(sellOrderRequest));
-            }
-            // Validate the model 
+            ArgumentNullException.ThrowIfNull(sellOrderRequest);
+
             ValidationHelper.ModelValidation(sellOrderRequest);
 
             var sellOrder = sellOrderRequest.ToSellOrder();
@@ -54,15 +49,17 @@ namespace StocksApp.Core.Services
             return createdSellOrder.ToSellOrderResponse();
         }
 
-        public async Task<List<BuyOrderResponse>> GetAllBuyOrders()
+        public async Task<List<BuyOrderResponse>> GetBuyOrdersByUser(Guid userId)
         {
-            List<BuyOrder> orderRequests = await _orderRepository.GetAllBuyOrdersAsync();
+            var specification = new BuyOrdersByUserSpecification(userId);
+            List<BuyOrder> orderRequests = await _orderRepository.GetBuyOrdersBySpecification(specification);
             return orderRequests.Select(o => o.ToBuyOrderResponse()).ToList();
         }
 
-        public async Task<List<SellOrderResponse>> GetAllSellOrders()
+        public async Task<List<SellOrderResponse>> GetSellOrdersByUser(Guid userId)
         {
-            List<SellOrder> sellOrderRequests = await _orderRepository.GetAllSellOrdersAsync();
+            var specification = new SellOrderByUserSpecification(userId);
+            List<SellOrder> sellOrderRequests = await _orderRepository.GetSellOrdersBySpecification(specification);
             return sellOrderRequests.Select(o => o.ToSellOrderResponse()).ToList();
         }
 

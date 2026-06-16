@@ -43,13 +43,13 @@ namespace StocksApp.WebApi.Controllers
         [HttpGet("allbuyorders")]
         public async Task<IActionResult> GetAllBuyOrders()
         {
-            List<BuyOrderResponse> buyOrders = await _stockService.GetAllBuyOrders();
+            List<BuyOrderResponse> buyOrders = await _stockService.GetBuyOrdersByUser(CurrentUserId);
             return Ok(buyOrders);
         }
         [HttpGet("allsellorders")]
         public async Task<IActionResult> GetAllSellOrders()
         {
-            List<SellOrderResponse> sellOrders = await _stockService.GetAllSellOrders();
+            List<SellOrderResponse> sellOrders = await _stockService.GetSellOrdersByUser(CurrentUserId);
             return Ok(sellOrders);
         }
     }

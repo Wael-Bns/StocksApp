@@ -2,6 +2,7 @@
 using Moq;
 using StocksApp.Core.Domain.Entities;
 using StocksApp.Core.Domain.RepositoryContracts;
+using StocksApp.Core.Domain.Specifications;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.DTO.StockDTO;
@@ -56,14 +57,14 @@ namespace StocksApp.Test.ServiceUnitTests
             _orderRepositoryMock.Setup(repo => repo.AddSellOrderAsync(It.IsAny<SellOrder>()))
                 .ReturnsAsync(sellOrder);
         }
-        private void MockGetAllBuyOrders(List<BuyOrder> buyOrders)
+        private void MockGetBuyOrdersBySpecification(List<BuyOrder> buyOrders)
         {
-            _orderRepositoryMock.Setup(repo => repo.GetAllBuyOrdersAsync())
+            _orderRepositoryMock.Setup(repo => repo.GetBuyOrdersBySpecification(It.IsAny<ISpecification<BuyOrder>>()))
                 .ReturnsAsync(buyOrders);
         }
-        private void MockGetAllSellOrders(List<SellOrder> sellOrders)
+        private void MockGetSellOrdersBySpecification(List<SellOrder> sellOrders)
         {
-            _orderRepositoryMock.Setup(repo => repo.GetAllSellOrdersAsync())
+            _orderRepositoryMock.Setup(repo => repo.GetSellOrdersBySpecification(It.IsAny<ISpecification<SellOrder>>()))
                 .ReturnsAsync(sellOrders);
         }
         private void MockGetStockQuote(StockQuoteDTO? stockQuote)
@@ -321,30 +322,30 @@ namespace StocksApp.Test.ServiceUnitTests
         }
         #endregion
 
-        #region GetAllBuyOrders
+        #region GetBuyOrdersByUser
         [Fact]
-        public async Task GetAllBuyOrders_Empty()
+        public async Task GetBuyOrdersByUser_Empty()
         {
             // Arrange
-            MockGetAllBuyOrders(new List<BuyOrder>());
+            MockGetBuyOrdersBySpecification(new List<BuyOrder>());
             // Act
-            List<BuyOrderResponse> actual = await _stockService.GetAllBuyOrders();
+            List<BuyOrderResponse> actual = await _stockService.GetBuyOrdersByUser(_userId);
             // Assert
             actual.Should().BeEmpty();
         }
         [Fact]
-        public async Task GetAllBuyOrders_Successful()
+        public async Task GetBuyOrdersByUser_Successful()
         {
             // Arrange 
             List<BuyOrder> buyOrders = [];
             buyOrders.Add(buyOrderRequest.ToBuyOrder());
 
-            MockGetAllBuyOrders(buyOrders);
+            MockGetBuyOrdersBySpecification(buyOrders);
 
             List<BuyOrderResponse> expected = buyOrders.Select(order => order.ToBuyOrderResponse()).ToList();
 
             // Act
-            List<BuyOrderResponse> actual = await _stockService.GetAllBuyOrders();
+            List<BuyOrderResponse> actual = await _stockService.GetBuyOrdersByUser(_userId);
 
             // Assert
             actual.Should().BeEquivalentTo(expected);
@@ -352,30 +353,30 @@ namespace StocksApp.Test.ServiceUnitTests
         }
         #endregion
 
-        #region GetAllSellOrders
+        #region GetSellOrdersByUser
         [Fact]
-        public async Task GetAllSellOrders_Empty()
+        public async Task GetSellOrdersByUser_Empty()
         {
             // Arrange
-            MockGetAllSellOrders(new List<SellOrder>());
+            MockGetSellOrdersBySpecification(new List<SellOrder>());
             // Act
-            List<SellOrderResponse> actual = await _stockService.GetAllSellOrders();
+            List<SellOrderResponse> actual = await _stockService.GetSellOrdersByUser(_userId);
             // Assert
             actual.Should().BeEmpty();
         }
         [Fact]
-        public async Task GetAllSellOrders_Successful()
+        public async Task GetSellOrdersByUser_Successful()
         {
             // Arrange 
             List<SellOrder> sellOrders = [];
             sellOrders.Add(sellOrderRequest.ToSellOrder());
 
-            MockGetAllSellOrders(sellOrders);
+            MockGetSellOrdersBySpecification(sellOrders);
 
             List<SellOrderResponse> expected = sellOrders.Select(order => order.ToSellOrderResponse()).ToList();
 
             // Act
-            List<SellOrderResponse> actual = await _stockService.GetAllSellOrders();
+            List<SellOrderResponse> actual = await _stockService.GetSellOrdersByUser(_userId);
 
             // Assert
             actual.Should().BeEquivalentTo(expected);
