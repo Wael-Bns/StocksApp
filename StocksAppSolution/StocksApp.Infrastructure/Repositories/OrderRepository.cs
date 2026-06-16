@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StocksApp.Core.Domain.Entities;
 using StocksApp.Core.Domain.RepositoryContracts;
+using StocksApp.Core.Domain.Specifications;
 
 namespace StocksApp.Infrastructure.Repositories
 {
@@ -26,24 +27,24 @@ namespace StocksApp.Infrastructure.Repositories
             return sellOrder;
         }
 
-        public async Task<List<BuyOrder>> GetAllBuyOrdersAsync()
+        public async Task<BuyOrder?> GetBuyOrder(Guid orderID)
         {
-            return await _dbContext.BuyOrders.ToListAsync();
+            return await _dbContext.BuyOrders.FirstOrDefaultAsync(order => order.BuyOrderID == orderID);
         }
 
-        public async Task<List<SellOrder>> GetAllSellOrdersAsync()
+        public async Task<List<BuyOrder>> GetBuyOrdersBySpecification(ISpecification<BuyOrder> specification)
         {
-            return await _dbContext.SellOrders.ToListAsync();
+            return await _dbContext.BuyOrders.Where(specification.Criteria).ToListAsync();
         }
 
-        public Task<BuyOrder?> GetBuyOrder(Guid orderID)
+        public async Task<SellOrder?> GetSellOrder(Guid orderID)
         {
-            return _dbContext.BuyOrders.FirstOrDefaultAsync(order => order.BuyOrderID == orderID);
+            return await _dbContext.SellOrders.FirstOrDefaultAsync(order => order.SellOrderID == orderID);
         }
 
-        public Task<SellOrder?> GetSellOrder(Guid orderID)
+        public async Task<List<SellOrder>> GetSellOrdersBySpecification(ISpecification<SellOrder> specification)
         {
-            return _dbContext.SellOrders.FirstOrDefaultAsync(order => order.SellOrderID == orderID);
+            return await _dbContext.SellOrders.Where(specification.Criteria).ToListAsync();
         }
     }
 }

@@ -10,24 +10,28 @@ namespace StocksApp.Core.ServiceContracts
         /// Create a Buy order with the given informations in buyOrderRequest
         /// </summary>
         /// <param name="buyOrderRequest"></param>
+        /// <param name="userId">The ID of the user creating the buy order.</param>
         /// <returns>Returns the created object</returns>
-        Task<BuyOrderResponse> CreateBuyOrder(BuyOrderRequest? buyOrderRequest);
+        Task<BuyOrderResponse> CreateBuyOrder(BuyOrderAddRequest? buyOrderRequest, Guid userId);
         /// <summary>
         /// Create a Sell order with the given informations in sellOrderRequest
         /// </summary>
         /// <param name="sellOrderRequest"></param>
+        /// <param name="userId">The ID of the user creating the sell order.</param>
         /// <returns>Returns the created object</returns>
-        Task<SellOrderResponse> CreateSellOrder(SellOrderRequest? sellOrderRequest);
+        Task<SellOrderResponse> CreateSellOrder(SellOrderAddRequest? sellOrderRequest, Guid userId);
         /// <summary>
-        /// Get the list of buy orders saved in the database
+        /// Get the list of buy orders saved in the database for a specific user
         /// </summary>
-        /// <returns></returns>
-        Task<List<BuyOrderResponse>> GetAllBuyOrders();
+        /// <param name="userId">The ID of the user whose buy orders are being fetched.</param>
+        /// <returns>List of buy orders for the specified user.</returns>
+        Task<List<BuyOrderResponse>> GetBuyOrdersByUser(Guid userId);
         /// <summary>
-        /// Get the list of sell orders saved in the database
+        /// Get the list of sell orders saved in the database for a specific user
         /// </summary>
-        /// <returns></returns>
-        Task<List<SellOrderResponse>> GetAllSellOrders();
+        /// <param name="userId">The ID of the user whose sell orders are being fetched.</param>
+        /// <returns>List of sell orders for the specified user.</returns>
+        Task<List<SellOrderResponse>> GetSellOrdersByUser(Guid userId);
         /// <summary>
         /// Returns the stock informations based on the provided stock symbol .
         /// </summary>

@@ -6,10 +6,9 @@ using StocksApp.Core.ServiceContracts;
 
 namespace StocksApp.WebApi.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
     [AllowAnonymous]
-    public class AuthController : ControllerBase
+    public class AuthController : ApiControllerBase
     {
         private readonly IAuthService _authenticationService;
         public AuthController(IAuthService authenticationService)

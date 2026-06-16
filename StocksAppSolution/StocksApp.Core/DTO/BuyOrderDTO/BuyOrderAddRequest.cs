@@ -4,7 +4,7 @@ using StocksApp.Core.Domain.Entities;
 
 namespace StocksApp.Core.DTO.BuyOrderDTO
 {
-    public class BuyOrderRequest
+    public class BuyOrderAddRequest
     {
         [Required(ErrorMessage = "Required Stock symbol")]
         public string? StockSymbol { get; set; }
