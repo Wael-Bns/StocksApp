@@ -8,10 +8,9 @@ using System.Security.Claims;
 
 namespace StocksApp.WebApi.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class TradeController : ControllerBase
+    public class TradeController : ApiControllerBase
     {
         private readonly IStockService _stockService;
 
@@ -30,41 +29,25 @@ namespace StocksApp.WebApi.Controllers
         [HttpPost("buyorder")]
         public async Task<IActionResult> BuyOrder(BuyOrderAddRequest buyOrderRequest)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdClaim, out Guid userId))
-            {
-                return Unauthorized();
-            }
-
-            buyOrderRequest.UserId = userId;
-           
-            BuyOrderResponse buyOrderResponse = await _stockService.CreateBuyOrder(buyOrderRequest);
+            BuyOrderResponse buyOrderResponse = await _stockService.CreateBuyOrder(buyOrderRequest, CurrentUserId);
             return Ok(buyOrderResponse);
         }
         [HttpPost("sellorder")]
         public async Task<IActionResult> SellOrder(SellOrderAddRequest sellOrderRequest)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!Guid.TryParse(userIdClaim, out Guid userId))
-            {
-                return Unauthorized();
-            }
-
-            sellOrderRequest.UserId = userId;
-            
-            SellOrderResponse sellOrderResponse = await _stockService.CreateSellOrder(sellOrderRequest);
+            SellOrderResponse sellOrderResponse = await _stockService.CreateSellOrder(sellOrderRequest, CurrentUserId);
             return Ok(sellOrderResponse);
         }
         [HttpGet("allbuyorders")]
         public async Task<IActionResult> GetAllBuyOrders()
         {
-            List<BuyOrderResponse> buyOrders = await _stockService.GetAllBuyOrders();
+            List<BuyOrderResponse> buyOrders = await _stockService.GetBuyOrdersByUser(CurrentUserId);
             return Ok(buyOrders);
         }
         [HttpGet("allsellorders")]
         public async Task<IActionResult> GetAllSellOrders()
         {
-            List<SellOrderResponse> sellOrders = await _stockService.GetAllSellOrders();
+            List<SellOrderResponse> sellOrders = await _stockService.GetSellOrdersByUser(CurrentUserId);
             return Ok(sellOrders);
         }
     }

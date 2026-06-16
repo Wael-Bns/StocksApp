@@ -2,6 +2,7 @@
 using Moq;
 using StocksApp.Core.Domain.Entities;
 using StocksApp.Core.Domain.RepositoryContracts;
+using StocksApp.Core.Domain.Specifications;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.DTO.StockDTO;
@@ -21,7 +22,9 @@ namespace StocksApp.Test.ServiceUnitTests
         private readonly Mock<ISubscriptionsManager> _subscriptionsManagerMock;
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
         private readonly Mock<IFinnHubHttpClient> _finnHubHttpClientMock;
-        // A sample BuyOrderRequest object that can be used in multiple tests
+
+        private readonly Guid _userId = Guid.NewGuid();
+
         private BuyOrderAddRequest buyOrderRequest = new BuyOrderAddRequest
         {
             StockName = "APPLE INC",
@@ -31,7 +34,6 @@ namespace StocksApp.Test.ServiceUnitTests
             Price = 100,
             UserId = new Guid("EB608896-7E47-44A6-9395-5D4EEE695044")
         };
-        // A sample SellOrderRequest object that can be used in multiple tests
         private SellOrderAddRequest sellOrderRequest = new SellOrderAddRequest
         {
             StockName = "APPLE INC",
@@ -61,14 +63,14 @@ namespace StocksApp.Test.ServiceUnitTests
             _orderRepositoryMock.Setup(repo => repo.AddSellOrderAsync(It.IsAny<SellOrder>()))
                 .ReturnsAsync(sellOrder);
         }
-        private void MockGetAllBuyOrders(List<BuyOrder> buyOrders)
+        private void MockGetBuyOrdersBySpecification(List<BuyOrder> buyOrders)
         {
-            _orderRepositoryMock.Setup(repo => repo.GetAllBuyOrdersAsync())
+            _orderRepositoryMock.Setup(repo => repo.GetBuyOrdersBySpecification(It.IsAny<ISpecification<BuyOrder>>()))
                 .ReturnsAsync(buyOrders);
         }
-        private void MockGetAllSellOrders(List<SellOrder> sellOrders)
+        private void MockGetSellOrdersBySpecification(List<SellOrder> sellOrders)
         {
-            _orderRepositoryMock.Setup(repo => repo.GetAllSellOrdersAsync())
+            _orderRepositoryMock.Setup(repo => repo.GetSellOrdersBySpecification(It.IsAny<ISpecification<SellOrder>>()))
                 .ReturnsAsync(sellOrders);
         }
         private void MockGetStockQuote(StockQuoteDTO? stockQuote)
@@ -90,7 +92,7 @@ namespace StocksApp.Test.ServiceUnitTests
             BuyOrderAddRequest? orderRequest = null;
             Func<Task> actual = async () =>
             {
-                BuyOrderResponse response = await _stockService.CreateBuyOrder(orderRequest);
+                BuyOrderResponse response = await _stockService.CreateBuyOrder(orderRequest, _userId);
             };
             await actual.Should().ThrowAsync<ArgumentNullException>();
         }
@@ -104,7 +106,7 @@ namespace StocksApp.Test.ServiceUnitTests
             // Act
             Func<Task> actual = async () =>
             {
-                BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest);
+                BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest, _userId);
             };
             // Assert
             await actual.Should().ThrowAsync<InvalidPropertyException>();
@@ -120,7 +122,7 @@ namespace StocksApp.Test.ServiceUnitTests
             // Act
             Func<Task> actual = async () =>
             {
-                BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest);
+                BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest, _userId);
             };
             // Assert
             await actual.Should().ThrowAsync<InvalidPropertyException>();
@@ -135,7 +137,7 @@ namespace StocksApp.Test.ServiceUnitTests
             // Act
             Func<Task> actual = async () =>
             {
-                BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest);
+                BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest, _userId);
             };
             // Assert
             await actual.Should().ThrowAsync<InvalidPropertyException>();
@@ -151,7 +153,7 @@ namespace StocksApp.Test.ServiceUnitTests
             // Act
             Func<Task> actual = async () =>
             {
-                BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest);
+                BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest, _userId);
             };
             // Assert
             await actual.Should().ThrowAsync<InvalidPropertyException>();
@@ -166,7 +168,7 @@ namespace StocksApp.Test.ServiceUnitTests
             // Act
             Func<Task> actual = async () =>
             {
-                BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest);
+                BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest, _userId);
             };
             // Assert
             await actual.Should().ThrowAsync<InvalidPropertyException>();
@@ -181,7 +183,7 @@ namespace StocksApp.Test.ServiceUnitTests
             // Act
             Func<Task> actual = async () =>
             {
-                BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest);
+                BuyOrderResponse response = await _stockService.CreateBuyOrder(buyOrderRequest, _userId);
             };
             // Assert
             await actual.Should().ThrowAsync<InvalidPropertyException>();
@@ -191,11 +193,12 @@ namespace StocksApp.Test.ServiceUnitTests
         {
             // Arrange
             BuyOrder buyOrder = buyOrderRequest.ToBuyOrder();
+            buyOrder.UserId = _userId;
             BuyOrderResponse expected = buyOrder.ToBuyOrderResponse();
 
             MockAddBuyOrder(buyOrder);
             // Act
-            BuyOrderResponse actual = await _stockService.CreateBuyOrder(buyOrderRequest);
+            BuyOrderResponse actual = await _stockService.CreateBuyOrder(buyOrderRequest, _userId);
             // Assert
             actual.Should().BeEquivalentTo(expected);
             actual.BuyOrderID.Should().NotBeEmpty();
@@ -210,7 +213,7 @@ namespace StocksApp.Test.ServiceUnitTests
             SellOrderAddRequest? orderRequest = null;
             Func<Task> actual = async () =>
             {
-                SellOrderResponse response = await _stockService.CreateSellOrder(orderRequest);
+                SellOrderResponse response = await _stockService.CreateSellOrder(orderRequest, _userId);
             };
             await actual.Should().ThrowAsync<ArgumentNullException>();
         }
@@ -225,7 +228,7 @@ namespace StocksApp.Test.ServiceUnitTests
             // Act
             Func<Task> actual = async () =>
             {
-                SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest);
+                SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest, _userId);
             };
             // Assert
             await actual.Should().ThrowAsync<InvalidPropertyException>();
@@ -241,7 +244,7 @@ namespace StocksApp.Test.ServiceUnitTests
             // Act
             Func<Task> actual = async () =>
             {
-                SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest);
+                SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest, _userId);
             };
             // Assert
             await actual.Should().ThrowAsync<InvalidPropertyException>();
@@ -257,7 +260,7 @@ namespace StocksApp.Test.ServiceUnitTests
             // Act
             Func<Task> actual = async () =>
             {
-                SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest);
+                SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest, _userId);
             };
             // Assert
             await actual.Should().ThrowAsync<InvalidPropertyException>();
@@ -273,7 +276,7 @@ namespace StocksApp.Test.ServiceUnitTests
             // Act
             Func<Task> actual = async () =>
             {
-                SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest);
+                SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest, _userId);
             };
             // Assert
             await actual.Should().ThrowAsync<InvalidPropertyException>();
@@ -288,7 +291,7 @@ namespace StocksApp.Test.ServiceUnitTests
             // Act
             Func<Task> actual = async () =>
             {
-                SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest);
+                SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest, _userId);
             };
             // Assert
             await actual.Should().ThrowAsync<InvalidPropertyException>();
@@ -303,7 +306,7 @@ namespace StocksApp.Test.ServiceUnitTests
             // Act
             Func<Task> actual = async () =>
             {
-                SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest);
+                SellOrderResponse response = await _stockService.CreateSellOrder(sellOrderRequest, _userId);
             };
             // Assert
             await actual.Should().ThrowAsync<InvalidPropertyException>();
@@ -313,11 +316,12 @@ namespace StocksApp.Test.ServiceUnitTests
         {
             // Arrange
             SellOrder sellOrder = sellOrderRequest.ToSellOrder();
+            sellOrder.UserId = _userId;
             SellOrderResponse expected = sellOrder.ToSellOrderResponse();
 
             MockAddSellOrder(sellOrder);
             // Act
-            SellOrderResponse actual = await _stockService.CreateSellOrder(sellOrderRequest);
+            SellOrderResponse actual = await _stockService.CreateSellOrder(sellOrderRequest, _userId);
             // Assert
             actual.Should().BeEquivalentTo(expected);
             _subscriptionsManagerMock.Verify(manager => manager.AddStockSymbol(sellOrderRequest.StockSymbol!), Times.Once);
@@ -325,61 +329,61 @@ namespace StocksApp.Test.ServiceUnitTests
         }
         #endregion
 
-        #region GetAllBuyOrders
+        #region GetBuyOrdersByUser
         [Fact]
-        public async Task GetAllBuyOrders_Empty()
+        public async Task GetBuyOrdersByUser_Empty()
         {
             // Arrange
-            MockGetAllBuyOrders(new List<BuyOrder>());
+            MockGetBuyOrdersBySpecification(new List<BuyOrder>());
             // Act
-            List<BuyOrderResponse> actual = await _stockService.GetAllBuyOrders();
+            List<BuyOrderResponse> actual = await _stockService.GetBuyOrdersByUser(_userId);
             // Assert
             actual.Should().BeEmpty();
         }
         [Fact]
-        public async Task GetAllBuyOrders_Successful()
+        public async Task GetBuyOrdersByUser_Successful()
         {
             // Arrange 
             List<BuyOrder> buyOrders = [];
             buyOrders.Add(buyOrderRequest.ToBuyOrder());
 
-            MockGetAllBuyOrders(buyOrders);
-            
+            MockGetBuyOrdersBySpecification(buyOrders);
+
             List<BuyOrderResponse> expected = buyOrders.Select(order => order.ToBuyOrderResponse()).ToList();
-            
+
             // Act
-            List<BuyOrderResponse> actual = await _stockService.GetAllBuyOrders();
-            
+            List<BuyOrderResponse> actual = await _stockService.GetBuyOrdersByUser(_userId);
+
             // Assert
             actual.Should().BeEquivalentTo(expected);
 
         }
         #endregion
 
-        #region GetAllSellOrders
+        #region GetSellOrdersByUser
         [Fact]
-        public async Task GetAllSellOrders_Empty()
+        public async Task GetSellOrdersByUser_Empty()
         {
             // Arrange
-            MockGetAllSellOrders(new List<SellOrder>());
+            MockGetSellOrdersBySpecification(new List<SellOrder>());
             // Act
-            List<SellOrderResponse> actual = await _stockService.GetAllSellOrders();
+            List<SellOrderResponse> actual = await _stockService.GetSellOrdersByUser(_userId);
             // Assert
             actual.Should().BeEmpty();
         }
         [Fact]
-        public async Task GetAllSellOrders_Successful()
+        public async Task GetSellOrdersByUser_Successful()
         {
             // Arrange 
             List<SellOrder> sellOrders = [];
             sellOrders.Add(sellOrderRequest.ToSellOrder());
 
-            MockGetAllSellOrders(sellOrders);
+            MockGetSellOrdersBySpecification(sellOrders);
 
             List<SellOrderResponse> expected = sellOrders.Select(order => order.ToSellOrderResponse()).ToList();
 
             // Act
-            List<SellOrderResponse> actual = await _stockService.GetAllSellOrders();
+            List<SellOrderResponse> actual = await _stockService.GetSellOrdersByUser(_userId);
 
             // Assert
             actual.Should().BeEquivalentTo(expected);

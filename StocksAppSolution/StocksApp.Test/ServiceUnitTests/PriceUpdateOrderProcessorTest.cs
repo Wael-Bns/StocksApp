@@ -33,9 +33,12 @@ namespace StocksApp.Test.ServiceUnitTests
             ServiceProvider serviceProvider = new ServiceCollection()
                 .AddScoped(_ => ordersExecutorMock.Object)
                 .BuildServiceProvider();
+            
+            var scopeFactory =
+                serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
             var processor = new PriceUpdateOrderProcessor(
-                serviceProvider,
+                scopeFactory,
                 NullLogger<PriceUpdateOrderProcessor>.Instance);
 
             using var cancellationTokenSource = new CancellationTokenSource();

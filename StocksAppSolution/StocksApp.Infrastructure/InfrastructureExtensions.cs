@@ -28,7 +28,7 @@ namespace StocksApp.Infrastructure
 
             services.Configure<FinnhubOptions>(options =>
             {
-                options.ApiKey = configuration[FinnhubOptions.ConfigurationName] ?? throw new ArgumentNullException("FinnhubApiKey configuration is missing.");
+                options.ApiKey = configuration["FinnhubApiKey"] ?? string.Empty;
             });
             
             services.AddScoped<IOrderRepository, OrderRepository>();

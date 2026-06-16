@@ -23,6 +23,11 @@ namespace StocksApp.Infrastructure.Configurations
             builder.Property(b => b.Quantity)
                 .IsRequired();
 
+            builder.HasOne(s => s.User)
+                    .WithMany(u => u.BuyOrders)
+                    .HasForeignKey(s => s.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
             builder.ToTable(t => t.HasCheckConstraint("CK_BuyOrder_Quantity", "\"Quantity\" > 0"));
             builder.ToTable(t => t.HasCheckConstraint("CK_BuyOrder_Price", "\"Price\" > 0"));
         }

@@ -4,8 +4,6 @@ using StocksApp.WebApi;
 using StocksApp.WebApi.Hubs;
 using StocksApp.WebApi.Middlewares;
 
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddWebApi(builder.Configuration)

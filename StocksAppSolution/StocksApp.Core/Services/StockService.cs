@@ -1,5 +1,6 @@
 ﻿using StocksApp.Core.Domain.Entities;
 using StocksApp.Core.Domain.RepositoryContracts;
+using StocksApp.Core.Domain.Specifications;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.DTO.StockDTO;
@@ -22,49 +23,47 @@ namespace StocksApp.Core.Services
             _subscriptionsManager = subscriptionsManager;
             _finnhubHttpClient = finnHubHttpClient;
         }
-        public async Task<BuyOrderResponse> CreateBuyOrder(BuyOrderAddRequest? buyOrderAddRequest)
+        public async Task<BuyOrderResponse> CreateBuyOrder(BuyOrderAddRequest? buyOrderRequest, Guid userId)
         {
-            if(buyOrderAddRequest == null)
-            {
-                throw new ArgumentNullException(nameof(buyOrderAddRequest));
-            }
-            // Validate the model 
-            ValidationHelper.ModelValidation(buyOrderAddRequest);
+            ArgumentNullException.ThrowIfNull(buyOrderRequest);
 
-            var buyOrder = buyOrderAddRequest.ToBuyOrder();
+            ValidationHelper.ModelValidation(buyOrderRequest);
+
+            var buyOrder = buyOrderRequest.ToBuyOrder();
+            buyOrder.UserId = userId;
             
             BuyOrder createdBuyOrder = await _orderRepository.AddBuyOrderAsync(buyOrder);
 
             return createdBuyOrder.ToBuyOrderResponse();
         }
 
-        public async Task<SellOrderResponse> CreateSellOrder(SellOrderAddRequest? sellOrderAddRequest)
+        public async Task<SellOrderResponse> CreateSellOrder(SellOrderAddRequest? sellOrderRequest, Guid userId)
         {
-            if (sellOrderAddRequest == null)
-            {
-                throw new ArgumentNullException(nameof(sellOrderAddRequest));
-            }
-            // Validate the model 
-            ValidationHelper.ModelValidation(sellOrderAddRequest);
+            ArgumentNullException.ThrowIfNull(sellOrderRequest);
 
-            var sellOrder = sellOrderAddRequest.ToSellOrder();
+            ValidationHelper.ModelValidation(sellOrderRequest);
+
+            var sellOrder = sellOrderRequest.ToSellOrder();
+            sellOrder.UserId = userId;
 
             SellOrder createdSellOrder = await _orderRepository.AddSellOrderAsync(sellOrder);
 
-            await _subscriptionsManager.AddStockSymbol(sellOrderAddRequest.StockSymbol!);
+            await _subscriptionsManager.AddStockSymbol(sellOrderRequest.StockSymbol!);
 
             return createdSellOrder.ToSellOrderResponse();
         }
 
-        public async Task<List<BuyOrderResponse>> GetAllBuyOrders()
+        public async Task<List<BuyOrderResponse>> GetBuyOrdersByUser(Guid userId)
         {
-            List<BuyOrder> orderRequests = await _orderRepository.GetAllBuyOrdersAsync();
+            var specification = new BuyOrdersByUserSpecification(userId);
+            List<BuyOrder> orderRequests = await _orderRepository.GetBuyOrdersBySpecification(specification);
             return orderRequests.Select(o => o.ToBuyOrderResponse()).ToList();
         }
 
-        public async Task<List<SellOrderResponse>> GetAllSellOrders()
+        public async Task<List<SellOrderResponse>> GetSellOrdersByUser(Guid userId)
         {
-            List<SellOrder> sellOrderRequests = await _orderRepository.GetAllSellOrdersAsync();
+            var specification = new SellOrderByUserSpecification(userId);
+            List<SellOrder> sellOrderRequests = await _orderRepository.GetSellOrdersBySpecification(specification);
             return sellOrderRequests.Select(o => o.ToSellOrderResponse()).ToList();
         }
 
