@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using StocksApp.Core.CustomValidationAttributes;
-using StocksApp.Core.Domain.Entities;
-using StocksApp.Core.Enums;
+using StocksApp.Domain.Entities;
+using StocksApp.Domain.Enums;
 
 namespace StocksApp.Core.DTO.SellOrderDTO
 {

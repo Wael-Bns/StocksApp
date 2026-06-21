@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace StocksApp.Core.Domain.Specifications
+namespace StocksApp.Domain.Specifications
 {
     public interface ISpecification<T>
     {

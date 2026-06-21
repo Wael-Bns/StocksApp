@@ -1,6 +1,6 @@
-﻿using StocksApp.Core.Domain.Entities;
+﻿using StocksApp.Domain.Entities;
 
-namespace StocksApp.Core.Domain.RepositoryContracts
+namespace StocksApp.Domain.RepositoryContracts
 {
     public interface IUserRepository
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using StocksApp.Core.Domain.Entities;
-using StocksApp.Core.Domain.RepositoryContracts;
+using StocksApp.Domain.Entities;
+using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.ServiceContracts;
 

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using StocksApp.Core.Domain.Entities;
+using StocksApp.Domain.Entities;
 
 namespace StocksApp.Infrastructure.Configurations
 {

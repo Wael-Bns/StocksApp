@@ -1,4 +1,4 @@
-﻿namespace StocksApp.Core.Domain.Entities
+﻿namespace StocksApp.Domain.Entities
 {
     public class User
     {

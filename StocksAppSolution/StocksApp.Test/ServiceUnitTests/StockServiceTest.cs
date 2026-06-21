@@ -1,8 +1,8 @@
 ﻿using FluentAssertions;
 using Moq;
-using StocksApp.Core.Domain.Entities;
-using StocksApp.Core.Domain.RepositoryContracts;
-using StocksApp.Core.Domain.Specifications;
+using StocksApp.Domain.Entities;
+using StocksApp.Domain.RepositoryContracts;
+using StocksApp.Domain.Specifications;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.DTO.StockDTO;
@@ -70,7 +70,7 @@ namespace StocksApp.Test.ServiceUnitTests
         }
         private void MockGetSellOrdersBySpecification(List<SellOrder> sellOrders)
         {
-            _orderRepositoryMock.Setup(repo => repo.GetSellOrdersBySpecification(It.IsAny<ISpecification<SellOrder>>()))
+            _orderRepositoryMock.Setup(repo => repo.GetSellOrdersBySpecificationAsNoTracking(It.IsAny<ISpecification<SellOrder>>()))
                 .ReturnsAsync(sellOrders);
         }
         private void MockGetStockQuote(StockQuoteDTO? stockQuote)

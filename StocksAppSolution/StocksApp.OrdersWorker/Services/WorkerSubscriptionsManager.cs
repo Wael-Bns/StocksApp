@@ -1,5 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using StocksApp.Core.Domain.RepositoryContracts;
+﻿using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Core.WebSocketClientAbstractions;
 using StocksApp.OrdersWorker.ServiceContracts;
 

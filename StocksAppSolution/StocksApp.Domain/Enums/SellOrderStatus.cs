@@ -1,4 +1,4 @@
-﻿namespace StocksApp.Core.Enums
+﻿namespace StocksApp.Domain.Enums
 {
     public enum SellOrderStatus
     {

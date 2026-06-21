@@ -1,7 +1,7 @@
 ﻿using System.Linq.Expressions;
-using StocksApp.Core.Domain.Entities;
+using StocksApp.Domain.Entities;
 
-namespace StocksApp.Core.Domain.Specifications
+namespace StocksApp.Domain.Specifications
 {
     public class BuyOrdersByUserSpecification : ISpecification<BuyOrder>
     {

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StocksApp.Core.Domain.Entities;
-using StocksApp.Core.Domain.RepositoryContracts;
-using StocksApp.Core.Domain.Specifications;
-using StocksApp.Core.Enums;
+using StocksApp.Domain.Entities;
+using StocksApp.Domain.RepositoryContracts;
+using StocksApp.Domain.Specifications;
+using StocksApp.Domain.Enums;
 
 namespace StocksApp.Infrastructure.Repositories
 {
@@ -27,43 +27,6 @@ namespace StocksApp.Infrastructure.Repositories
             await _dbContext.SaveChangesAsync();
             return sellOrder;
         }
-        public async Task<IEnumerable<SellOrder>?> ExecuteSellOrders(string stockSymbol, double marketPrice)
-        {
-            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
-
-            try
-            {
-                IEnumerable<SellOrder> ordersToExecute = await _dbContext.SellOrders
-                    .Where(order => order.Status == SellOrderStatus.Pending  
-                           && order.Price <= marketPrice
-                           && order.StockSymbol == stockSymbol)
-                    .Include(order => order.User)
-                    .ToListAsync();
-
-                if (!ordersToExecute.Any())
-                {
-                    return null;
-                }
-
-                foreach (var order in ordersToExecute)
-                {
-                    order.Status = SellOrderStatus.Executed;
-                    order.User.CashBalance += (order.Price * order.Quantity);
-                }
-
-                await _dbContext.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-
-                return ordersToExecute;
-            }
-            catch
-            {
-                await transaction.RollbackAsync();
-                throw; // Re-throw the exception after rolling back
-            }
-        }
-
        public async Task<BuyOrder?> GetBuyOrder(Guid orderID)
         {
             return await _dbContext.BuyOrders.FirstOrDefaultAsync(order => order.BuyOrderID == orderID);
@@ -89,9 +52,17 @@ namespace StocksApp.Infrastructure.Repositories
                 .ToListAsync();
             return symbols;
         }
-        public async Task<List<SellOrder>> GetSellOrdersBySpecification(ISpecification<SellOrder> specification)
+        public async Task<List<SellOrder>> GetSellOrdersBySpecificationAsNoTracking(ISpecification<SellOrder> specification)
         {
-            return await _dbContext.SellOrders.Where(specification.Criteria).ToListAsync();
+            return await _dbContext.SellOrders
+                .AsNoTracking()
+                .Where(specification.Criteria)
+                .ToListAsync();
+        }
+
+        public Task<IEnumerable<SellOrder>?> ExecuteSellOrders(string stockSymbol, double marketPrice)
+        {
+            throw new NotImplementedException();
         }
     }
 }

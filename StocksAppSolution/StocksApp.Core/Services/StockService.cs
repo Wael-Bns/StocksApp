@@ -1,6 +1,6 @@
-﻿using StocksApp.Core.Domain.Entities;
-using StocksApp.Core.Domain.RepositoryContracts;
-using StocksApp.Core.Domain.Specifications;
+﻿using StocksApp.Domain.Entities;
+using StocksApp.Domain.RepositoryContracts;
+using StocksApp.Domain.Specifications;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.DTO.StockDTO;
@@ -63,7 +63,7 @@ namespace StocksApp.Core.Services
         public async Task<List<SellOrderResponse>> GetSellOrdersByUser(Guid userId)
         {
             var specification = new SellOrderByUserSpecification(userId);
-            List<SellOrder> sellOrderRequests = await _orderRepository.GetSellOrdersBySpecification(specification);
+            List<SellOrder> sellOrderRequests = await _orderRepository.GetSellOrdersBySpecificationAsNoTracking(specification);
             return sellOrderRequests.Select(o => o.ToSellOrderResponse()).ToList();
         }
 

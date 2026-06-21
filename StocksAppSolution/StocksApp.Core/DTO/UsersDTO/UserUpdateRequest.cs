@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using StocksApp.Core.Domain.Entities;
+using StocksApp.Domain.Entities;
 
 namespace StocksApp.Core.DTO.UsersDTO
 {

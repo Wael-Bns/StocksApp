@@ -1,10 +1,10 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using StocksApp.Core.Domain.Entities;
-using StocksApp.Core.Domain.RepositoryContracts;
+using StocksApp.Domain.Entities;
+using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Core.DTO.SellOrderDTO;
-using StocksApp.Core.Enums;
+using StocksApp.Domain.Enums;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 using Xunit;

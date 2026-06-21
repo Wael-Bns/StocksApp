@@ -1,7 +1,7 @@
-﻿using StocksApp.Core.Domain.Entities;
-using StocksApp.Core.Domain.Specifications;
+﻿using StocksApp.Domain.Entities;
+using StocksApp.Domain.Specifications;
 
-namespace StocksApp.Core.Domain.RepositoryContracts
+namespace StocksApp.Domain.RepositoryContracts
 {
     /// <summary>
     /// A Repository responsible for handling data access related to Buy and Sell Orders. 
@@ -12,9 +12,9 @@ namespace StocksApp.Core.Domain.RepositoryContracts
         Task<SellOrder?> GetSellOrder(Guid sellOrderId);
         Task<BuyOrder> AddBuyOrderAsync(BuyOrder buyOrder);
         Task<SellOrder> AddSellOrderAsync(SellOrder sellOrder);
-        Task<IEnumerable<SellOrder>?> ExecuteSellOrders(string stockSymbol, double marketPrice);
         Task<List<string>> GetPendingSellOrderSymbols();
-        Task<List<SellOrder>> GetSellOrdersBySpecification(ISpecification<SellOrder> specification);
+        Task<List<SellOrder>> GetSellOrdersBySpecificationAsNoTracking(ISpecification<SellOrder> specification);
         Task<List<BuyOrder>> GetBuyOrdersBySpecification(ISpecification<BuyOrder> specification);
+        Task<IEnumerable<SellOrder>?> ExecuteSellOrders(string stockSymbol, double marketPrice);
     }
 }
