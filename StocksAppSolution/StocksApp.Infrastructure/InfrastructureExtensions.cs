@@ -34,6 +34,8 @@ namespace StocksApp.Infrastructure
             
             services.AddScoped<IUserRepository, UserRepository>();
 
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+
             services.AddTransient<IPasswordHasher, BCryptPasswordHasher>();
 
             services.AddScoped<IStockService, StockService>();

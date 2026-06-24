@@ -21,6 +21,8 @@ namespace StocksApp.Core
 
             services.AddScoped<IOrdersExecutor, OrdersExecutor>();
 
+            services.AddSingleton<IOrdersExecutionService, OrdersExecutionService>();
+            
             services.AddSingleton<ISubscriptionsManager, SubscriptionsManager>();
             // Configure Options pattern 
             services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));

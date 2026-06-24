@@ -64,5 +64,14 @@ namespace StocksApp.Infrastructure.Repositories
         {
             throw new NotImplementedException();
         }
+
+        public async Task<List<SellOrder>> GetSellOrdersByIds(List<Guid> sellOrderIds)
+        {
+            List<SellOrder> sellOrders = await _dbContext.SellOrders
+                .Where(order => sellOrderIds.Contains(order.SellOrderID))
+                .Include(o => o.User)
+                .ToListAsync();
+            return sellOrders;
+        }
     }
 }
