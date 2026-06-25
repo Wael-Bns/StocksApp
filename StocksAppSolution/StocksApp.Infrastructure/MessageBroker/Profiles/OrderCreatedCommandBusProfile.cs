@@ -6,6 +6,8 @@ namespace StocksApp.Infrastructure.MessageBroker.Profiles
 {
     internal class OrderCreatedCommandBusProfile : ICommandBusProfile
     {
+        public Type MessageType => typeof(SellOrderCreatedCommand);
+        public Uri EndpointUri => new Uri($"exchange:{RabbitMQExchanges.OrdersExchange}");
         public void ConfigureMessages(IRabbitMqBusFactoryConfigurator cfg)
         {
             cfg.Message<SellOrderCreatedCommand>(x => x.SetEntityName(RabbitMQExchanges.OrdersExchange));

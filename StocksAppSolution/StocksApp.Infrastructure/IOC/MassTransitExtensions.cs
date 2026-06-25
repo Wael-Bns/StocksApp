@@ -21,7 +21,7 @@ namespace StocksApp.Infrastructure.IoC
             {
                 x.UsingRabbitMq((ctx, cfg) =>
                 {
-                    cfg.Host(settings.HostName, settings.Port, "/", h =>
+                    cfg.Host(settings.HostName, "/", h =>
                     {
                         h.Username(settings.UserName!);
                         h.Password(settings.Password!);

@@ -11,6 +11,10 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=stocksappdb
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=admin
+      - RabbitMQ__Password=admin
     ports:
       - "8088:8080"
     networks:
@@ -26,6 +30,18 @@ services:
       - "5434:5432"
     volumes:
       - ./postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - stocksapp-network
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
     networks:
       - stocksapp-network
 

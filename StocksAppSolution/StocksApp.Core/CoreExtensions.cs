@@ -21,7 +21,7 @@ namespace StocksApp.Core
 
             services.AddScoped<IOrdersExecutor, OrdersExecutor>();
 
-            services.AddSingleton<IOrdersExecutionService, OrdersExecutionService>();
+            //services.AddSingleton<IOrdersExecutionService, OrdersExecutionService>();
             
             services.AddSingleton<ISubscriptionsManager, SubscriptionsManager>();
             // Configure Options pattern 

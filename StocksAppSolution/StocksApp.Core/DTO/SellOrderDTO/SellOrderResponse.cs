@@ -1,5 +1,6 @@
 ﻿using StocksApp.Domain.Entities;
 using StocksApp.Domain.Enums;
+using StocksApp.Domain.Events;
 
 namespace StocksApp.Core.DTO.SellOrderDTO
 {
@@ -28,6 +29,18 @@ namespace StocksApp.Core.DTO.SellOrderDTO
                 Status = (SellOrderStatus)sellOrder.Status,
                 Quantity = sellOrder.Quantity,
                 TradeAmount = sellOrder.Quantity * sellOrder.Price
+            };
+        }
+        public static SellOrderCreatedCommand ToSellOrderCreatedCommand(this SellOrderResponse sellOrderResponse, Guid userId)
+        {
+            return new SellOrderCreatedCommand
+            {
+                SellOrderId = sellOrderResponse.SellOrderID,
+                UserId = userId, // Assuming you have a way to get the UserId, replace Guid.Empty with the actual UserId
+                StockSymbol = sellOrderResponse.StockSymbol ?? string.Empty,
+                Price = sellOrderResponse.Price,
+                Quantity = sellOrderResponse.Quantity,
+                CreatedAt = sellOrderResponse.DateAndTimeOfOrder
             };
         }
     }
