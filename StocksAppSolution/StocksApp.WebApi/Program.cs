@@ -1,5 +1,5 @@
 using StocksApp.Core;
-using StocksApp.Infrastructure.IOC;
+using StocksApp.Infrastructure.IoC;
 using StocksApp.WebApi;
 using StocksApp.WebApi.Hubs;
 using StocksApp.WebApi.Middlewares;
@@ -8,11 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddWebApi(builder.Configuration)
                 .AddCore(builder.Configuration)
-                .AddInfrastructure(builder.Configuration, builder.Environment);
-
-// Configure Swagger for API documentation
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+                .AddInfrastructure(builder.Configuration, builder.Environment)
+                .AddRabbitMqCommandSender(builder.Configuration);
 
 var app = builder.Build();
 

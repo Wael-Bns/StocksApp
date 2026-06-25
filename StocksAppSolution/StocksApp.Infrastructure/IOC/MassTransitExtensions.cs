@@ -1,13 +1,12 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StocksApp.Core.DTO.Commands;
 using StocksApp.Core.MessageBroker.Publisher;
 using StocksApp.Infrastructure.Helpers;
 using StocksApp.Infrastructure.MessageBroker;
 using StocksApp.Infrastructure.MessageBroker.Profiles;
 
-namespace StocksApp.Infrastructure.IOC
+namespace StocksApp.Infrastructure.IoC
 {
     public static class MassTransitExtensions
     {

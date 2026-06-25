@@ -43,6 +43,11 @@ namespace StocksApp.WebApi
                 });
             });
 
+            // Configure Swagger for API documentation
+            services.AddEndpointsApiExplorer();
+            
+            services.AddSwaggerGen();
+
             services.Configure<TradeOptions>(configuration.GetSection(TradeOptions.SectionName));
 
             services.AddHostedService<StockPricesHostedService>();

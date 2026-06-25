@@ -15,7 +15,7 @@ using StocksApp.Core.Services;
 using StocksApp.Infrastructure.WebSocketClients;
 using StocksApp.Infrastructure.Helpers;
 
-namespace StocksApp.Infrastructure.IOC
+namespace StocksApp.Infrastructure.IoC
 {
     public static class InfrastructureExtensions
     {
