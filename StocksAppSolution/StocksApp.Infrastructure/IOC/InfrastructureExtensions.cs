@@ -13,8 +13,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using StocksApp.Core.Services;
 using StocksApp.Infrastructure.WebSocketClients;
+using StocksApp.Infrastructure.Helpers;
 
-namespace StocksApp.Infrastructure
+namespace StocksApp.Infrastructure.IOC
 {
     public static class InfrastructureExtensions
     {
@@ -29,9 +30,11 @@ namespace StocksApp.Infrastructure
             {
                 options.ApiKey = configuration["FinnhubApiKey"] ?? string.Empty;
             });
-            
+
+            services.Configure<RabbitMQSettings>(configuration.GetSection("RabbitMQ"));
+
             services.AddScoped<IOrderRepository, OrderRepository>();
-            
+
             services.AddScoped<IUserRepository, UserRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();

@@ -1,8 +1,8 @@
 using StocksApp.OrdersWorker.ServiceContracts;
 using StocksApp.OrdersWorker.Services;
 using StocksApp.Core;
-using StocksApp.Infrastructure;
 using StocksApp.OrdersWorker.Worker;
+using StocksApp.Infrastructure.IOC;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -13,7 +13,8 @@ builder.Services.AddHostedService<OrdersWorker>();
 
 builder.Services
     .AddInfrastructure(builder.Configuration, builder.Environment)
-    .AddCore(builder.Configuration);
+    .AddCore(builder.Configuration)
+    .AddRabbitMqCommandSender(builder.Configuration);
 
 var host = builder.Build();
 

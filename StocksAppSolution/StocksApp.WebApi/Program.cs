@@ -1,5 +1,5 @@
 using StocksApp.Core;
-using StocksApp.Infrastructure;
+using StocksApp.Infrastructure.IOC;
 using StocksApp.WebApi;
 using StocksApp.WebApi.Hubs;
 using StocksApp.WebApi.Middlewares;

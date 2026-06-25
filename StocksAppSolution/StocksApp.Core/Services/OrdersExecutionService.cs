@@ -1,4 +1,4 @@
-﻿using StocksApp.Core.DTO.Commands;
+﻿using StocksApp.Domain.Events;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Domain.Enums;
 using StocksApp.Domain.RepositoryContracts;
@@ -14,7 +14,7 @@ namespace StocksApp.Core.Services
             _orderRepository = orderRepository;
             _unitOfWork = unitOfWork;
         }
-        public async Task ExecuteSellOrdersAsync(IReadOnlyCollection<ExecuteSellOrderCommand> orders, CancellationToken cancellationToken)
+        public async Task ExecuteSellOrdersAsync(IReadOnlyCollection<SellOrderCreatedCommand> orders, CancellationToken cancellationToken)
         {
             List<Guid> orderIds = orders
                             .Select(o => o.SellOrderId)

@@ -1,4 +1,4 @@
-﻿using StocksApp.Core.DTO.Commands;
+﻿using StocksApp.Domain.Events;
 
 namespace StocksApp.Core.ServiceContracts
 {
@@ -7,6 +7,6 @@ namespace StocksApp.Core.ServiceContracts
     /// </summary>
     public interface IOrdersExecutionService
     {
-        Task ExecuteSellOrdersAsync(IReadOnlyCollection<ExecuteSellOrderCommand> orders,CancellationToken cancellationToken);
+        Task ExecuteSellOrdersAsync(IReadOnlyCollection<SellOrderCreatedCommand> orders,CancellationToken cancellationToken);
     }
 }

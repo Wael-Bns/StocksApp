@@ -1,6 +1,6 @@
-﻿namespace StocksApp.Core.DTO.Commands
+﻿namespace StocksApp.Domain.Events
 {
-    public class ExecuteSellOrderCommand
+    public class SellOrderCreatedCommand
     {
         public Guid SellOrderId { get; }
         public Guid UserId { get; }
