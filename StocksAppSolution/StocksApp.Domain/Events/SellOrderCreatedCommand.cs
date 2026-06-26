@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using StocksApp.Domain.Entities;
+﻿using StocksApp.Domain.Entities;
 
 namespace StocksApp.Domain.Events
 {

@@ -1,7 +1,9 @@
-﻿using StocksApp.OrdersWorker.ServiceContracts;
+﻿using StocksApp.OrdersWorker.Channels;
+using StocksApp.OrdersWorker.MessageHandlers;
+using StocksApp.OrdersWorker.Messages;
+using StocksApp.OrdersWorker.ServiceContracts;
 using StocksApp.OrdersWorker.Services;
 using StocksApp.OrdersWorker.Stores;
-using StocksApp.OrdersWorker.Worker;
 
 namespace StocksApp.OrdersWorker.IoC
 {
@@ -9,11 +11,19 @@ namespace StocksApp.OrdersWorker.IoC
     {
         public static IServiceCollection AddWorkerServices(this IServiceCollection services)
         {
+            services.AddSingleton<IWorkerChannel, WorkerChannel>();
+
             services.AddSingleton<ISellOrdersStore, SellOrdersStore>();
      
-            services.AddSingleton<IPendingOrdersInitializer, PendingOrderInitializer>();
+            services.AddSingleton<IPendingOrdersInitializer, PendingOrdersInitializer>();
 
             services.AddSingleton<IPriceUpdateOrderProcessor, PriceUpdateOrderProcessor>();
+            
+            services.AddSingleton<IOrderMessageProcessor, OrderMessageProcessor>();
+
+            services.AddSingleton<IWorkerMessageHandler<PriceUpdateWorkerMessage>, PriceUpdateMessageHandler>();
+            
+            services.AddSingleton<IWorkerMessageHandler<SellOrderCreatedWorkerMessage>, SellOrderCreatedMessageHandler>();
             
             services.AddSingleton<IWorkerSubscriptionsManager, WorkerSubscriptionsManager>();
 

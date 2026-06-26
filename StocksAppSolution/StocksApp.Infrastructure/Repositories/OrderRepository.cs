@@ -60,11 +60,6 @@ namespace StocksApp.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public Task<IEnumerable<SellOrder>?> ExecuteSellOrders(string stockSymbol, double marketPrice)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<List<SellOrder>> GetSellOrdersByIds(List<Guid> sellOrderIds)
         {
             List<SellOrder> sellOrders = await _dbContext.SellOrders

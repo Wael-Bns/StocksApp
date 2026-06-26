@@ -29,7 +29,7 @@ namespace StocksApp.Infrastructure.MessageBroker
             try
             {
                 var endpoint = await _sendEndpointProvider.GetSendEndpoint(uri);
-                await endpoint.Send(command, ct);
+                await endpoint.Send(command,context => { }, ct);
                 _logger.LogInformation("Sent command {CommandType}", typeof(T).Name);
             }
             catch (Exception ex)

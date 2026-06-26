@@ -100,6 +100,7 @@ namespace StocksApp.Infrastructure.WebSocketClients
             if (_socket.State is WebSocketState.Open or WebSocketState.CloseReceived)
             {
                 await _socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing", cancellationToken);
+                _logger.LogInformation("Disconnected from finnhub websocket.");
             }
         }
     }

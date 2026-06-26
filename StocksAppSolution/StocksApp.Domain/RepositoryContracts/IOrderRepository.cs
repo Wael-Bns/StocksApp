@@ -15,7 +15,6 @@ namespace StocksApp.Domain.RepositoryContracts
         Task<List<string>> GetPendingSellOrderSymbols();
         Task<List<SellOrder>> GetSellOrdersBySpecificationAsNoTracking(ISpecification<SellOrder> specification);
         Task<List<BuyOrder>> GetBuyOrdersBySpecification(ISpecification<BuyOrder> specification);
-        Task<IEnumerable<SellOrder>?> ExecuteSellOrders(string stockSymbol, double marketPrice);
         Task<List<SellOrder>> GetSellOrdersByIds(List<Guid> sellOrderIds);
     }
 }

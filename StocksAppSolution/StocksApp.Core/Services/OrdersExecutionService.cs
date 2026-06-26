@@ -22,13 +22,14 @@ namespace StocksApp.Core.Services
 
             await _unitOfWork.BeginTransactionAsync(cancellationToken);
             var sellOrders = await _orderRepository.GetSellOrdersByIds(orderIds);
-             
+            
             foreach (var sellOrder in sellOrders)
             {
                 sellOrder.Status = SellOrderStatus.Executed;
                 sellOrder.User.CashBalance += sellOrder.Price * sellOrder.Quantity;
             }
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
         }
     }
 }

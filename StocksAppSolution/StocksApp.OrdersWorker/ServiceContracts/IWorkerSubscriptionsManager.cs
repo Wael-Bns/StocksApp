@@ -6,5 +6,6 @@
     public interface IWorkerSubscriptionsManager
     {
         Task RefreshSubscriptionsPeriodically(TimeSpan timeSpan,CancellationToken cancellationToken);
+        Task AddStockSymbol(string stockSymbol, CancellationToken cancellationToken);
     }
 }

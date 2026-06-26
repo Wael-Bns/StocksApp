@@ -19,9 +19,7 @@ namespace StocksApp.Core
 
             services.AddTransient<IAuthService, AuthService>();
 
-            services.AddScoped<IOrdersExecutor, OrdersExecutor>();
-
-            //services.AddSingleton<IOrdersExecutionService, OrdersExecutionService>();
+            services.AddScoped<IOrdersExecutionService, OrdersExecutionService>();
             
             services.AddSingleton<ISubscriptionsManager, SubscriptionsManager>();
             // Configure Options pattern 

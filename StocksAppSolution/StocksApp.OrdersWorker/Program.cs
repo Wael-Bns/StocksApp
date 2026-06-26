@@ -10,7 +10,8 @@ builder.Services.AddHostedService<OrdersWorker>();
 builder.Services
     .AddInfrastructure(builder.Configuration, builder.Environment)
     .AddCore(builder.Configuration)
-    .AddWorkerServices();
+    .AddWorkerServices()
+    .AddRabbitMqConsumers(builder.Configuration);
 
 var host = builder.Build();
 

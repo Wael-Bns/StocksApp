@@ -1,45 +1,49 @@
 using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.WebSocketClientAbstractions;
+using StocksApp.OrdersWorker.Channels;
+using StocksApp.OrdersWorker.Messages;
 using StocksApp.OrdersWorker.ServiceContracts;
 
 namespace StocksApp.OrdersWorker.Worker
 {
     public class OrdersWorker : BackgroundService
     {
-        private readonly ILogger<OrdersWorker> _logger;
         private readonly IFinnhubWebSocketClient _finnhubWebSocketClient;
-        private readonly IWorkerSubscriptionsManager _workerSubscriptionsManager;
-        private readonly IPriceUpdateOrderProcessor _priceUpdateOrderProcessor;
-
-        public OrdersWorker(
-            ILogger<OrdersWorker> logger, 
-            IFinnhubWebSocketClient finnhubWebSocketClient, 
-            IPriceUpdateOrderProcessor priceUpdateOrderProcessor,
-            IWorkerSubscriptionsManager workerSubscriptionsManager)
+        private readonly IPendingOrdersInitializer _pendingOrdersInitializer;
+        private readonly IOrderMessageProcessor _orderMessageProcessor;
+        private readonly IWorkerChannel _channel;
+        private ILogger<OrdersWorker> _logger;
+        public OrdersWorker(IFinnhubWebSocketClient finnhubWebSocketClient,
+            IPendingOrdersInitializer pendingOrdersInitializer,
+            IOrderMessageProcessor orderMessageProcessor,
+            IWorkerChannel channel,
+            ILogger<OrdersWorker> logger)
         {
-            _logger = logger;
             _finnhubWebSocketClient = finnhubWebSocketClient;
-            _priceUpdateOrderProcessor = priceUpdateOrderProcessor;
-            _workerSubscriptionsManager = workerSubscriptionsManager;
+            _pendingOrdersInitializer = pendingOrdersInitializer;
+            _orderMessageProcessor = orderMessageProcessor;
+            _channel = channel; 
+            _logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             try
             {
 
                 _logger.LogInformation("Starting {ServiceName} at: {time}", nameof(OrdersWorker), DateTimeOffset.Now);
-                await _finnhubWebSocketClient.ConnectAsync(stoppingToken);
-                
+
+                await _pendingOrdersInitializer.StartAsync(cancellationToken);
+
+                await _finnhubWebSocketClient.ConnectAsync(cancellationToken);
+
                 _finnhubWebSocketClient.OnMessageReceived += ProcessPriceUpdates;
 
-                var finnhubTask = _finnhubWebSocketClient.ReceiveAsync(stoppingToken);
-            
-                var priceUpdateProcessorTask = _priceUpdateOrderProcessor.StartAsync(stoppingToken);
-            
-                var subscriptionsRefreshTask = _workerSubscriptionsManager.RefreshSubscriptionsPeriodically(TimeSpan.FromMinutes(1),stoppingToken);
+                var orderMessageProcessorTask = _orderMessageProcessor.StartAsync(cancellationToken);
 
-                await Task.WhenAll(subscriptionsRefreshTask, finnhubTask, priceUpdateProcessorTask);
+                var finnhubTask = _finnhubWebSocketClient.ReceiveAsync(cancellationToken);
+
+                await Task.WhenAll(orderMessageProcessorTask, finnhubTask);
             }
             catch(Exception ex)
             {
@@ -58,7 +62,8 @@ namespace StocksApp.OrdersWorker.Worker
             {
                 foreach (var priceUpdate in priceUpdates)
                 {
-                    await _priceUpdateOrderProcessor.EnqueueMessageAsync(priceUpdate);
+                    var priceUpdateWorkerMessage = priceUpdate.ToPriceUpdateWorkerMessage();
+                    await _channel.EnqueueAsync(priceUpdateWorkerMessage);
                 }
             }
         }

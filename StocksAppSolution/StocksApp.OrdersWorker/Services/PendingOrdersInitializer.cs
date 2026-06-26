@@ -6,14 +6,18 @@ using StocksApp.OrdersWorker.Stores;
 
 namespace StocksApp.OrdersWorker.Services
 {
-    public class PendingOrderInitializer : IPendingOrdersInitializer
+    public class PendingOrdersInitializer : IPendingOrdersInitializer
     {
         private readonly ISellOrdersStore _sellOrdersStore;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        public PendingOrderInitializer(ISellOrdersStore sellOrdersStore, IServiceScopeFactory serviceScopeFactory)
+        private readonly IWorkerSubscriptionsManager _workerSubscriptionsManager;
+        public PendingOrdersInitializer(ISellOrdersStore sellOrdersStore,
+            IServiceScopeFactory serviceScopeFactory,
+            IWorkerSubscriptionsManager workerSubscriptionsManager)
         {
             _sellOrdersStore = sellOrdersStore;
             _serviceScopeFactory = serviceScopeFactory;
+            _workerSubscriptionsManager = workerSubscriptionsManager;
         }
         public async Task StartAsync(CancellationToken cancellationToken)
         {
@@ -24,6 +28,7 @@ namespace StocksApp.OrdersWorker.Services
             foreach(var order in pendingSellOrders)
             {
                 _sellOrdersStore.AddSellOrder(order.ToSellOrderCreatedCommand());
+                await _workerSubscriptionsManager.AddStockSymbol(order.StockSymbol!, cancellationToken);
             }
         }
     }
