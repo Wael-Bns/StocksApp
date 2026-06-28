@@ -6,6 +6,7 @@ using StocksApp.Domain.Events;
 using StocksApp.OrdersWorker.MessageHandlers;
 using StocksApp.OrdersWorker.Messages;
 using StocksApp.OrdersWorker.Stores;
+using StocksApp.Tests.Common.Builders;
 using Xunit;
 
 namespace StocksApp.Test.ServiceUnitTests
@@ -58,8 +59,8 @@ namespace StocksApp.Test.ServiceUnitTests
             var message = new PriceUpdateWorkerMessage("AAPL", 120);
             var eligibleOrders = new List<SellOrderCreatedCommand>
             {
-                CreateSellOrder(price: 100),
-                CreateSellOrder(price: 110)
+                new SellOrderCreatedCommandBuilder().WithStockSymbol("AAPL").WithPrice(100).Build(),
+                new SellOrderCreatedCommandBuilder().WithStockSymbol("AAPL").WithPrice(110).Build()
             };
 
             _sellOrdersStoreMock
@@ -80,7 +81,10 @@ namespace StocksApp.Test.ServiceUnitTests
         {
             // Arrange
             var message = new PriceUpdateWorkerMessage("AAPL", 120);
-            var eligibleOrders = new List<SellOrderCreatedCommand> { CreateSellOrder(price: 100) };
+            var eligibleOrders = new List<SellOrderCreatedCommand>
+            {
+                new SellOrderCreatedCommandBuilder().WithStockSymbol("AAPL").WithPrice(100).Build()
+            };
 
             _sellOrdersStoreMock
                 .Setup(store => store.DequeueEligibleOrders(message.StockSymbol, message.Price))
@@ -96,19 +100,6 @@ namespace StocksApp.Test.ServiceUnitTests
             // Assert
             await actual.Should().ThrowAsync<InvalidOperationException>()
                 .WithMessage("Execution failed");
-        }
-
-        private static SellOrderCreatedCommand CreateSellOrder(double price)
-        {
-            return new SellOrderCreatedCommand
-            {
-                SellOrderId = Guid.NewGuid(),
-                UserId = Guid.NewGuid(),
-                StockSymbol = "AAPL",
-                Price = price,
-                Quantity = 10,
-                CreatedAt = DateTime.UtcNow
-            };
         }
     }
 }

@@ -3,9 +3,11 @@ using Moq;
 using StocksApp.Core.Services;
 using StocksApp.Domain.Entities;
 using StocksApp.Domain.Enums;
-using StocksApp.Domain.Events;
 using StocksApp.Domain.RepositoryContracts;
+using StocksApp.Tests.Common.Builders;
 using Xunit;
+using StocksApp.Domain.Events;
+
 
 namespace StocksApp.Test.ServiceUnitTests
 {
@@ -28,8 +30,14 @@ namespace StocksApp.Test.ServiceUnitTests
         public async Task ExecuteSellOrdersAsync_ValidOrders_MarksOrdersAsExecutedAndCreditsUsers()
         {
             // Arrange
-            var user = new User { UserId = Guid.NewGuid(), CashBalance = 1000 };
-            var sellOrder = CreateSellOrder(price: 50, quantity: 3, user);
+            var user = new UserBuilder().WithCashBalance(1000).Build();
+            var sellOrder = new SellOrderBuilder()
+                .WithStockSymbol("AAPL")
+                .WithStockName("Apple Inc")
+                .WithPrice(50)
+                .WithQuantity(3)
+                .WithUser(user)
+                .Build();
             var command = sellOrder.ToSellOrderCreatedCommand();
 
             _orderRepositoryMock
@@ -53,8 +61,14 @@ namespace StocksApp.Test.ServiceUnitTests
         public async Task ExecuteSellOrdersAsync_WhenSaveFails_RollsBackTransaction()
         {
             // Arrange
-            var user = new User { UserId = Guid.NewGuid(), CashBalance = 1000 };
-            var sellOrder = CreateSellOrder(price: 25, quantity: 2, user);
+            var user = new UserBuilder().WithCashBalance(1000).Build();
+            var sellOrder = new SellOrderBuilder()
+                .WithStockSymbol("AAPL")
+                .WithStockName("Apple Inc")
+                .WithPrice(25)
+                .WithQuantity(2)
+                .WithUser(user)
+                .Build();
             var command = sellOrder.ToSellOrderCreatedCommand();
 
             _orderRepositoryMock
@@ -75,22 +89,6 @@ namespace StocksApp.Test.ServiceUnitTests
 
             _unitOfWorkMock.Verify(uow => uow.RollbackTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
             _unitOfWorkMock.Verify(uow => uow.CommitTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
-        }
-
-        private static SellOrder CreateSellOrder(double price, uint quantity, User user)
-        {
-            return new SellOrder
-            {
-                SellOrderID = Guid.NewGuid(),
-                StockSymbol = "AAPL",
-                StockName = "Apple Inc",
-                DateAndTimeOfOrder = DateTime.UtcNow,
-                Price = price,
-                Quantity = quantity,
-                Status = SellOrderStatus.Pending,
-                UserId = user.UserId,
-                User = user
-            };
         }
     }
 }
