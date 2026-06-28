@@ -20,16 +20,24 @@ namespace StocksApp.Core.Services
                             .Select(o => o.SellOrderId)
                             .ToList();
 
-            await _unitOfWork.BeginTransactionAsync(cancellationToken);
-            var sellOrders = await _orderRepository.GetSellOrdersByIds(orderIds);
-            
-            foreach (var sellOrder in sellOrders)
+            try
             {
-                sellOrder.Status = SellOrderStatus.Executed;
-                sellOrder.User.CashBalance += sellOrder.Price * sellOrder.Quantity;
+                await _unitOfWork.BeginTransactionAsync(cancellationToken);
+                var sellOrders = await _orderRepository.GetSellOrdersByIds(orderIds);
+
+                foreach (var sellOrder in sellOrders)
+                {
+                    sellOrder.Status = SellOrderStatus.Executed;
+                    sellOrder.User.CashBalance += sellOrder.Price * sellOrder.Quantity;
+                }
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                await _unitOfWork.CommitTransactionAsync(cancellationToken);
             }
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+                throw new Exception("An error occurred while executing sell orders.", ex);
+            }
         }
     }
 }
