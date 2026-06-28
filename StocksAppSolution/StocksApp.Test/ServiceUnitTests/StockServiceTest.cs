@@ -40,8 +40,7 @@ namespace StocksApp.Test.ServiceUnitTests
             StockSymbol = "AAPL",
             Quantity = 250,
             DateAndTimeOfOrder = DateTime.Now,
-            Price = 100,
-            UserId = new Guid("EB608896-7E47-44A6-9395-5D4EEE695044")
+            Price = 100
         };
 
         public StockServiceTest()
@@ -51,7 +50,7 @@ namespace StocksApp.Test.ServiceUnitTests
             _orderRepository = _orderRepositoryMock.Object;
             _subscriptionsManagerMock = new Mock<ISubscriptionsManager>();
             _subscriptionsManager = _subscriptionsManagerMock.Object;
-            _stockService = new StockService(_orderRepository, _finnHubHttpClientMock.Object, _subscriptionsManager);
+            _stockService = new StockService(_orderRepository, _finnHubHttpClientMock.Object);
         }
         private void MockAddBuyOrder(BuyOrder buyOrder)
         {
@@ -324,7 +323,6 @@ namespace StocksApp.Test.ServiceUnitTests
             SellOrderResponse actual = await _stockService.CreateSellOrder(sellOrderRequest, _userId);
             // Assert
             actual.Should().BeEquivalentTo(expected);
-            _subscriptionsManagerMock.Verify(manager => manager.AddStockSymbol(sellOrderRequest.StockSymbol!), Times.Once);
             actual.SellOrderID.Should().NotBeEmpty();
         }
         #endregion
