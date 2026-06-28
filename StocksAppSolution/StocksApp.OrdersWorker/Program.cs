@@ -2,17 +2,32 @@ using StocksApp.Core;
 using StocksApp.Infrastructure.IoC;
 using StocksApp.OrdersWorker.IoC;
 using StocksApp.OrdersWorker.Worker;
+using Serilog;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddHostedService<OrdersWorker>();
+try
+{
+    builder.RegisterSerilog();
 
-builder.Services
-    .AddInfrastructure(builder.Configuration, builder.Environment)
-    .AddCore(builder.Configuration)
-    .AddWorkerServices()
-    .AddRabbitMqConsumers(builder.Configuration);
+    builder.Services.AddHostedService<OrdersWorker>();
 
-var host = builder.Build();
+    builder.Services
+        .AddInfrastructure(builder.Configuration, builder.Environment)
+        .AddCore(builder.Configuration)
+        .AddWorkerServices()
+        .AddRabbitMqConsumers(builder.Configuration);
 
-host.Run();
+    var host = builder.Build();
+
+    Log.Information("StocksApp Orders Worker is starting up...");
+    host.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "An unhandled exception occurred during Orders Worker startup.");
+}
+finally
+{
+    Log.CloseAndFlush();
+}

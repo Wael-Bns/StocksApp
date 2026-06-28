@@ -16,8 +16,6 @@ namespace StocksApp.OrdersWorker.IoC
             services.AddSingleton<ISellOrdersStore, SellOrdersStore>();
      
             services.AddSingleton<IPendingOrdersInitializer, PendingOrdersInitializer>();
-
-            services.AddSingleton<IPriceUpdateOrderProcessor, PriceUpdateOrderProcessor>();
             
             services.AddSingleton<IOrderMessageProcessor, OrderMessageProcessor>();
 

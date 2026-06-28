@@ -15,11 +15,13 @@ services:
       - RabbitMQ__Port=5672
       - RabbitMQ__UserName=admin
       - RabbitMQ__Password=admin
+      - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
     ports:
       - "8088:8080"
       - "8089:8081"
     depends_on:
       - rabbitmq-container
+      - seq
     networks:
       - stocksapp-network
   
@@ -39,8 +41,21 @@ services:
       - RabbitMQ__Port=5672
       - RabbitMQ__UserName=admin
       - RabbitMQ__Password=admin
+      - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
     depends_on:
       - rabbitmq-container
+      - seq
+    networks:
+      - stocksapp-network
+
+  seq:
+    image: datalust/seq:latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=true
+    ports:
+      - "5341:5341"
+      - "9090:80"
     networks:
       - stocksapp-network
 

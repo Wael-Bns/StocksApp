@@ -22,7 +22,7 @@ namespace StocksApp.WebApi.Middlewares
             }
             catch(ClientException ex)
             {
-                _logger.LogWarning(ex, "A client exception occurred during the execution of the request.");
+                _logger.LogWarning(ex, $"A client exception occurred during the execution of the request: {ex.Message}");
                 
                 await HandleExceptionAsync(httpContext, ex.StatusCode, ex.Message);
             }

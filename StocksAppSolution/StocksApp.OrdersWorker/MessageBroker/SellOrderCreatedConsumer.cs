@@ -17,7 +17,7 @@ namespace StocksApp.OrdersWorker.MessageBroker
         public async Task Consume(ConsumeContext<SellOrderCreatedCommand> context)
         {
             await _channel.EnqueueAsync(new SellOrderCreatedWorkerMessage(context.Message));
-            _logger.LogInformation("SellOrder added to store: {OrderId}", context.Message.SellOrderId);
+            _logger.LogInformation("Consumed SellOrderCreatedCommand {OrderId}", context.Message.SellOrderId);
         }
     }
 }

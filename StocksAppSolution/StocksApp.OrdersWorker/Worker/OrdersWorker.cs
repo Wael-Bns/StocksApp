@@ -32,12 +32,12 @@ namespace StocksApp.OrdersWorker.Worker
             {
 
                 _logger.LogInformation("Starting {ServiceName} at: {time}", nameof(OrdersWorker), DateTimeOffset.Now);
-
-                await _pendingOrdersInitializer.StartAsync(cancellationToken);
+                
+                _finnhubWebSocketClient.OnMessageReceived += ProcessPriceUpdates;
 
                 await _finnhubWebSocketClient.ConnectAsync(cancellationToken);
 
-                _finnhubWebSocketClient.OnMessageReceived += ProcessPriceUpdates;
+                await _pendingOrdersInitializer.StartAsync(cancellationToken);
 
                 var orderMessageProcessorTask = _orderMessageProcessor.StartAsync(cancellationToken);
 
