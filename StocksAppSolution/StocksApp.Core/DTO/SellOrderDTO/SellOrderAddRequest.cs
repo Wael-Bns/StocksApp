@@ -17,8 +17,6 @@ namespace StocksApp.Core.DTO.SellOrderDTO
         public uint Quantity { get; set; }
         [Range(1, 10000, ErrorMessage = "Price should be between 1 and 10000")]
         public double Price { get; set; }
-        [Required(ErrorMessage = "User ID is required")]
-        public Guid UserId { get; set; }
         public SellOrder ToSellOrder()
         {
             return new SellOrder
@@ -30,7 +28,6 @@ namespace StocksApp.Core.DTO.SellOrderDTO
                 Price = Price,
                 Quantity = Quantity,
                 Status = SellOrderStatus.Pending,
-                UserId = UserId
             };
         }
     }

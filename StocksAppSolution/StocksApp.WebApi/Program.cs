@@ -26,7 +26,7 @@ app.UseExceptionHandlingMiddleware();
 
 app.UseSerilogRequestLogging();
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseCors();
 

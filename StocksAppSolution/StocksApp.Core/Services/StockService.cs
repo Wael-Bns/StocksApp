@@ -14,13 +14,11 @@ namespace StocksApp.Core.Services
     public class StockService : IStockService
     {
         private readonly IOrderRepository _orderRepository;
-        private readonly ISubscriptionsManager _subscriptionsManager;
         private readonly IFinnHubHttpClient _finnhubHttpClient;
 
-        public StockService(IOrderRepository orderRepository, IFinnHubHttpClient finnHubHttpClient, ISubscriptionsManager subscriptionsManager)
+        public StockService(IOrderRepository orderRepository, IFinnHubHttpClient finnHubHttpClient)
         {
             _orderRepository = orderRepository;
-            _subscriptionsManager = subscriptionsManager;
             _finnhubHttpClient = finnHubHttpClient;
         }
         public async Task<BuyOrderResponse> CreateBuyOrder(BuyOrderAddRequest? buyOrderRequest, Guid userId)
@@ -47,8 +45,6 @@ namespace StocksApp.Core.Services
             sellOrder.UserId = userId;
 
             SellOrder createdSellOrder = await _orderRepository.AddSellOrderAsync(sellOrder);
-
-            await _subscriptionsManager.AddStockSymbol(sellOrderRequest.StockSymbol!);
 
             return createdSellOrder.ToSellOrderResponse();
         }
