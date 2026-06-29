@@ -4,7 +4,7 @@ using StocksApp.OrdersWorker.Stores;
 
 namespace StocksApp.OrdersWorker.MessageHandlers
 {
-    public sealed class SellOrderCreatedMessageHandler : IWorkerMessageHandler<SellOrderCreatedWorkerMessage>
+    public sealed class SellOrderCreatedMessageHandler : WorkerMessageHandler<SellOrderCreatedWorkerMessage>
     {
         private readonly ILogger<SellOrderCreatedMessageHandler> _logger;
         private readonly IWorkerSubscriptionsManager _workerSubscriptionsManager;
@@ -19,7 +19,7 @@ namespace StocksApp.OrdersWorker.MessageHandlers
             _sellOrdersStore = sellOrdersStore;
         }
 
-        public async Task HandleAsync(SellOrderCreatedWorkerMessage message, CancellationToken cancellationToken = default)
+        protected override async Task HandleAsync(SellOrderCreatedWorkerMessage message, CancellationToken cancellationToken = default)
         {
             _sellOrdersStore.AddSellOrder(message.SellOrder);
             await _workerSubscriptionsManager.AddStockSymbol(message.SellOrder.StockSymbol, cancellationToken);

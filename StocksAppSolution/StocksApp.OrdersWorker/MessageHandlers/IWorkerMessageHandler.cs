@@ -2,8 +2,20 @@
 
 namespace StocksApp.OrdersWorker.MessageHandlers
 {
-    public interface IWorkerMessageHandler<TMessage> where TMessage : WorkerMessage
+    public interface IWorkerMessageHandler
     {
-        Task HandleAsync(TMessage message, CancellationToken cancellationToken = default);
+        Type MessageType { get; }
+        Task HandleAsync(WorkerMessage message, CancellationToken cancellationToken);
+    }
+    public abstract class WorkerMessageHandler<T> : IWorkerMessageHandler where T : WorkerMessage
+    {
+        public Type MessageType => typeof(T);
+
+        public Task HandleAsync(WorkerMessage message, CancellationToken ct)
+        {
+            return HandleAsync((T)message, ct);
+        }
+
+        protected abstract Task HandleAsync(T message, CancellationToken ct);
     }
 }

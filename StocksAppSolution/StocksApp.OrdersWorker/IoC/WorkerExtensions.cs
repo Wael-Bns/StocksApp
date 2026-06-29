@@ -1,6 +1,5 @@
 ﻿using StocksApp.OrdersWorker.Channels;
 using StocksApp.OrdersWorker.MessageHandlers;
-using StocksApp.OrdersWorker.Messages;
 using StocksApp.OrdersWorker.ServiceContracts;
 using StocksApp.OrdersWorker.Services;
 using StocksApp.OrdersWorker.Stores;
@@ -19,9 +18,9 @@ namespace StocksApp.OrdersWorker.IoC
             
             services.AddSingleton<IOrderMessageProcessor, OrderMessageProcessor>();
 
-            services.AddSingleton<IWorkerMessageHandler<PriceUpdateWorkerMessage>, PriceUpdateMessageHandler>();
+            services.AddSingleton<IWorkerMessageHandler, PriceUpdateMessageHandler>();
             
-            services.AddSingleton<IWorkerMessageHandler<SellOrderCreatedWorkerMessage>, SellOrderCreatedMessageHandler>();
+            services.AddSingleton<IWorkerMessageHandler, SellOrderCreatedMessageHandler>();
             
             services.AddSingleton<IWorkerSubscriptionsManager, WorkerSubscriptionsManager>();
 

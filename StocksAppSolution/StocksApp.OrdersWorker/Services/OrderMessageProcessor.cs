@@ -8,19 +8,16 @@ namespace StocksApp.OrdersWorker.Services
     public sealed class OrderMessageProcessor : IOrderMessageProcessor
     {
         private readonly IWorkerChannel _channel;
-        private readonly IWorkerMessageHandler<PriceUpdateWorkerMessage> _priceUpdateHandler;
-        private readonly IWorkerMessageHandler<SellOrderCreatedWorkerMessage> _sellOrderHandler;
+        private readonly IReadOnlyDictionary<Type, IWorkerMessageHandler> _handlers;
         private readonly ILogger<OrderMessageProcessor> _logger;
 
         public OrderMessageProcessor(
             IWorkerChannel channel,
-            IWorkerMessageHandler<PriceUpdateWorkerMessage> priceUpdateHandler,
-            IWorkerMessageHandler<SellOrderCreatedWorkerMessage> sellOrderHandler,
+            IEnumerable<IWorkerMessageHandler> handlers,
             ILogger<OrderMessageProcessor> logger)
         {
             _channel = channel;
-            _priceUpdateHandler = priceUpdateHandler;
-            _sellOrderHandler = sellOrderHandler;
+            _handlers = handlers.ToDictionary(h => h.MessageType);
             _logger = logger;
         }
 
@@ -39,14 +36,12 @@ namespace StocksApp.OrdersWorker.Services
             }
         }
 
-        private Task DispatchAsync(WorkerMessage message, CancellationToken cancellationToken)
+        private async Task DispatchAsync(WorkerMessage message, CancellationToken cancellationToken)
         {
-            return message switch
-            {
-                PriceUpdateWorkerMessage m => _priceUpdateHandler.HandleAsync(m, cancellationToken),
-                SellOrderCreatedWorkerMessage m => _sellOrderHandler.HandleAsync(m, cancellationToken),
-                _ => throw new InvalidOperationException($"Unknown message type: {message.GetType().Name}")
-            };
+            if (!_handlers.TryGetValue(message.GetType(), out var handler))
+                throw new InvalidOperationException($"No handler registered for {message.GetType().Name}");
+
+            await handler.HandleAsync(message, cancellationToken);
         }
     }
 }

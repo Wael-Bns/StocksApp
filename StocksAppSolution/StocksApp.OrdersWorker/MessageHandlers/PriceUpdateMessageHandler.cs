@@ -4,7 +4,7 @@ using StocksApp.OrdersWorker.Stores;
 
 namespace StocksApp.OrdersWorker.MessageHandlers
 {
-    public sealed class PriceUpdateMessageHandler : IWorkerMessageHandler<PriceUpdateWorkerMessage>
+    public sealed class PriceUpdateMessageHandler : WorkerMessageHandler<PriceUpdateWorkerMessage>
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ISellOrdersStore _sellOrdersStore;
@@ -16,7 +16,7 @@ namespace StocksApp.OrdersWorker.MessageHandlers
             _sellOrdersStore = sellOrdersStore;
         }
 
-        public async Task HandleAsync(PriceUpdateWorkerMessage message, CancellationToken cancellationToken = default)
+        protected override async Task HandleAsync(PriceUpdateWorkerMessage message, CancellationToken cancellationToken = default)
         {
             var eligibleOrders = _sellOrdersStore.DequeueEligibleOrders(message.StockSymbol, message.Price);
 
