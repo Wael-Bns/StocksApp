@@ -33,9 +33,7 @@ namespace StocksApp.Infrastructure.IoC
 
             services.Configure<RabbitMQSettings>(configuration.GetSection("RabbitMQ"));
 
-            services.AddScoped<IOrderRepository, OrderRepository>();
-
-            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 

@@ -1,35 +1,40 @@
-﻿using StocksApp.Domain.Events;
-using StocksApp.Core.ServiceContracts;
+﻿using StocksApp.Domain.Entities;
+using StocksApp.Domain.Events;
 using StocksApp.Domain.Enums;
 using StocksApp.Domain.RepositoryContracts;
+using StocksApp.Domain.Specifications;
+using StocksApp.Core.ServiceContracts;
 
 namespace StocksApp.Core.Services
 {
     public class OrdersExecutionService : IOrdersExecutionService
     {
-        private readonly IOrderRepository _orderRepository;
+        private readonly IGenericRepository<SellOrder> _sellOrderRepository;
         private readonly IUnitOfWork _unitOfWork;
-        public OrdersExecutionService(IOrderRepository orderRepository, IUnitOfWork unitOfWork)
+
+        public OrdersExecutionService(IGenericRepository<SellOrder> sellOrderRepository, IUnitOfWork unitOfWork)
         {
-            _orderRepository = orderRepository;
+            _sellOrderRepository = sellOrderRepository;
             _unitOfWork = unitOfWork;
         }
+
         public async Task ExecuteSellOrdersAsync(IReadOnlyCollection<SellOrderCreatedCommand> orders, CancellationToken cancellationToken)
         {
-            List<Guid> orderIds = orders
-                            .Select(o => o.SellOrderId)
-                            .ToList();
+            var orderIds = orders.Select(o => o.SellOrderId).ToList();
 
             try
             {
                 await _unitOfWork.BeginTransactionAsync(cancellationToken);
-                var sellOrders = await _orderRepository.GetSellOrdersByIds(orderIds);
+
+                var spec = new SellOrdersByIdsSpecification(orderIds);
+                var sellOrders = await _sellOrderRepository.ListAsync(spec);
 
                 foreach (var sellOrder in sellOrders)
                 {
                     sellOrder.Status = SellOrderStatus.Executed;
                     sellOrder.User.CashBalance += sellOrder.Price * sellOrder.Quantity;
                 }
+
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync(cancellationToken);
             }

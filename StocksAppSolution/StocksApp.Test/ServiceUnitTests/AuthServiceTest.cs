@@ -9,6 +9,7 @@ using StocksApp.Core.Exceptions;
 using StocksApp.Core.Options;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
+using StocksApp.Tests.Common.Builders;
 using Xunit;
 
 namespace StocksApp.Test.ServiceUnitTests
@@ -52,8 +53,17 @@ namespace StocksApp.Test.ServiceUnitTests
         [Fact]
         public async Task RegisterAsync_ValidRequest_ReturnsAuthenticationResponse()
         {
-            var request = new UserAddRequest { UserName = TestUserName, Email = TestEmail, Password = TestPassword };
-            var userResponse = new UserResponse { UserId = TestUserId, UserName = request.UserName!, Email = request.Email! };
+            var request = new UserAddRequestBuilder()
+                .WithUsername(TestUserName)
+                .WithEmail(TestEmail)
+                .WithPassword(TestPassword)
+                .Build();
+
+            var userResponse = new UserResponseBuilder()
+                .WithUserId(TestUserId)
+                .WithUserName(request.UserName!)
+                .WithEmail(request.Email!)
+                .Build();
 
             _userServiceMock.Setup(s => s.AddUser(request)).ReturnsAsync(userResponse);
             _tokenServiceMock.Setup(s => s.CreateAccessToken(userResponse.UserId, userResponse.UserName, userResponse.Email))
@@ -84,7 +94,11 @@ namespace StocksApp.Test.ServiceUnitTests
         [Fact]
         public async Task LoginAsync_InvalidEmail_ThrowsClientException()
         {
-            var loginRequest = new LoginRequest { Email = "invalid@test.com", Password = TestPassword };
+            var loginRequest = new LoginRequestBuilder()
+                .WithEmail("invalid@test.com")
+                .WithPassword(TestPassword)
+                .Build();
+
             _userServiceMock.Setup(s => s.GetUserByEmail(loginRequest.Email!)).ReturnsAsync((UserResponse?)null);
 
             Func<Task> action = async () => await _authService.LoginAsync(loginRequest);
@@ -95,14 +109,17 @@ namespace StocksApp.Test.ServiceUnitTests
         [Fact]
         public async Task LoginAsync_InvalidPassword_ThrowsClientException()
         {
-            var loginRequest = new LoginRequest { Email = TestEmail, Password = WrongPassword };
-            var userResponse = new UserResponse
-            {
-                UserId = TestUserId,
-                UserName = TestUserName,
-                Email = loginRequest.Email!,
-                PasswordHash = PasswordHash
-            };
+            var loginRequest = new LoginRequestBuilder()
+                .WithEmail(TestEmail)
+                .WithPassword(WrongPassword)
+                .Build();
+
+            var userResponse = new UserResponseBuilder()
+                .WithUserId(TestUserId)
+                .WithUserName(TestUserName)
+                .WithEmail(loginRequest.Email!)
+                .WithPasswordHash(PasswordHash)
+                .Build();
 
             _userServiceMock.Setup(s => s.GetUserByEmail(loginRequest.Email!)).ReturnsAsync(userResponse);
             _passwordHasherMock.Setup(p => p.VerifyPassword(loginRequest.Password!, userResponse.PasswordHash)).Returns(false);
@@ -115,14 +132,17 @@ namespace StocksApp.Test.ServiceUnitTests
         [Fact]
         public async Task LoginAsync_ValidCredentials_ReturnsAuthenticationResponse()
         {
-            var loginRequest = new LoginRequest { Email = TestEmail, Password = TestPassword };
-            var userResponse = new UserResponse
-            {
-                UserId = TestUserId,
-                UserName = TestUserName,
-                Email = loginRequest.Email!,
-                PasswordHash = PasswordHash
-            };
+            var loginRequest = new LoginRequestBuilder()
+                .WithEmail(TestEmail)
+                .WithPassword(TestPassword)
+                .Build();
+
+            var userResponse = new UserResponseBuilder()
+                .WithUserId(TestUserId)
+                .WithUserName(TestUserName)
+                .WithEmail(loginRequest.Email!)
+                .WithPasswordHash(PasswordHash)
+                .Build();
 
             _userServiceMock.Setup(s => s.GetUserByEmail(loginRequest.Email!)).ReturnsAsync(userResponse);
             _passwordHasherMock.Setup(p => p.VerifyPassword(loginRequest.Password!, userResponse.PasswordHash)).Returns(true);
@@ -152,7 +172,10 @@ namespace StocksApp.Test.ServiceUnitTests
         [Fact]
         public async Task GenerateNewAccessTokenAsync_InvalidRequest_ThrowsArgumentException()
         {
-            var tokenModel = new TokenModel { Token = string.Empty, RefreshToken = RefreshToken };
+            var tokenModel = new TokenModelBuilder()
+                .WithToken(string.Empty)
+                .WithRefreshToken(RefreshToken)
+                .Build();
 
             Func<Task> action = async () => await _authService.GenerateNewAccessTokenAsync(tokenModel);
 
@@ -203,14 +226,13 @@ namespace StocksApp.Test.ServiceUnitTests
         {
             var tokenModel = CreateTokenModel();
             var principal = CreatePrincipal(TestEmail);
-            var userResponse = new UserResponse
-            {
-                UserId = TestUserId,
-                UserName = TestUserName,
-                Email = TestEmail,
-                RefreshToken = DifferentRefreshToken,
-                RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(10)
-            };
+            var userResponse = new UserResponseBuilder()
+                .WithUserId(TestUserId)
+                .WithUserName(TestUserName)
+                .WithEmail(TestEmail)
+                .WithRefreshToken(DifferentRefreshToken)
+                .WithRefreshTokenExpiry(DateTime.UtcNow.AddMinutes(10))
+                .Build();
 
             _tokenServiceMock.Setup(s => s.GetPrincipalFromAccessToken(tokenModel.Token)).Returns(principal);
             _userServiceMock.Setup(s => s.GetUserByEmail(userResponse.Email)).ReturnsAsync(userResponse);
@@ -225,14 +247,13 @@ namespace StocksApp.Test.ServiceUnitTests
         {
             var tokenModel = CreateTokenModel();
             var principal = CreatePrincipal(TestEmail);
-            var userResponse = new UserResponse
-            {
-                UserId = TestUserId,
-                UserName = TestUserName,
-                Email = TestEmail,
-                RefreshToken = tokenModel.RefreshToken,
-                RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(-1)
-            };
+            var userResponse = new UserResponseBuilder()
+                .WithUserId(TestUserId)
+                .WithUserName(TestUserName)
+                .WithEmail(TestEmail)
+                .WithRefreshToken(tokenModel.RefreshToken!)
+                .WithRefreshTokenExpiry(DateTime.UtcNow.AddMinutes(-1))
+                .Build();
 
             _tokenServiceMock.Setup(s => s.GetPrincipalFromAccessToken(tokenModel.Token)).Returns(principal);
             _userServiceMock.Setup(s => s.GetUserByEmail(userResponse.Email)).ReturnsAsync(userResponse);
@@ -247,14 +268,13 @@ namespace StocksApp.Test.ServiceUnitTests
         {
             var tokenModel = CreateTokenModel();
             var principal = CreatePrincipal(TestEmail);
-            var userResponse = new UserResponse
-            {
-                UserId = TestUserId,
-                UserName = TestUserName,
-                Email = TestEmail,
-                RefreshToken = tokenModel.RefreshToken,
-                RefreshTokenExpiry = DateTime.UtcNow.AddMinutes(10)
-            };
+            var userResponse = new UserResponseBuilder()
+                .WithUserId(TestUserId)
+                .WithUserName(TestUserName)
+                .WithEmail(TestEmail)
+                .WithRefreshToken(tokenModel.RefreshToken!)
+                .WithRefreshTokenExpiry(DateTime.UtcNow.AddMinutes(10))
+                .Build();
 
             _tokenServiceMock.Setup(s => s.GetPrincipalFromAccessToken(tokenModel.Token)).Returns(principal);
             _userServiceMock.Setup(s => s.GetUserByEmail(userResponse.Email)).ReturnsAsync(userResponse);
@@ -280,11 +300,10 @@ namespace StocksApp.Test.ServiceUnitTests
 
         private static TokenModel CreateTokenModel()
         {
-            return new TokenModel
-            {
-                Token = AccessToken,
-                RefreshToken = RefreshToken
-            };
+            return new TokenModelBuilder()
+                .WithToken(AccessToken)
+                .WithRefreshToken(RefreshToken)
+                .Build();
         }
 
         private static ClaimsPrincipal CreatePrincipal(string email)

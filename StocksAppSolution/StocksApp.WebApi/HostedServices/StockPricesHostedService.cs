@@ -38,6 +38,7 @@ namespace StocksApp.WebApi.HostedServices
         {
             if (priceUpdates != null)
             {
+                _logger.LogInformation("Received {Count} price updates.", priceUpdates.Count);
                 foreach (var trade in priceUpdates)
                 {
                     await _stocksHub.Clients.Group(trade.StockSymbol)

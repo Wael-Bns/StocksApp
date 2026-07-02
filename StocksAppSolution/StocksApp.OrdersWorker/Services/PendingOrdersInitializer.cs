@@ -1,4 +1,5 @@
-﻿using StocksApp.Domain.Events;
+﻿using StocksApp.Domain.Entities;
+using StocksApp.Domain.Events;
 using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Domain.Specifications;
 using StocksApp.OrdersWorker.ServiceContracts;
@@ -23,8 +24,8 @@ namespace StocksApp.OrdersWorker.Services
         {
             var spec = new PendingSellOrdersSpecification();
             using var scope = _serviceScopeFactory.CreateScope();
-            var service = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
-            var pendingSellOrders = await service.GetSellOrdersBySpecificationAsNoTracking(spec);
+            var service = scope.ServiceProvider.GetRequiredService<IGenericRepository<SellOrder>>();
+            var pendingSellOrders = await service.ListAsync(spec);
             foreach(var order in pendingSellOrders)
             {
                 _sellOrdersStore.AddSellOrder(order.ToSellOrderCreatedCommand());

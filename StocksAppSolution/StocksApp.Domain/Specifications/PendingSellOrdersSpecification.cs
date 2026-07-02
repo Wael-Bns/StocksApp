@@ -1,16 +1,13 @@
-﻿using System.Linq.Expressions;
-using StocksApp.Domain.Entities;
+﻿using StocksApp.Domain.Entities;
 using StocksApp.Domain.Enums;
 
 namespace StocksApp.Domain.Specifications
 {
-    public class PendingSellOrdersSpecification : ISpecification<SellOrder>
+    public class PendingSellOrdersSpecification : BaseSpecification<SellOrder>
     {
-        public Expression<Func<SellOrder, bool>> Criteria { get; }
-        public PendingSellOrdersSpecification()
+        public PendingSellOrdersSpecification() : base(o => o.Status == SellOrderStatus.Pending)
         {
-            Criteria = order => 
-                            order.Status == SellOrderStatus.Pending;
+            ApplyNoTracking();
         }
     }
 }
