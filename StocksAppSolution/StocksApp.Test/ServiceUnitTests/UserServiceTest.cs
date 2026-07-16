@@ -1,10 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Moq;
 using Xunit;
-using StocksApp.Core.Domain.Entities;
-using StocksApp.Core.Domain.RepositoryContracts;
+using StocksApp.Domain.Entities;
+using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Core.DTO.UsersDTO;
 using StocksApp.Core.Exceptions;
 using StocksApp.Core.ServiceContracts;

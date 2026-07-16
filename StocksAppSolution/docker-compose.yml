@@ -11,8 +11,51 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=stocksappdb
+      - RabbitMQ__HostName=rabbitmq-container
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=admin
+      - RabbitMQ__Password=admin
+      - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
     ports:
       - "8088:8080"
+      - "8089:8081"
+    depends_on:
+      - rabbitmq-container
+      - seq
+    networks:
+      - stocksapp-network
+  
+  ordersworker:
+    image: ordersworker:dev
+    build:
+      context: .
+      dockerfile: StocksApp.OrdersWorker/Dockerfile
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      - POSTGRES_HOST=postgres-container
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=stocksappdb
+      - RabbitMQ__HostName=rabbitmq-container
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=admin
+      - RabbitMQ__Password=admin
+      - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
+    depends_on:
+      - rabbitmq-container
+      - seq
+    networks:
+      - stocksapp-network
+
+  seq:
+    image: datalust/seq:latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_NOAUTHENTICATION=true
+    ports:
+      - "5341:5341"
+      - "9090:80"
     networks:
       - stocksapp-network
 
@@ -26,6 +69,17 @@ services:
       - "5434:5432"
     volumes:
       - ./postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - stocksapp-network
+
+  rabbitmq-container:
+    image: rabbitmq:3.11-management
+    ports:
+      - "5672:5672"   
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
     networks:
       - stocksapp-network
 

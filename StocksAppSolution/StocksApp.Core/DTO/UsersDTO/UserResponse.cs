@@ -1,4 +1,4 @@
-using StocksApp.Core.Domain.Entities;
+using StocksApp.Domain.Entities;
 
 namespace StocksApp.Core.DTO.UsersDTO
 {
@@ -8,7 +8,7 @@ namespace StocksApp.Core.DTO.UsersDTO
         public string UserName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
-        public decimal CashBalance { get; set; }
+        public double CashBalance { get; set; }
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiry { get; set; }
     }

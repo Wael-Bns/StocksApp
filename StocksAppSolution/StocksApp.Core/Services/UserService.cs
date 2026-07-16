@@ -1,5 +1,5 @@
 using StocksApp.Core.DTO.UsersDTO;
-using StocksApp.Core.Domain.RepositoryContracts;
+using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Exceptions;
 

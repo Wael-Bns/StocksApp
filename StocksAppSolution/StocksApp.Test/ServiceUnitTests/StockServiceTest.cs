@@ -1,8 +1,8 @@
 ﻿using FluentAssertions;
 using Moq;
-using StocksApp.Core.Domain.Entities;
-using StocksApp.Core.Domain.RepositoryContracts;
-using StocksApp.Core.Domain.Specifications;
+using StocksApp.Domain.Entities;
+using StocksApp.Domain.RepositoryContracts;
+using StocksApp.Domain.Specifications;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.DTO.StockDTO;
@@ -18,6 +18,8 @@ namespace StocksApp.Test.ServiceUnitTests
     {
         private readonly IStockService _stockService;
         private readonly IOrderRepository _orderRepository;
+        private readonly ISubscriptionsManager _subscriptionsManager;
+        private readonly Mock<ISubscriptionsManager> _subscriptionsManagerMock;
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
         private readonly Mock<IFinnHubHttpClient> _finnHubHttpClientMock;
 
@@ -30,6 +32,7 @@ namespace StocksApp.Test.ServiceUnitTests
             Quantity = 250,
             DateAndTimeOfOrder = DateTime.Now,
             Price = 100,
+            UserId = new Guid("EB608896-7E47-44A6-9395-5D4EEE695044")
         };
         private SellOrderAddRequest sellOrderRequest = new SellOrderAddRequest
         {
@@ -37,7 +40,7 @@ namespace StocksApp.Test.ServiceUnitTests
             StockSymbol = "AAPL",
             Quantity = 250,
             DateAndTimeOfOrder = DateTime.Now,
-            Price = 100,
+            Price = 100
         };
 
         public StockServiceTest()
@@ -45,6 +48,8 @@ namespace StocksApp.Test.ServiceUnitTests
             _orderRepositoryMock = new Mock<IOrderRepository>();
             _finnHubHttpClientMock = new Mock<IFinnHubHttpClient>();
             _orderRepository = _orderRepositoryMock.Object;
+            _subscriptionsManagerMock = new Mock<ISubscriptionsManager>();
+            _subscriptionsManager = _subscriptionsManagerMock.Object;
             _stockService = new StockService(_orderRepository, _finnHubHttpClientMock.Object);
         }
         private void MockAddBuyOrder(BuyOrder buyOrder)
@@ -64,7 +69,7 @@ namespace StocksApp.Test.ServiceUnitTests
         }
         private void MockGetSellOrdersBySpecification(List<SellOrder> sellOrders)
         {
-            _orderRepositoryMock.Setup(repo => repo.GetSellOrdersBySpecification(It.IsAny<ISpecification<SellOrder>>()))
+            _orderRepositoryMock.Setup(repo => repo.GetSellOrdersBySpecificationAsNoTracking(It.IsAny<ISpecification<SellOrder>>()))
                 .ReturnsAsync(sellOrders);
         }
         private void MockGetStockQuote(StockQuoteDTO? stockQuote)

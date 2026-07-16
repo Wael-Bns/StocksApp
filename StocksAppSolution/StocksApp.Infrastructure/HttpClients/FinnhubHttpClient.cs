@@ -4,7 +4,7 @@ using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.HttpClientAbstractions;
 using StocksApp.Infrastructure.Options;
 
-namespace StocksApp.Infrastructure.Services
+namespace StocksApp.Infrastructure.HttpClients
 {
     public class FinnhubHttpClient : IFinnHubHttpClient
     {

@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StocksApp.Core.Domain.Entities;
+using StocksApp.Domain.Entities;
 
 namespace StocksApp.Infrastructure
 {

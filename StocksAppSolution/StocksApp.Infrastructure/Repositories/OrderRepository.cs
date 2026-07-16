@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StocksApp.Core.Domain.Entities;
-using StocksApp.Core.Domain.RepositoryContracts;
-using StocksApp.Core.Domain.Specifications;
+using StocksApp.Domain.Entities;
+using StocksApp.Domain.RepositoryContracts;
+using StocksApp.Domain.Specifications;
+using StocksApp.Domain.Enums;
 
 namespace StocksApp.Infrastructure.Repositories
 {
@@ -26,8 +27,7 @@ namespace StocksApp.Infrastructure.Repositories
             await _dbContext.SaveChangesAsync();
             return sellOrder;
         }
-
-        public async Task<BuyOrder?> GetBuyOrder(Guid orderID)
+       public async Task<BuyOrder?> GetBuyOrder(Guid orderID)
         {
             return await _dbContext.BuyOrders.FirstOrDefaultAsync(order => order.BuyOrderID == orderID);
         }
@@ -42,9 +42,31 @@ namespace StocksApp.Infrastructure.Repositories
             return await _dbContext.SellOrders.FirstOrDefaultAsync(order => order.SellOrderID == orderID);
         }
 
-        public async Task<List<SellOrder>> GetSellOrdersBySpecification(ISpecification<SellOrder> specification)
+        public async Task<List<string>> GetPendingSellOrderSymbols()
         {
-            return await _dbContext.SellOrders.Where(specification.Criteria).ToListAsync();
+            var symbols = await _dbContext.SellOrders.
+                Where(order => order.Status == SellOrderStatus.Pending)
+                .AsNoTracking()
+                .Select(order => order.StockSymbol!)
+                .Distinct()
+                .ToListAsync();
+            return symbols;
+        }
+        public async Task<List<SellOrder>> GetSellOrdersBySpecificationAsNoTracking(ISpecification<SellOrder> specification)
+        {
+            return await _dbContext.SellOrders
+                .AsNoTracking()
+                .Where(specification.Criteria)
+                .ToListAsync();
+        }
+
+        public async Task<List<SellOrder>> GetSellOrdersByIds(List<Guid> sellOrderIds)
+        {
+            List<SellOrder> sellOrders = await _dbContext.SellOrders
+                .Where(order => sellOrderIds.Contains(order.SellOrderID))
+                .Include(o => o.User)
+                .ToListAsync();
+            return sellOrders;
         }
     }
 }

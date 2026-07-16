@@ -1,4 +1,6 @@
-﻿using StocksApp.IntegrationsTests.Factory;
+﻿using MassTransit.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using StocksApp.IntegrationsTests.Factory;
 
 namespace StocksApp.IntegrationsTests.Collection
 {
@@ -7,10 +9,14 @@ namespace StocksApp.IntegrationsTests.Collection
     {
         protected readonly CustomWebApplicationFactory Factory;
         protected HttpClient Client { get; private set; }
+        protected ITestHarness Harness { get; private set; }
+
         protected IntegrationTestBase(CustomWebApplicationFactory factory)
         {
             Factory = factory;
             Client = Factory.CreateClient();
+            Harness = Factory.Services.GetRequiredService<ITestHarness>();
+
         }
         public async Task InitializeAsync()
         {
