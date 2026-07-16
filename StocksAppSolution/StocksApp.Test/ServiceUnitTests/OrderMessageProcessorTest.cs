@@ -11,13 +11,16 @@ namespace StocksApp.Test.ServiceUnitTests
 {
     public class OrderMessageProcessorTest
     {
-        private readonly Mock<IWorkerMessageHandler<PriceUpdateWorkerMessage>> _priceUpdateHandlerMock;
-        private readonly Mock<IWorkerMessageHandler<SellOrderCreatedWorkerMessage>> _sellOrderHandlerMock;
+        private readonly Mock<IWorkerMessageHandler> _priceUpdateHandlerMock;
+        private readonly Mock<IWorkerMessageHandler> _sellOrderHandlerMock;
 
         public OrderMessageProcessorTest()
         {
-            _priceUpdateHandlerMock = new Mock<IWorkerMessageHandler<PriceUpdateWorkerMessage>>();
-            _sellOrderHandlerMock = new Mock<IWorkerMessageHandler<SellOrderCreatedWorkerMessage>>();
+            _priceUpdateHandlerMock = new Mock<IWorkerMessageHandler>();
+            _priceUpdateHandlerMock.Setup(h => h.MessageType).Returns(typeof(PriceUpdateWorkerMessage));
+
+            _sellOrderHandlerMock = new Mock<IWorkerMessageHandler>();
+            _sellOrderHandlerMock.Setup(h => h.MessageType).Returns(typeof(SellOrderCreatedWorkerMessage));
         }
 
         [Fact]
@@ -43,7 +46,7 @@ namespace StocksApp.Test.ServiceUnitTests
         public async Task StartAsync_SellOrderCreatedMessage_DispatchesToSellOrderHandler()
         {
             // Arrange
-            var message = new SellOrderCreatedWorkerMessage(CreateSellOrder());
+            var message = new SellOrderCreatedWorkerMessage(CreateSellOrderCommand());
             var processor = CreateProcessor(message);
 
             // Act
@@ -63,7 +66,7 @@ namespace StocksApp.Test.ServiceUnitTests
         {
             // Arrange
             var failingMessage = new PriceUpdateWorkerMessage("AAPL", 100);
-            var nextMessage = new SellOrderCreatedWorkerMessage(CreateSellOrder());
+            var nextMessage = new SellOrderCreatedWorkerMessage(CreateSellOrderCommand());
 
             _priceUpdateHandlerMock
                 .Setup(handler => handler.HandleAsync(failingMessage, It.IsAny<CancellationToken>()))
@@ -87,12 +90,12 @@ namespace StocksApp.Test.ServiceUnitTests
         {
             return new OrderMessageProcessor(
                 new TestWorkerChannel(messages),
-                _priceUpdateHandlerMock.Object,
-                _sellOrderHandlerMock.Object,
+                new[] { _priceUpdateHandlerMock.Object,
+                _sellOrderHandlerMock.Object },
                 NullLogger<OrderMessageProcessor>.Instance);
         }
 
-        private static SellOrderCreatedCommand CreateSellOrder()
+        private static SellOrderCreatedCommand CreateSellOrderCommand()
         {
             return new SellOrderCreatedCommand
             {

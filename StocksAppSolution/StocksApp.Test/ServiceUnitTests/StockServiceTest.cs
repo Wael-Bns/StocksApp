@@ -17,10 +17,8 @@ namespace StocksApp.Test.ServiceUnitTests
     public class StockServiceTest
     {
         private readonly IStockService _stockService;
-        private readonly IOrderRepository _orderRepository;
-        private readonly ISubscriptionsManager _subscriptionsManager;
-        private readonly Mock<ISubscriptionsManager> _subscriptionsManagerMock;
-        private readonly Mock<IOrderRepository> _orderRepositoryMock;
+        private readonly Mock<IGenericRepository<BuyOrder>> _buyOrderRepositoryMock;
+        private readonly Mock<IGenericRepository<SellOrder>> _sellOrderRepositoryMock;
         private readonly Mock<IFinnHubHttpClient> _finnHubHttpClientMock;
 
         private readonly Guid _userId = Guid.NewGuid();
@@ -45,31 +43,34 @@ namespace StocksApp.Test.ServiceUnitTests
 
         public StockServiceTest()
         {
-            _orderRepositoryMock = new Mock<IOrderRepository>();
+            _buyOrderRepositoryMock = new Mock<IGenericRepository<BuyOrder>>();
+            _sellOrderRepositoryMock = new Mock<IGenericRepository<SellOrder>>();
             _finnHubHttpClientMock = new Mock<IFinnHubHttpClient>();
-            _orderRepository = _orderRepositoryMock.Object;
-            _subscriptionsManagerMock = new Mock<ISubscriptionsManager>();
-            _subscriptionsManager = _subscriptionsManagerMock.Object;
-            _stockService = new StockService(_orderRepository, _finnHubHttpClientMock.Object);
+
+            _stockService = new StockService(
+                _buyOrderRepositoryMock.Object,
+                _sellOrderRepositoryMock.Object,
+                _finnHubHttpClientMock.Object);
         }
+
         private void MockAddBuyOrder(BuyOrder buyOrder)
         {
-            _orderRepositoryMock.Setup(repo => repo.AddBuyOrderAsync(It.IsAny<BuyOrder>()))
+            _buyOrderRepositoryMock.Setup(repo => repo.AddAsync(It.IsAny<BuyOrder>()))
                 .ReturnsAsync(buyOrder);
         }
         private void MockAddSellOrder(SellOrder sellOrder)
         {
-            _orderRepositoryMock.Setup(repo => repo.AddSellOrderAsync(It.IsAny<SellOrder>()))
+            _sellOrderRepositoryMock.Setup(repo => repo.AddAsync(It.IsAny<SellOrder>()))
                 .ReturnsAsync(sellOrder);
         }
         private void MockGetBuyOrdersBySpecification(List<BuyOrder> buyOrders)
         {
-            _orderRepositoryMock.Setup(repo => repo.GetBuyOrdersBySpecification(It.IsAny<ISpecification<BuyOrder>>()))
+            _buyOrderRepositoryMock.Setup(repo => repo.ListAsync(It.IsAny<ISpecification<BuyOrder>>()))
                 .ReturnsAsync(buyOrders);
         }
         private void MockGetSellOrdersBySpecification(List<SellOrder> sellOrders)
         {
-            _orderRepositoryMock.Setup(repo => repo.GetSellOrdersBySpecificationAsNoTracking(It.IsAny<ISpecification<SellOrder>>()))
+            _sellOrderRepositoryMock.Setup(repo => repo.ListAsync(It.IsAny<ISpecification<SellOrder>>()))
                 .ReturnsAsync(sellOrders);
         }
         private void MockGetStockQuote(StockQuoteDTO? stockQuote)

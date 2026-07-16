@@ -1,12 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using StocksApp.Domain.Entities;
-using StocksApp.Domain.Enums;
 using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Domain.Specifications;
 using StocksApp.OrdersWorker.ServiceContracts;
 using StocksApp.OrdersWorker.Services;
 using StocksApp.OrdersWorker.Stores;
+using StocksApp.Tests.Common.Builders;
 using Xunit;
 
 namespace StocksApp.Test.ServiceUnitTests
@@ -14,7 +14,7 @@ namespace StocksApp.Test.ServiceUnitTests
     public class PendingOrdersInitializerTest
     {
         private readonly Mock<ISellOrdersStore> _sellOrdersStoreMock;
-        private readonly Mock<IOrderRepository> _orderRepositoryMock;
+        private readonly Mock<IGenericRepository<SellOrder>> _sellOrdersRepositoryMock;
         private readonly Mock<IWorkerSubscriptionsManager> _workerSubscriptionsManagerMock;
         private readonly ServiceProvider _serviceProvider;
         private readonly PendingOrdersInitializer _pendingOrdersInitializer;
@@ -22,11 +22,11 @@ namespace StocksApp.Test.ServiceUnitTests
         public PendingOrdersInitializerTest()
         {
             _sellOrdersStoreMock = new Mock<ISellOrdersStore>();
-            _orderRepositoryMock = new Mock<IOrderRepository>();
+            _sellOrdersRepositoryMock = new Mock<IGenericRepository<SellOrder>>();
             _workerSubscriptionsManagerMock = new Mock<IWorkerSubscriptionsManager>();
 
             _serviceProvider = new ServiceCollection()
-                .AddScoped(_ => _orderRepositoryMock.Object)
+                .AddScoped(_ => _sellOrdersRepositoryMock.Object)
                 .BuildServiceProvider();
 
             _pendingOrdersInitializer = new PendingOrdersInitializer(
@@ -42,12 +42,12 @@ namespace StocksApp.Test.ServiceUnitTests
             var cancellationToken = new CancellationTokenSource().Token;
             var pendingOrders = new List<SellOrder>
             {
-                CreateSellOrder("AAPL"),
-                CreateSellOrder("MSFT")
+                new SellOrderBuilder().WithStockSymbol("AAPL").WithStockName("AAPL").Build(),
+                new SellOrderBuilder().WithStockSymbol("MSFT").WithStockName("MSFT").Build()
             };
 
-            _orderRepositoryMock
-                .Setup(repo => repo.GetSellOrdersBySpecificationAsNoTracking(It.IsAny<ISpecification<SellOrder>>()))
+            _sellOrdersRepositoryMock
+                .Setup(repo => repo.ListAsync(It.IsAny<ISpecification<SellOrder>>()))
                 .ReturnsAsync(pendingOrders);
 
             // Act
@@ -71,8 +71,8 @@ namespace StocksApp.Test.ServiceUnitTests
         public async Task StartAsync_NoPendingOrders_DoesNotAddOrSubscribe()
         {
             // Arrange
-            _orderRepositoryMock
-                .Setup(repo => repo.GetSellOrdersBySpecificationAsNoTracking(It.IsAny<ISpecification<SellOrder>>()))
+            _sellOrdersRepositoryMock
+                .Setup(repo => repo.ListAsync(It.IsAny<ISpecification<SellOrder>>()))
                 .ReturnsAsync(new List<SellOrder>());
 
             // Act
@@ -83,21 +83,6 @@ namespace StocksApp.Test.ServiceUnitTests
             _workerSubscriptionsManagerMock.Verify(
                 manager => manager.AddStockSymbol(It.IsAny<string>(), It.IsAny<CancellationToken>()),
                 Times.Never);
-        }
-
-        private static SellOrder CreateSellOrder(string stockSymbol)
-        {
-            return new SellOrder
-            {
-                SellOrderID = Guid.NewGuid(),
-                StockSymbol = stockSymbol,
-                StockName = stockSymbol,
-                DateAndTimeOfOrder = DateTime.UtcNow,
-                Price = 100,
-                Quantity = 10,
-                Status = SellOrderStatus.Pending,
-                UserId = Guid.NewGuid()
-            };
         }
     }
 }
