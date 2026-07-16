@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using MassTransit;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
+using StocksApp.Core.HttpClientAbstractions;
+using StocksApp.Core.WebSocketClientAbstractions;
 using StocksApp.Infrastructure;
 using StocksApp.IntegrationsTests.Fakes;
-using StocksApp.Core.HttpClientAbstractions;
 
 namespace StocksApp.IntegrationsTests.Factory
 {
@@ -41,7 +42,18 @@ namespace StocksApp.IntegrationsTests.Factory
 
                 services.AddScoped<IFinnHubHttpClient, FakeFinnhubHttpClient>();
 
-                services.RemoveAll<IHostedService>();
+                services.RemoveAll<IFinnhubWebSocketClient>();
+                services.AddSingleton<IFinnhubWebSocketClient, FakeFinnhubWebSocketClient>();
+
+                var massTransitDescriptors = services
+                    .Where(d => d.ServiceType.Namespace != null
+                             && d.ServiceType.Namespace.Contains("MassTransit", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                foreach (var descriptor in massTransitDescriptors)
+                    services.Remove(descriptor);
+
+                services.AddMassTransitTestHarness();
             });
         }
 

@@ -37,8 +37,9 @@ namespace StocksApp.Test.ServiceUnitTests
             _priceUpdateHandlerMock.Verify(
                 handler => handler.HandleAsync(message, It.IsAny<CancellationToken>()),
                 Times.Once);
+
             _sellOrderHandlerMock.Verify(
-                handler => handler.HandleAsync(It.IsAny<SellOrderCreatedWorkerMessage>(), It.IsAny<CancellationToken>()),
+                handler => handler.HandleAsync(It.IsAny<PriceUpdateWorkerMessage>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
 
@@ -56,8 +57,9 @@ namespace StocksApp.Test.ServiceUnitTests
             _sellOrderHandlerMock.Verify(
                 handler => handler.HandleAsync(message, It.IsAny<CancellationToken>()),
                 Times.Once);
+
             _priceUpdateHandlerMock.Verify(
-                handler => handler.HandleAsync(It.IsAny<PriceUpdateWorkerMessage>(), It.IsAny<CancellationToken>()),
+                handler => handler.HandleAsync(It.IsAny<SellOrderCreatedWorkerMessage>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
 
@@ -81,6 +83,7 @@ namespace StocksApp.Test.ServiceUnitTests
             _priceUpdateHandlerMock.Verify(
                 handler => handler.HandleAsync(failingMessage, It.IsAny<CancellationToken>()),
                 Times.Once);
+
             _sellOrderHandlerMock.Verify(
                 handler => handler.HandleAsync(nextMessage, It.IsAny<CancellationToken>()),
                 Times.Once);

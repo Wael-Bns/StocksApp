@@ -4,6 +4,7 @@ using FluentAssertions;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.DTO.StockDTO;
+using StocksApp.Domain.Events;
 using StocksApp.IntegrationsTests.Collection;
 using StocksApp.IntegrationsTests.Factory;
 using StocksApp.IntegrationsTests.Helpers;
@@ -129,6 +130,28 @@ namespace StocksApp.IntegrationsTests.Tests
             sellOrderResponse.Should().NotBeNull();
             sellOrderResponse!.StockSymbol.Should().Be("MSFT");
             sellOrderResponse.Quantity.Should().Be(5);
+        }
+        [Fact]
+        public async Task SellOrder_ValidRequest_SendsSellOrderCreatedCommand()
+        {
+            await AuthenticateAsync("sellordercommand@test.com");
+
+            var request = new SellOrderRequestBuilder()
+                .WithStockSymbol("MSFT")
+                .WithStockName("Microsoft Corporation")
+                .WithQuantity(5)
+                .WithPrice(100)
+                .Build();
+
+            var response = await _trade.SellOrderRawAsync(request);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            var sellOrderResponse = await response.Content.ReadFromJsonAsync<SellOrderResponse>();
+
+            (await Harness.Sent.Any<SellOrderCreatedCommand>(x =>
+                    x.Context.Message.StockSymbol == sellOrderResponse!.StockSymbol
+                 && x.Context.Message.Quantity == sellOrderResponse.Quantity))
+                .Should().BeTrue();
         }
 
         [Fact]

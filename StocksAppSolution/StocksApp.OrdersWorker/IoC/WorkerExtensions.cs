@@ -10,6 +10,7 @@ namespace StocksApp.OrdersWorker.IoC
     {
         public static IServiceCollection AddWorkerServices(this IServiceCollection services)
         {
+
             services.AddSingleton<IWorkerChannel, WorkerChannel>();
 
             services.AddSingleton<ISellOrdersStore, SellOrdersStore>();
