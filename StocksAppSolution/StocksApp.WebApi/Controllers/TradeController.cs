@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.ServiceContracts;
-using StocksApp.WebApi.Options;
 using Microsoft.AspNetCore.Authorization;
+using StocksApp.Core.MessageBroker.Publisher;
 
 namespace StocksApp.WebApi.Controllers
 {
@@ -13,12 +12,12 @@ namespace StocksApp.WebApi.Controllers
     public class TradeController : ApiControllerBase
     {
         private readonly IStockService _stockService;
-        private readonly IOptions<TradeOptions> _tradeOptions;
+        private readonly ICommandSender _commandSender;
 
-        public TradeController(IStockService stockService, IOptions<TradeOptions> tradeOptions)
+        public TradeController(IStockService stockService, ICommandSender commandSender)
         {
             _stockService = stockService;
-            _tradeOptions = tradeOptions;
+            _commandSender = commandSender;
         }
 
         [HttpGet("trade-info/{stockSymbol=MSFT}")]
@@ -38,6 +37,7 @@ namespace StocksApp.WebApi.Controllers
         public async Task<IActionResult> SellOrder(SellOrderAddRequest sellOrderRequest)
         {
             SellOrderResponse sellOrderResponse = await _stockService.CreateSellOrder(sellOrderRequest, CurrentUserId);
+            await _commandSender.SendAsync(sellOrderResponse.ToSellOrderCreatedCommand(CurrentUserId));
             return Ok(sellOrderResponse);
         }
         [HttpGet("allbuyorders")]

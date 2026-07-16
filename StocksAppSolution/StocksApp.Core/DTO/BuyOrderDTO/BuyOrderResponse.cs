@@ -1,4 +1,4 @@
-﻿using StocksApp.Core.Domain.Entities;
+﻿using StocksApp.Domain.Entities;
 
 namespace StocksApp.Core.DTO.BuyOrderDTO
 {

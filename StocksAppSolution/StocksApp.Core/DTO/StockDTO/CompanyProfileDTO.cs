@@ -1,5 +1,4 @@
-﻿
-namespace StocksApp.Core.DTO.StockDTO
+﻿namespace StocksApp.Core.DTO.StockDTO
 {
     public class CompanyProfileDTO
     {

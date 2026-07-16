@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using StocksApp.Core.Domain.Entities;
-using StocksApp.Core.Domain.RepositoryContracts;
+using StocksApp.Domain.Entities;
+using StocksApp.Domain.RepositoryContracts;
 
 namespace StocksApp.Infrastructure.Repositories
 {

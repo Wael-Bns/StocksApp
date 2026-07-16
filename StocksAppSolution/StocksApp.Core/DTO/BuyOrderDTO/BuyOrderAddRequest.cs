@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using StocksApp.Core.CustomValidationAttributes;
-using StocksApp.Core.Domain.Entities;
+using StocksApp.Domain.Entities;
 
 namespace StocksApp.Core.DTO.BuyOrderDTO
 {
@@ -12,10 +12,12 @@ namespace StocksApp.Core.DTO.BuyOrderDTO
         public string? StockName { get; set; }
         [MinDate("2000-01-01")]
         public DateTime DateAndTimeOfOrder { get; set; }
-        [Range(1, 10000,ErrorMessage ="Quantity should be between 1 and 100000")]
+        [Range(1, 10000,ErrorMessage ="Quantity should be between 1 and 10000")]
         public uint Quantity { get; set; }
-        [Range(1, 10000, ErrorMessage = "Quantity should be between 1 and 100000")]
+        [Range(1, 10000, ErrorMessage = "Price should be between 1 and 10000")]
         public double Price { get; set; }
+        [Required(ErrorMessage = "User is not recognized")]
+        public Guid UserId { get; set; }
 
         public BuyOrder ToBuyOrder()
         {
@@ -26,7 +28,8 @@ namespace StocksApp.Core.DTO.BuyOrderDTO
                 StockName = StockName,
                 DateAndTimeOfOrder = DateAndTimeOfOrder,
                 Price = Price,
-                Quantity = Quantity
+                Quantity = Quantity,
+                UserId = UserId
             };
         }
     }

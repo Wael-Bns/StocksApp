@@ -22,7 +22,7 @@ namespace StocksApp.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("StocksApp.Core.Domain.Entities.BuyOrder", b =>
+            modelBuilder.Entity("StocksApp.Domain.Entities.BuyOrder", b =>
                 {
                     b.Property<Guid>("BuyOrderID")
                         .ValueGeneratedOnAdd()
@@ -60,7 +60,7 @@ namespace StocksApp.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("StocksApp.Core.Domain.Entities.SellOrder", b =>
+            modelBuilder.Entity("StocksApp.Domain.Entities.SellOrder", b =>
                 {
                     b.Property<Guid>("SellOrderID")
                         .ValueGeneratedOnAdd()
@@ -74,6 +74,9 @@ namespace StocksApp.Infrastructure.Migrations
 
                     b.Property<long>("Quantity")
                         .HasColumnType("bigint");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<string>("StockName")
                         .HasColumnType("text");
@@ -98,13 +101,13 @@ namespace StocksApp.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("StocksApp.Core.Domain.Entities.User", b =>
+            modelBuilder.Entity("StocksApp.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("UserId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("CashBalance")
+                    b.Property<double>("CashBalance")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Email")
@@ -133,9 +136,9 @@ namespace StocksApp.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("StocksApp.Core.Domain.Entities.BuyOrder", b =>
+            modelBuilder.Entity("StocksApp.Domain.Entities.BuyOrder", b =>
                 {
-                    b.HasOne("StocksApp.Core.Domain.Entities.User", "User")
+                    b.HasOne("StocksApp.Domain.Entities.User", "User")
                         .WithMany("BuyOrders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -144,9 +147,9 @@ namespace StocksApp.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("StocksApp.Core.Domain.Entities.SellOrder", b =>
+            modelBuilder.Entity("StocksApp.Domain.Entities.SellOrder", b =>
                 {
-                    b.HasOne("StocksApp.Core.Domain.Entities.User", "User")
+                    b.HasOne("StocksApp.Domain.Entities.User", "User")
                         .WithMany("SellOrders")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -155,7 +158,7 @@ namespace StocksApp.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("StocksApp.Core.Domain.Entities.User", b =>
+            modelBuilder.Entity("StocksApp.Domain.Entities.User", b =>
                 {
                     b.Navigation("BuyOrders");
 

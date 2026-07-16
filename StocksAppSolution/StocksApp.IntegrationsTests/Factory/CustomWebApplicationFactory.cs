@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using MassTransit;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using StocksApp.Core.HttpClientAbstractions;
+using StocksApp.Core.WebSocketClientAbstractions;
 using StocksApp.Infrastructure;
 using StocksApp.IntegrationsTests.Fakes;
 
@@ -26,9 +28,6 @@ namespace StocksApp.IntegrationsTests.Factory
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseEnvironment("Test");
-            builder.ConfigureLogging(logging => logging.ClearProviders());
-
-            
 
             builder.ConfigureServices(services =>
             {
@@ -39,10 +38,22 @@ namespace StocksApp.IntegrationsTests.Factory
                     options.UseNpgsql(_postgresDbManager.ConnectionString);
                 });
 
-                // 2. Replace Finnhub client
                 services.RemoveAll<IFinnHubHttpClient>();
 
                 services.AddScoped<IFinnHubHttpClient, FakeFinnhubHttpClient>();
+
+                services.RemoveAll<IFinnhubWebSocketClient>();
+                services.AddSingleton<IFinnhubWebSocketClient, FakeFinnhubWebSocketClient>();
+
+                var massTransitDescriptors = services
+                    .Where(d => d.ServiceType.Namespace != null
+                             && d.ServiceType.Namespace.Contains("MassTransit", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                foreach (var descriptor in massTransitDescriptors)
+                    services.Remove(descriptor);
+
+                services.AddMassTransitTestHarness();
             });
         }
 
