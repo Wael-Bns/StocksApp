@@ -60,39 +60,6 @@ namespace StocksApp.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("StocksApp.Domain.Entities.Outbox", b =>
-                {
-                    b.Property<Guid>("OutboxId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("AggregateId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("AggregateType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Payload")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("OutboxId");
-
-                    b.ToTable("Outbox");
-                });
-
             modelBuilder.Entity("StocksApp.Domain.Entities.SellOrder", b =>
                 {
                     b.Property<Guid>("SellOrderID")

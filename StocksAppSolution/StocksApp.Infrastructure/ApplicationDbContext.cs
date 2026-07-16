@@ -8,7 +8,6 @@ namespace StocksApp.Infrastructure
         public DbSet<BuyOrder> BuyOrders { get; set; }
         public DbSet<SellOrder> SellOrders { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<Outbox> Outbox { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
