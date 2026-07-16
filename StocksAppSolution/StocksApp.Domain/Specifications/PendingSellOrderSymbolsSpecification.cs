@@ -7,7 +7,7 @@ namespace StocksApp.Domain.Specifications
     {
         public PendingSellOrderSymbolsSpecification() : base(o => o.Status == SellOrderStatus.Pending)
         {
-            Selector = o => o.StockSymbol;
+            Selector = o => o.StockSymbol!;
             ApplyNoTracking();
         }
     }
