@@ -6,11 +6,7 @@ services:
       dockerfile: StocksApp.WebApi/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - POSTGRES_HOST=postgres-container
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=stocksappdb
+      - ConnectionStrings__DefaultConnection=Host=postgres-container;Port=5432;Database=stocksappdb;Username=postgres;Password=password;
       - RabbitMQ__HostName=rabbitmq-container
       - RabbitMQ__Port=5672
       - RabbitMQ__UserName=admin
@@ -32,11 +28,7 @@ services:
       dockerfile: StocksApp.OrdersWorker/Dockerfile
     environment:
       - DOTNET_ENVIRONMENT=Development
-      - POSTGRES_HOST=postgres-container
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=stocksappdb
+      - ConnectionStrings__DefaultConnection=Host=postgres-container;Port=5432;Database=stocksappdb;Username=postgres;Password=password;
       - RabbitMQ__HostName=rabbitmq-container
       - RabbitMQ__Port=5672
       - RabbitMQ__UserName=admin

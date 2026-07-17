@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StocksApp.Tests.Common", "S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StocksApp.Domain", "StocksApp.Domain\StocksApp.Domain.csproj", "{0C371F7F-BE03-2C94-0028-B83C49BC9224}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StocksApp.OutboxDispatcher", "StocksApp.OutboxDispatcher\StocksApp.OutboxDispatcher.csproj", "{26182B4E-F152-DD5B-2788-3FB21C468FA4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{0C371F7F-BE03-2C94-0028-B83C49BC9224}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C371F7F-BE03-2C94-0028-B83C49BC9224}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C371F7F-BE03-2C94-0028-B83C49BC9224}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26182B4E-F152-DD5B-2788-3FB21C468FA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26182B4E-F152-DD5B-2788-3FB21C468FA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26182B4E-F152-DD5B-2788-3FB21C468FA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26182B4E-F152-DD5B-2788-3FB21C468FA4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,6 +86,7 @@ Global
 		{77E5E144-9375-45E8-B00D-5582718106EE} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{F8756789-AA24-B681-3BB5-D6B7494B3649} = {2F270526-02CA-45D8-AD23-BF588909C616}
 		{0C371F7F-BE03-2C94-0028-B83C49BC9224} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{26182B4E-F152-DD5B-2788-3FB21C468FA4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C6179D63-F3B6-4606-B081-2C54FBE0B8E0}
