@@ -7,7 +7,7 @@ namespace StocksApp.OutboxDispatcher.EventHandlers
 {
     public class SellOrderCreatedCommandOutboxHandler : IOutboxEventHandler
     {
-        public string EventType => nameof(SellOrderCreatedCommand);
+        public string EventType => typeof(SellOrderCreatedCommand).AssemblyQualifiedName!;
         private readonly ICommandSender _commandSender;
         public SellOrderCreatedCommandOutboxHandler(ICommandSender commandSender)
         {

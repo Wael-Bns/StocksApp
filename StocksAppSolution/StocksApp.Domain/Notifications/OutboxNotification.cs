@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace StocksApp.Domain.Notifications
 {
@@ -9,7 +10,7 @@ namespace StocksApp.Domain.Notifications
         [JsonPropertyName("event_type")]
         public string EventType { get; set; } = null!;
         [JsonPropertyName("payload")]
-        public string Payload { get; set; } = null!;
+        public JsonElement Payload { get; set; } 
         [JsonPropertyName("created_at")]
         public DateTime CreatedAt { get; set; }
     }

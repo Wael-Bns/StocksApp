@@ -9,8 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddWebApi(builder.Configuration)
                 .AddCore(builder.Configuration)
-                .AddInfrastructure(builder.Configuration, builder.Environment)
-                .AddRabbitMqCommandSender(builder.Configuration);
+                .AddInfrastructure(builder.Configuration, builder.Environment);
 
 builder.Host.UseSerilog((context, configuration) =>
 {

@@ -3,7 +3,7 @@
     public class InvalidOutboxEventTypeException : Exception
     {
 
-        public InvalidOutboxEventTypeException() : base("Invalid event type in the outbox table .") { }
+        public InvalidOutboxEventTypeException() : base("Invalid event type or not registered handler .") { }
         public InvalidOutboxEventTypeException(string message) : base( message ) { }
     }
 }

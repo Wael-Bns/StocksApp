@@ -40,6 +40,25 @@ services:
     networks:
       - stocksapp-network
 
+  outboxdispatcher:
+    image: outboxdispatcher:dev
+    build:
+      context: .
+      dockerfile: StocksApp.OutboxDispatcher/Dockerfile
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres-container;Port=5432;Database=stocksappdb;Username=postgres;Password=password;
+      - OutboxOptions__ConnectionString=Host=postgres-container;Port=5432;Database=stocksappdb;Username=postgres;Password=password;
+      - RabbitMQ__HostName=rabbitmq-container
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=admin
+      - RabbitMQ__Password=admin
+      - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
+    depends_on:
+      - rabbitmq-container
+    networks:
+      - stocksapp-network
+
   seq:
     image: datalust/seq:latest
     environment:

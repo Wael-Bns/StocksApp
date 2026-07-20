@@ -6,8 +6,9 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<OutboxDispatcherService>();
 
 builder.Services
-    .AddOutboxDispatcherServices()
-    .AddInfrastructure(builder.Configuration, builder.Environment);
+    .AddOutboxDispatcherServices(builder.Configuration)
+    .AddInfrastructure(builder.Configuration, builder.Environment)
+    .AddRabbitMqCommandSender(builder.Configuration);
 
 var host = builder.Build();
 host.Run();

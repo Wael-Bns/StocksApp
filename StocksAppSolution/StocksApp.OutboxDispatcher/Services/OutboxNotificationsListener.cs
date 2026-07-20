@@ -47,17 +47,24 @@ namespace StocksApp.OutboxDispatcher.Services
             // When the notification is sent from the database, we handle it using registered delegates .
             connection.Notification += async (_, e) =>
             {
-                _logger.LogInformation("Received database notification on channel {Channel}", e.Channel);
-                if (OnNotificationReceived != null)
+                try
                 {
-                    foreach (Func<OutboxNotification, Task> handler in OnNotificationReceived.GetInvocationList())
+                    _logger.LogInformation("Received database notification on channel {Channel}", e.Channel);
+                    if (OnNotificationReceived != null)
                     {
-                        var notification = JsonSerializer.Deserialize<OutboxNotification>(e.Payload);
-                        if(notification != null)
+                        foreach (Func<OutboxNotification, Task> handler in OnNotificationReceived.GetInvocationList())
                         {
-                            await handler(notification);
+                            var notification = JsonSerializer.Deserialize<OutboxNotification>(e.Payload);
+                            if(notification != null)
+                            {
+                                await handler(notification);
+                            }
                         }
                     }
+                }
+                catch(Exception ex)
+                {
+                    _logger.LogError(ex, "Error handling database notification.");
                 }
             };
 
