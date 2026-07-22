@@ -9,7 +9,7 @@ namespace StocksApp.OutboxDispatcher.IoC
     {
         public static IServiceCollection AddOutboxDispatcherServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<OutboxOptions>(configuration.GetSection("OutboxOptions"));
+            services.Configure<OutboxOptions>(configuration.GetSection(OutboxOptions.SectionName));
             
             services.AddSingleton<IOutboxNotificationsListener, OutboxNotificationsListener>();
             services.AddScoped<IOutboxEventHandler, SellOrderCreatedCommandOutboxHandler>();

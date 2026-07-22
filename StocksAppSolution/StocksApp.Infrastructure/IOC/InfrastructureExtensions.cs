@@ -31,7 +31,7 @@ namespace StocksApp.Infrastructure.IoC
                 options.ApiKey = configuration["FinnhubApiKey"] ?? string.Empty;
             });
 
-            services.Configure<RabbitMQSettings>(configuration.GetSection("RabbitMQ"));
+            services.Configure<RabbitMQSettings>(configuration.GetSection(RabbitMQSettings.SectionName));
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 

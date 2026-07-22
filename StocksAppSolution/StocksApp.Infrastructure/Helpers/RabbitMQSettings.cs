@@ -2,6 +2,7 @@
 {
     public class RabbitMQSettings
     {
+        public const string SectionName = "RabbitMQ";
         public string? HostName { get; set; }
         public int Port { get; set; }
         public string? UserName { get; set; }
