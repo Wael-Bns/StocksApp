@@ -11,14 +11,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
-    <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.1" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
-    <PackageReference Include="Serilog.Sinks.Seq" Version="9.1.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\StocksApp.Core\StocksApp.Core.csproj" />
     <ProjectReference Include="..\StocksApp.Infrastructure\StocksApp.Infrastructure.csproj" />
+    <ProjectReference Include="..\StocksApp.Observability\StocksApp.Observability.csproj" />
   </ItemGroup>
 </Project>

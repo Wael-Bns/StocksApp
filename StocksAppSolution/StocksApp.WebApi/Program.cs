@@ -1,6 +1,6 @@
-using Serilog;
 using StocksApp.Core;
 using StocksApp.Infrastructure.IoC;
+using StocksApp.Observability;
 using StocksApp.WebApi;
 using StocksApp.WebApi.Hubs;
 using StocksApp.WebApi.Middlewares;
@@ -10,12 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddWebApi(builder.Configuration)
                 .AddCore(builder.Configuration)
                 .AddInfrastructure(builder.Configuration, builder.Environment)
-                .AddRabbitMqCommandSender(builder.Configuration);
-
-builder.Host.UseSerilog((context, configuration) =>
-{
-    configuration.ReadFrom.Configuration(context.Configuration);
-});
+                .AddRabbitMqCommandSender(builder.Configuration)
+                .AddObservability(builder.Configuration);
 
 
 var app = builder.Build();
@@ -23,8 +19,6 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 
 app.UseExceptionHandlingMiddleware();
-
-app.UseSerilogRequestLogging();
 
 //app.UseHttpsRedirection();
 

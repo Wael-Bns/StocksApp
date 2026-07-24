@@ -15,13 +15,13 @@ services:
       - RabbitMQ__Port=5672
       - RabbitMQ__UserName=admin
       - RabbitMQ__Password=admin
-      - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
+      - Observability__ServiceName=StocksApp.WebApi
+      - Observability__OtlpEndpoint=http://alloy:4317
     ports:
       - "8088:8080"
       - "8089:8081"
     depends_on:
       - rabbitmq-container
-      - seq
     networks:
       - stocksapp-network
   
@@ -41,21 +41,10 @@ services:
       - RabbitMQ__Port=5672
       - RabbitMQ__UserName=admin
       - RabbitMQ__Password=admin
-      - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
+      - Observability__ServiceName=StocksApp.OrdersWorker
+      - Observability__OtlpEndpoint=http://alloy:4317
     depends_on:
       - rabbitmq-container
-      - seq
-    networks:
-      - stocksapp-network
-
-  seq:
-    image: datalust/seq:latest
-    environment:
-      - ACCEPT_EULA=Y
-      - SEQ_FIRSTRUN_NOAUTHENTICATION=true
-    ports:
-      - "5341:5341"
-      - "9090:80"
     networks:
       - stocksapp-network
 
@@ -82,6 +71,75 @@ services:
       RABBITMQ_DEFAULT_PASS: admin
     networks:
       - stocksapp-network
+
+  loki:
+    image: grafana/loki:3.2.0
+    container_name: loki
+    command: -config.file=/etc/loki/loki-config.yaml
+    volumes:
+      - ./observability/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+    ports:
+      - "3100:3100"
+    networks:
+      - stocksapp-network
+  
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-remote-write-receiver
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9091:9090"
+    networks:
+      - stocksapp-network
+  
+  tempo:
+    image: grafana/tempo:2.6.1
+    container_name: tempo
+    command: -config.file=/etc/tempo.yaml
+    volumes:
+      - ./observability/tempo.yaml:/etc/tempo.yaml:ro
+    ports:
+      - "3200:3200"
+    networks:
+      - stocksapp-network
+
+  alloy:
+    image: grafana/alloy:v1.4.1
+    container_name: alloy
+    volumes:
+      - ./observability/alloy-config.alloy:/etc/alloy/config.alloy:ro
+    command: run --server.http.listen-addr=0.0.0.0:12345 --stability.level=public-preview /etc/alloy/config.alloy
+    ports:
+      - "4317:4317"
+      - "4318:4318"  
+      - "12345:12345"
+    depends_on:
+      - loki
+      - tempo
+      - prometheus
+    networks:
+      - stocksapp-network
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - ./observability/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml:ro
+    ports:
+      - "3000:3000"
+    depends_on: 
+      - loki
+      - tempo
+      - prometheus 
+    networks: 
+     - stocksapp-network
 
 networks:
   stocksapp-network:
