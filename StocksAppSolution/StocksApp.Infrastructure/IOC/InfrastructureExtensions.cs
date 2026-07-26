@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using StocksApp.Core.Services;
 using StocksApp.Infrastructure.WebSocketClients;
-using StocksApp.Infrastructure.Helpers;
 
 namespace StocksApp.Infrastructure.IoC
 {
@@ -31,7 +30,7 @@ namespace StocksApp.Infrastructure.IoC
                 options.ApiKey = configuration["FinnhubApiKey"] ?? string.Empty;
             });
 
-            services.Configure<RabbitMQSettings>(configuration.GetSection("RabbitMQ"));
+            services.Configure<RabbitMqOptions>(configuration.GetSection(RabbitMqOptions.SectionName));
 
             services.AddScoped<IOrderRepository, OrderRepository>();
 
@@ -47,14 +46,8 @@ namespace StocksApp.Infrastructure.IoC
 
             if(!environment.IsEnvironment("Test"))
             {
-                string connectionStringTemplate = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("No connection string was provided");
-                string connectionString = connectionStringTemplate
-                                            .Replace("$POSTGRES_HOST", Environment.GetEnvironmentVariable("POSTGRES_HOST"))
-                                            .Replace("$POSTGRES_PORT", Environment.GetEnvironmentVariable("POSTGRES_PORT"))
-                                            .Replace("$POSTGRES_USER", Environment.GetEnvironmentVariable("POSTGRES_USER"))
-                                            .Replace("$POSTGRES_PASSWORD", Environment.GetEnvironmentVariable("POSTGRES_PASSWORD"))
-                                            .Replace("$POSTGRES_DB", Environment.GetEnvironmentVariable("POSTGRES_DB"));
-           
+                string connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("No connection string was provided");
+                
                 services.AddDbContext<ApplicationDbContext>(options =>
                 {
                     options.UseNpgsql(connectionString);

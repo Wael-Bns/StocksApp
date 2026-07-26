@@ -1,8 +1,8 @@
-using Serilog;
 using StocksApp.Core;
 using StocksApp.Infrastructure.IoC;
-using StocksApp.WebApi;
+using StocksApp.Observability;
 using StocksApp.WebApi.Hubs;
+using StocksApp.WebApi.IoC;
 using StocksApp.WebApi.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,19 +12,17 @@ builder.Services.AddWebApi(builder.Configuration)
                 .AddInfrastructure(builder.Configuration, builder.Environment)
                 .AddRabbitMqCommandSender(builder.Configuration);
 
-builder.Host.UseSerilog((context, configuration) =>
+if(!builder.Environment.IsEnvironment("Test"))
 {
-    configuration.ReadFrom.Configuration(context.Configuration);
-});
-
+    builder.Services.AddObservability(builder.Configuration)
+        .AddInfrastructureHealthChecks(builder.Configuration);
+}
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
 app.UseExceptionHandlingMiddleware();
-
-app.UseSerilogRequestLogging();
 
 //app.UseHttpsRedirection();
 
@@ -38,8 +36,10 @@ app.MapControllers();
 
 app.MapHub<StocksHub>("stocksHub");
 
+app.MapHealthChecks("/health");
+
 //Add Swagger middleware
-if(app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
