@@ -27,7 +27,7 @@ jobs:
             dockerfile: ./StocksAppSolution/StocksApp.WebApi/Dockerfile
           - name: stocksapp.ordersworker
             context: ./StocksAppSolution
-            dockerfile: ./StocksAppSolution/StocksApp.OrderWorker/Dockerfile
+            dockerfile: ./StocksAppSolution/StocksApp.OrdersWorker/Dockerfile
 
     steps:
       - name: Checkout repository
