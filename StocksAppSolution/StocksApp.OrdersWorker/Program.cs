@@ -11,8 +11,12 @@ builder.Services
     .AddInfrastructure(builder.Configuration, builder.Environment)
     .AddCore(builder.Configuration)
     .AddWorkerServices()
-    .AddRabbitMqConsumers(builder.Configuration)
-    .AddObservability(builder.Configuration);
+    .AddRabbitMqConsumers(builder.Configuration);
+
+if(!builder.Environment.IsEnvironment("Test"))
+{
+    builder.Services.AddObservability(builder.Configuration);
+}
 
 var host = builder.Build();
 

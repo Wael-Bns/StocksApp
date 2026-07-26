@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StocksApp.Core.MessageBroker.Publisher;
-using StocksApp.Infrastructure.Helpers;
 using StocksApp.Infrastructure.MessageBroker;
 using StocksApp.Infrastructure.MessageBroker.Profiles;
+using StocksApp.Infrastructure.Options;
 
 namespace StocksApp.Infrastructure.IoC
 {
@@ -12,7 +12,7 @@ namespace StocksApp.Infrastructure.IoC
     {
         public static IServiceCollection AddRabbitMqCommandSender(this IServiceCollection services,IConfiguration configuration)
         {
-            var settings = configuration.GetSection("RabbitMQ").Get<RabbitMQSettings>()
+            var settings = configuration.GetSection(RabbitMqOptions.SectionName).Get<RabbitMqOptions>()
                 ?? throw new InvalidOperationException("RabbitMQ settings are not configured.");
 
             services.AddCommandBusProfiles();
