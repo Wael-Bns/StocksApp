@@ -33,6 +33,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Lowercase Repository Owner
+        run: |
+          echo "REPO_OWNER=${OWNER,,}" >> "${GITHUB_ENV}"
+        env:
+          OWNER: '${{ github.repository_owner }}'
+
       - name: Log in to GHCR
       # Only log in if we are actually pushing (avoids unnecessary auth on PRs)
         if: github.event_name != 'pull_request'
@@ -49,5 +55,5 @@ jobs:
           file: ${{ matrix.dockerfile }}
           push: ${{ github.event_name == 'push' }}
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ matrix.name }}:latest
-            ghcr.io/${{ github.repository_owner }}/${{ matrix.name }}:${{ github.sha }}
+            ghcr.io/${{ env.REPO_OWNER }}/${{ matrix.name }}:latest
+            ghcr.io/${{ env.REPO_OWNER }}/${{ matrix.name }}:${{ github.sha }}
