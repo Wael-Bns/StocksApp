@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stocksapp-webapi
+  namespace: ${DEPLOY_NAMESPACE}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stocksapp-webapi
+  template:
+    metadata:
+      labels:
+        app: stocksapp-webapi
+    spec:
+      containers:
+        - name: webapi
+          image: ghcr.io/${REPO_OWNER}/stocksapp.webapi:${IMAGE_TAG}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: stocksapp-config
+            - secretRef:
+                name: webapi-secrets
