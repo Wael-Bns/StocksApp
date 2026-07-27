@@ -1,16 +1,11 @@
-name: Build and Push Docker Services
+name: CI/CD Pipeline
 
 on:
   pull_request:
-    branches:
-      - main
-      - dev
-      - staging
+    branches: [ main, dev, staging ]
   push:
-    branches:
-      - main
-      - dev
-      - staging
+    branches: [ main, dev, staging ]
+
 env:
   REGISTRY: ghcr.io
   REPO_OWNER: ${{ github.repository_owner }}
@@ -18,7 +13,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    name: Running Unit & Integration tests stage
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,7 +21,9 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x' 
+          dotnet-version: '8.0.x'
+          cache: true
+          cache-dependency-path: './StocksAppSolution/StocksAppSolution.sln'
 
       - name: Restore dependencies
         run: dotnet restore ./StocksAppSolution/StocksAppSolution.sln
@@ -38,8 +35,9 @@ jobs:
         run: dotnet test ./StocksAppSolution/StocksAppSolution.sln --no-build --configuration Release --verbosity normal
 
   build-and-deploy:
+    name: Build and deploy stage
     needs: test
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -81,7 +79,7 @@ jobs:
       - name: Build and Push WebAPI
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: ./StocksAppSolution
           file: ./StocksAppSolution/StocksApp.WebApi/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/stocksapp.webapi:${{ github.sha }}
@@ -94,15 +92,13 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/stocksapp.ordersworker:${{ github.sha }}
 
-      # 4. Set Kubernetes Context
       - name: Set Kubernetes Context
         uses: azure/k8s-set-context@v4
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBECONFIG }}
 
-      # 5. Substitute Variables & Apply Manifests
-      - name: Substitute and Apply Manifests
+      - name: Substitute and Apply Manifests via Kustomize
         env:
           IMAGE_TAG: ${{ github.sha }}
           JWT_KEY: ${{ secrets.JWT_KEY }}
@@ -116,8 +112,5 @@ jobs:
         run: |
           VARS='$DEPLOY_NAMESPACE:$REPO_OWNER:$IMAGE_TAG:$APP_ENV:$JWT_KEY:$WEBAPI_FINNHUB_API_KEY:$WORKER_FINNHUB_API_KEY:$DB_USER:$DB_PASSWORD:$DB_NAME:$RABBITMQ_USER:$RABBITMQ_PASSWORD'
 
-          for file in k8s/*.yml; do
-            echo "Applying $file to namespace: ${DEPLOY_NAMESPACE}..."
-            envsubst "$VARS" < $file | kubectl apply -f -
-          done
-    
+          # Kustomize builds the resources in exact order, envsubst replaces variables, kubectl applies
+          kubectl kustomize k8s/ | envsubst "$VARS" | kubectl apply -f -
