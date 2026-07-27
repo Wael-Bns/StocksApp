@@ -5,6 +5,7 @@ resources:
   # 1. Namespaces & Secrets
   - namespaces/namespace.yml
   - configs/secrets.yml
+  - configs/configmap.yml
 
   # 2. StatefulSets (Databases / Messaging)
   - statefulsets/postgres-statefulset.yml
