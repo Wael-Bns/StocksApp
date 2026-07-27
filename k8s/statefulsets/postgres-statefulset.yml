@@ -22,6 +22,8 @@ spec:
           env:
             - name: POSTGRES_USER
               value: "${DB_USER}"
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
             - name: POSTGRES_PASSWORD
               value: "${DB_PASSWORD}"
             - name: POSTGRES_DB
