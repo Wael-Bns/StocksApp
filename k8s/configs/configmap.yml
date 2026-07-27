@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stocksapp-config
+  namespace: ${DEPLOY_NAMESPACE}
+data:
+  ASPNETCORE_ENVIRONMENT: "${APP_ENV}"
+  DOTNET_ENVIRONMENT: "${APP_ENV}"
+  RabbitMQ__HostName: "rabbitmq-service"
+  RabbitMQ__Port: "5672"
+  JWT__Issuer: "StocksApp.WebApi"
+  JWT__Audience: "StocksApp.WebApi"
+  JWT__EXPIRATION_MINUTES: "10"
+  RefreshToken__EXPIRATION_MINUTES: "30"

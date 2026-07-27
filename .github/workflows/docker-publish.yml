@@ -1,21 +1,19 @@
-name: Build and Push Docker Services
+name: CI/CD Pipeline
 
 on:
   pull_request:
-    branches:
-      - main
-      - dev
-      - staging
+    branches: [ main, dev, staging ]
   push:
-    branches:
-      - main
-      - dev
-      - staging
+    branches: [ main, dev, staging ]
+
+env:
+  REGISTRY: ghcr.io
+  REPO_OWNER: ${{ github.repository_owner }}
 
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    name: Running Unit & Integration tests stage
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,7 +21,9 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x' 
+          dotnet-version: '8.0.x'
+          cache: true
+          cache-dependency-path: './StocksAppSolution/StocksAppSolution.sln'
 
       - name: Restore dependencies
         run: dotnet restore ./StocksAppSolution/StocksAppSolution.sln
@@ -34,48 +34,83 @@ jobs:
       - name: Run Tests
         run: dotnet test ./StocksAppSolution/StocksAppSolution.sln --no-build --configuration Release --verbosity normal
 
-  build-and-push:
-    runs-on: ubuntu-latest
+  build-and-deploy:
+    name: Build and deploy stage
     needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
 
-    strategy:
-      matrix:
-        include:
-          - name: stocksapp.webapi
-            context: ./StocksAppSolution
-            dockerfile: ./StocksAppSolution/StocksApp.WebApi/Dockerfile
-          - name: stocksapp.ordersworker
-            context: ./StocksAppSolution
-            dockerfile: ./StocksAppSolution/StocksApp.OrdersWorker/Dockerfile
-
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
-     
-      - name: Lowercase Repository Owner
-        run: |
-          echo "REPO_OWNER=${OWNER,,}" >> "${GITHUB_ENV}"
-        env:
-          OWNER: '${{ github.repository_owner }}'
 
-      - name: Log in to GHCR
-      # Only log in if we are actually pushing (avoids unnecessary auth on PRs)
-        if: github.event_name != 'pull_request'
+      - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+      - name: Lowercase Repository Owner
+        run: echo "REPO_OWNER=${REPO_OWNER,,}" >> $GITHUB_ENV
+
+      - name: Compute Target Namespace
+        run: |
+          BRANCH_NAME="${GITHUB_REF_NAME}"
+          
+          if [ "$BRANCH_NAME" = "main" ]; then
+            TARGET_NS="production"
+            APP_ENV="Production"
+          elif [ "$BRANCH_NAME" = "staging" ]; then
+            TARGET_NS="staging"
+            APP_ENV="Staging"
+          else
+            TARGET_NS="development"
+            APP_ENV="Development"
+          fi
+
+          echo "DEPLOY_NAMESPACE=${TARGET_NS}" >> $GITHUB_ENV
+          echo "APP_ENV=${APP_ENV}" >> $GITHUB_ENV
+          echo "Target namespace set to: ${TARGET_NS}"
+
+      - name: Build and Push WebAPI
+        uses: docker/build-push-action@v5
         with:
-          context: ${{ matrix.context }}
-          file: ${{ matrix.dockerfile }}
-          push: ${{ github.event_name == 'push' }}
-          tags: |
-            ghcr.io/${{ env.REPO_OWNER }}/${{ matrix.name }}:latest
-            ghcr.io/${{ env.REPO_OWNER }}/${{ matrix.name }}:${{ github.sha }}
+          context: ./StocksAppSolution
+          file: ./StocksAppSolution/StocksApp.WebApi/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/stocksapp.webapi:${{ github.sha }}
+
+      - name: Build and Push OrdersWorker
+        uses: docker/build-push-action@v5
+        with:
+          context: ./StocksAppSolution
+          file: ./StocksAppSolution/StocksApp.OrdersWorker/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/stocksapp.ordersworker:${{ github.sha }}
+
+      - name: Set Kubernetes Context
+        uses: azure/k8s-set-context@v4
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+
+      - name: Substitute and Apply Manifests via Kustomize
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          JWT_KEY: ${{ secrets.JWT_KEY }}
+          WEBAPI_FINNHUB_API_KEY: ${{ secrets.WEBAPI_FINNHUB_API_KEY }}
+          WORKER_FINNHUB_API_KEY: ${{ secrets.WORKER_FINNHUB_API_KEY }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          RABBITMQ_USER: ${{ secrets.RABBITMQ_USER }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
+        run: |
+          VARS='$DEPLOY_NAMESPACE:$REPO_OWNER:$IMAGE_TAG:$APP_ENV:$JWT_KEY:$WEBAPI_FINNHUB_API_KEY:$WORKER_FINNHUB_API_KEY:$DB_USER:$DB_PASSWORD:$DB_NAME:$RABBITMQ_USER:$RABBITMQ_PASSWORD'
+
+          # Kustomize builds the resources in exact order, envsubst replaces variables, kubectl applies
+          kubectl kustomize k8s/ | envsubst "$VARS" | kubectl apply -f -
