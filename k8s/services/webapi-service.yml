@@ -4,7 +4,7 @@ metadata:
   name: stocksapp-webapi-service
   namespace: ${DEPLOY_NAMESPACE}
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
     - port: 80
       targetPort: 8080
