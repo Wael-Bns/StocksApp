@@ -34,7 +34,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHub<StocksHub>("stocksHub");
+app.MapHub<StocksHub>("api/stocksHub");
 
 app.MapHealthChecks("/health");
 
