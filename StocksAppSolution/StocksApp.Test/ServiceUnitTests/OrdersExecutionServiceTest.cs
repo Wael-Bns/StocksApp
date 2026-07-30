@@ -1,12 +1,14 @@
+using Castle.Core.Logging;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using StocksApp.Core.Services;
 using StocksApp.Domain.Entities;
 using StocksApp.Domain.Enums;
+using StocksApp.Domain.Events;
 using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Tests.Common.Builders;
 using Xunit;
-using StocksApp.Domain.Events;
 
 
 namespace StocksApp.Test.ServiceUnitTests
@@ -16,14 +18,17 @@ namespace StocksApp.Test.ServiceUnitTests
         private readonly Mock<IOrderRepository> _orderRepositoryMock;
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly OrdersExecutionService _ordersExecutionService;
+        private readonly Mock<ILogger<OrdersExecutionService>> _loggerMock;
 
         public OrdersExecutionServiceTest()
         {
             _orderRepositoryMock = new Mock<IOrderRepository>();
             _unitOfWorkMock = new Mock<IUnitOfWork>();
+            _loggerMock = new Mock<ILogger<OrdersExecutionService>>();
             _ordersExecutionService = new OrdersExecutionService(
                 _orderRepositoryMock.Object,
-                _unitOfWorkMock.Object);
+                _unitOfWorkMock.Object,
+                _loggerMock.Object);
         }
 
         [Fact]
