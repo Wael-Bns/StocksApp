@@ -3,18 +3,18 @@
  * Override with VITE_API_BASE_URL in a .env file if the backend runs elsewhere.
  */
 export const API_BASE_URL: string =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8088";
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8088/api";
 
 export const API_ROUTES = {
-  register: "/api/Auth/register",
-  login: "/api/Auth/login",
-  refreshToken: "/api/Auth/generate-new-access-token",
+  register: "/Auth/register",
+  login: "/Auth/login",
+  refreshToken: "/Auth/generate-new-access-token",
   tradeInfo: (stockSymbol: string) =>
-    `/api/Trade/trade-info/${encodeURIComponent(stockSymbol)}`,
-  buyOrder: "/api/Trade/buyorder",
-  sellOrder: "/api/Trade/sellorder",
-  allBuyOrders: "/api/Trade/allbuyorders",
-  allSellOrders: "/api/Trade/allsellorders",
+    `/Trade/trade-info/${encodeURIComponent(stockSymbol)}`,
+  buyOrder: "/Trade/buyorder",
+  sellOrder: "/Trade/sellorder",
+  allBuyOrders: "/Trade/allbuyorders",
+  allSellOrders: "/Trade/allsellorders",
 } as const;
 
 /**

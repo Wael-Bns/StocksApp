@@ -24,3 +24,6 @@ resources:
   - deployments/webapi-deployment.yml
   - deployments/ordersworker-deployment.yml
   - deployments/stocksapp-frontend-deployment.yml
+
+  # Ingress
+  - ingress/nginx-ingress.yml

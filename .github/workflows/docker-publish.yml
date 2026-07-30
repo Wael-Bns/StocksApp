@@ -91,6 +91,16 @@ jobs:
           file: ./StocksAppSolution/StocksApp.OrdersWorker/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/stocksapp.ordersworker:${{ github.sha }}
+      
+      - name: Build and Push React frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./StocksAppSolution/StocksApp.Frontend
+          file: ./StocksAppSolution/StocksApp.Frontend/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER }}/stocksapp.frontend:${{ github.sha }}
+          build-args: |
+            VITE_API_BASE_URL=/api
 
       - name: Set Kubernetes Context
         uses: azure/k8s-set-context@v4
