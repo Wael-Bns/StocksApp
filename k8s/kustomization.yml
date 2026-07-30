@@ -14,7 +14,7 @@ resources:
   # Services (Networking)
   - services/postgres-service.yml
   - services/rabbitmq-service.yml
-  - services/webapi-service.yml
+  - services/stocksapp-webapi-service.yml
   - services/stocksapp-frontend-service.yml
 
   # Jobs
