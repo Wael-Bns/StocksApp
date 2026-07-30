@@ -15,6 +15,7 @@ resources:
   - services/postgres-service.yml
   - services/rabbitmq-service.yml
   - services/webapi-service.yml
+  - services/stocksapp-frontend-service.yml
 
   # Jobs
   - jobs/migration-job.yml
@@ -22,3 +23,7 @@ resources:
   # Deployments (Applications)
   - deployments/webapi-deployment.yml
   - deployments/ordersworker-deployment.yml
+  - deployments/stocksapp-frontend-deployment.yml
+
+  # Ingress
+  - ingress/nginx-ingress.yml

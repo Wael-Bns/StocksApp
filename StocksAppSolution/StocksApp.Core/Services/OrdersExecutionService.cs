@@ -2,6 +2,7 @@
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Domain.Enums;
 using StocksApp.Domain.RepositoryContracts;
+using Microsoft.Extensions.Logging;
 
 namespace StocksApp.Core.Services
 {
@@ -9,10 +10,12 @@ namespace StocksApp.Core.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IUnitOfWork _unitOfWork;
-        public OrdersExecutionService(IOrderRepository orderRepository, IUnitOfWork unitOfWork)
+        private readonly ILogger<OrdersExecutionService> _logger;
+        public OrdersExecutionService(IOrderRepository orderRepository, IUnitOfWork unitOfWork, ILogger<OrdersExecutionService> logger)
         {
             _orderRepository = orderRepository;
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
         public async Task ExecuteSellOrdersAsync(IReadOnlyCollection<SellOrderCreatedCommand> orders, CancellationToken cancellationToken)
         {
@@ -32,6 +35,7 @@ namespace StocksApp.Core.Services
                 }
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync(cancellationToken);
+                _logger.LogInformation("Executed {OrdersCount} sell orders", sellOrders.Count);
             }
             catch (Exception ex)
             {

@@ -41,7 +41,7 @@ namespace StocksApp.WebApi.HostedServices
                 foreach (var trade in priceUpdates)
                 {
                     await _stocksHub.Clients.Group(trade.StockSymbol)
-                        .SendAsync("ReceivePriceUpdate", trade.Price);
+                        .SendAsync("ReceivePriceUpdate", trade.StockSymbol, trade.Price);
                 }
             }
         }
