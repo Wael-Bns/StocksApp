@@ -17,10 +17,11 @@ namespace StocksApp.OutboxDispatcher.EventHandlers
         public async Task HandleAsync(string @event)
         {
             SellOrderCreatedCommand? command = JsonSerializer.Deserialize<SellOrderCreatedCommand>(@event);
-            if(command != null)
+            if(command == null)
             {
-                await _commandSender.SendAsync(command);
+                throw new JsonException("Error in command deserialization .");
             }
+            await _commandSender.SendAsync(command);
         }
     }
 }

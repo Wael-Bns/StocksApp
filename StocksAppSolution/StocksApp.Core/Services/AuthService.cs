@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using StocksApp.Core.DTO.AuthenticationDTO;

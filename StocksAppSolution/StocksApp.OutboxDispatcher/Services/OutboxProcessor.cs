@@ -1,5 +1,4 @@
-﻿using StocksApp.Core.Exceptions;
-using StocksApp.Core.ServiceContracts;
+﻿using StocksApp.Core.ServiceContracts;
 using StocksApp.Domain.Entities;
 using StocksApp.Domain.Notifications;
 using StocksApp.Domain.RepositoryContracts;
