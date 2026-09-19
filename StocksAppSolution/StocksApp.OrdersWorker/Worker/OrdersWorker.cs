@@ -13,47 +13,54 @@ namespace StocksApp.OrdersWorker.Worker
     {
         private readonly IFinnhubWebSocketClient _finnhubWebSocketClient;
         private readonly IPendingSellOrdersBootstrapper _pendingOrdersInitializer;
-        private readonly IWorkerMessageDispatcher _orderMessageProcessor;
+        private readonly IWorkerMessageDispatcher _workerMessageDispatcher;
         private readonly IWorkerChannel _channel;
         private ILogger<OrdersWorker> _logger;
         public OrdersWorker(IFinnhubWebSocketClient finnhubWebSocketClient,
             IPendingSellOrdersBootstrapper pendingOrdersInitializer,
-            IWorkerMessageDispatcher orderMessageProcessor,
+            IWorkerMessageDispatcher workerMessageDispatcher,
             IWorkerChannel channel,
             ILogger<OrdersWorker> logger)
         {
             _finnhubWebSocketClient = finnhubWebSocketClient;
             _pendingOrdersInitializer = pendingOrdersInitializer;
-            _orderMessageProcessor = orderMessageProcessor;
+            _workerMessageDispatcher = workerMessageDispatcher;
             _channel = channel; 
             _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Starting {ServiceName} at: {time}", nameof(OrdersWorker), DateTimeOffset.Now);
+
+            using var loopsCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+
+            _finnhubWebSocketClient.OnPriceUpdatesReceived += ProcessPriceUpdates;
             try
             {
-
-                _logger.LogInformation("Starting {ServiceName} at: {time}", nameof(OrdersWorker), DateTimeOffset.Now);
-                
-                _finnhubWebSocketClient.OnPriceUpdatesReceived += ProcessPriceUpdates;
-
                 await _finnhubWebSocketClient.ConnectAsync(cancellationToken);
 
                 await _pendingOrdersInitializer.RestoreAsync(cancellationToken);
 
-                var orderMessageProcessorTask = _orderMessageProcessor.RunAsync(cancellationToken);
+                var consumerTask = _workerMessageDispatcher.RunAsync(cancellationToken);
 
                 var finnhubTask = _finnhubWebSocketClient.ReceiveLoopAsync(cancellationToken);
 
-                await Task.WhenAll(orderMessageProcessorTask, finnhubTask);
+                var firstStoppedTask = await Task.WhenAny(consumerTask, finnhubTask);
+                await firstStoppedTask;
+
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    throw new InvalidOperationException("A worker loop ended unexpectedly. This should not happen unless the service is stopping.");
+                }
             }
-            catch(Exception ex)
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
-                _logger.LogError(ex, "An error occurred in {ServiceName}: {Message}", nameof(OrdersWorker), ex.Message);
+                _logger.LogInformation("{ServiceName} is stopping due to cancellation at: {time}", nameof(OrdersWorker), DateTimeOffset.Now);
             }
             finally
             {
+                loopsCts.Cancel();
                 _finnhubWebSocketClient.OnPriceUpdatesReceived -= ProcessPriceUpdates;
                 await _finnhubWebSocketClient.DisconnectAsync(CancellationToken.None);
                 _logger.LogInformation("{ServiceName} stopped at: {time}",nameof(OrdersWorker), DateTimeOffset.Now);
