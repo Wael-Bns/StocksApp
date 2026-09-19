@@ -4,11 +4,11 @@ using StocksApp.OrdersWorker.Comparers;
 
 namespace StocksApp.OrdersWorker.Stores
 {
-    public class SellOrdersStore : ISellOrdersStore
+    public class PendingSellOrdersStore : IPendingOrdersStore
     {
         private readonly ConcurrentDictionary<string, SortedSet<SellOrderCreatedCommand>> _pendingSellOrders;
-        private readonly ILogger<SellOrdersStore> _logger;
-        public SellOrdersStore(ILogger<SellOrdersStore> logger)
+        private readonly ILogger<PendingSellOrdersStore> _logger;
+        public PendingSellOrdersStore(ILogger<PendingSellOrdersStore> logger)
         {
             _pendingSellOrders = new();
             _logger = logger;

@@ -4,15 +4,18 @@ using StocksApp.OrdersWorker.Stores;
 
 namespace StocksApp.OrdersWorker.MessageHandlers
 {
+    /// <summary>
+    /// Reacts to newly created sell orders.
+    /// </summary>
     public sealed class SellOrderCreatedMessageHandler : WorkerMessageHandler<SellOrderCreatedWorkerMessage>
     {
         private readonly ILogger<SellOrderCreatedMessageHandler> _logger;
-        private readonly IWorkerSubscriptionsManager _workerSubscriptionsManager;
-        private readonly ISellOrdersStore _sellOrdersStore;
+        private readonly IPriceFeedSubscriptionRegistry _workerSubscriptionsManager;
+        private readonly IPendingOrdersStore _sellOrdersStore;
 
         public SellOrderCreatedMessageHandler(ILogger<SellOrderCreatedMessageHandler> logger,
-            IWorkerSubscriptionsManager workerSubscriptionsManager,
-            ISellOrdersStore sellOrdersStore)
+            IPriceFeedSubscriptionRegistry workerSubscriptionsManager,
+            IPendingOrdersStore sellOrdersStore)
         {
             _logger = logger;
             _workerSubscriptionsManager = workerSubscriptionsManager;

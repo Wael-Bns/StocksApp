@@ -13,23 +13,23 @@ namespace StocksApp.Test.ServiceUnitTests
 {
     public class PendingOrdersInitializerTest
     {
-        private readonly Mock<ISellOrdersStore> _sellOrdersStoreMock;
+        private readonly Mock<IPendingOrdersStore> _sellOrdersStoreMock;
         private readonly Mock<IGenericRepository<SellOrder>> _sellOrdersRepositoryMock;
-        private readonly Mock<IWorkerSubscriptionsManager> _workerSubscriptionsManagerMock;
+        private readonly Mock<IPriceFeedSubscriptionRegistry> _workerSubscriptionsManagerMock;
         private readonly ServiceProvider _serviceProvider;
-        private readonly PendingOrdersInitializer _pendingOrdersInitializer;
+        private readonly PendingSellOrdersBootstrapper _pendingOrdersInitializer;
 
         public PendingOrdersInitializerTest()
         {
-            _sellOrdersStoreMock = new Mock<ISellOrdersStore>();
+            _sellOrdersStoreMock = new Mock<IPendingOrdersStore>();
             _sellOrdersRepositoryMock = new Mock<IGenericRepository<SellOrder>>();
-            _workerSubscriptionsManagerMock = new Mock<IWorkerSubscriptionsManager>();
+            _workerSubscriptionsManagerMock = new Mock<IPriceFeedSubscriptionRegistry>();
 
             _serviceProvider = new ServiceCollection()
                 .AddScoped(_ => _sellOrdersRepositoryMock.Object)
                 .BuildServiceProvider();
 
-            _pendingOrdersInitializer = new PendingOrdersInitializer(
+            _pendingOrdersInitializer = new PendingSellOrdersBootstrapper(
                 _sellOrdersStoreMock.Object,
                 _serviceProvider.GetRequiredService<IServiceScopeFactory>(),
                 _workerSubscriptionsManagerMock.Object);

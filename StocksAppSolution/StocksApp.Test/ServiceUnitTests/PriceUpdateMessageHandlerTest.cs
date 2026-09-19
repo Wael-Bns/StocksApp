@@ -13,14 +13,14 @@ namespace StocksApp.Test.ServiceUnitTests
 {
     public class PriceUpdateMessageHandlerTest
     {
-        private readonly Mock<ISellOrdersStore> _sellOrdersStoreMock;
+        private readonly Mock<IPendingOrdersStore> _sellOrdersStoreMock;
         private readonly Mock<IOrdersExecutionService> _ordersExecutionServiceMock;
         private readonly ServiceProvider _serviceProvider;
         private readonly PriceUpdateMessageHandler _handler;
 
         public PriceUpdateMessageHandlerTest()
         {
-            _sellOrdersStoreMock = new Mock<ISellOrdersStore>();
+            _sellOrdersStoreMock = new Mock<IPendingOrdersStore>();
             _ordersExecutionServiceMock = new Mock<IOrdersExecutionService>();
 
             _serviceProvider = new ServiceCollection()

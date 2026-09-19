@@ -6,16 +6,19 @@ using StocksApp.OrdersWorker.ServiceContracts;
 
 namespace StocksApp.OrdersWorker.Worker
 {
+    /// <summary>
+    /// Runs the pending-orders pipeline as a background service and owns its lifecycle
+    /// </summary>
     public class OrdersWorker : BackgroundService
     {
         private readonly IFinnhubWebSocketClient _finnhubWebSocketClient;
-        private readonly IPendingOrdersInitializer _pendingOrdersInitializer;
-        private readonly IOrderMessageProcessor _orderMessageProcessor;
+        private readonly IPendingSellOrdersBootstrapper _pendingOrdersInitializer;
+        private readonly IWorkerMessageDispatcher _orderMessageProcessor;
         private readonly IWorkerChannel _channel;
         private ILogger<OrdersWorker> _logger;
         public OrdersWorker(IFinnhubWebSocketClient finnhubWebSocketClient,
-            IPendingOrdersInitializer pendingOrdersInitializer,
-            IOrderMessageProcessor orderMessageProcessor,
+            IPendingSellOrdersBootstrapper pendingOrdersInitializer,
+            IWorkerMessageDispatcher orderMessageProcessor,
             IWorkerChannel channel,
             ILogger<OrdersWorker> logger)
         {

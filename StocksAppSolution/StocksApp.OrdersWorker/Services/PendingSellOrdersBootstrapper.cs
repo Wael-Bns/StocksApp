@@ -7,14 +7,14 @@ using StocksApp.OrdersWorker.Stores;
 
 namespace StocksApp.OrdersWorker.Services
 {
-    public class PendingOrdersInitializer : IPendingOrdersInitializer
+    public class PendingSellOrdersBootstrapper : IPendingSellOrdersBootstrapper
     {
-        private readonly ISellOrdersStore _sellOrdersStore;
+        private readonly IPendingOrdersStore _sellOrdersStore;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly IWorkerSubscriptionsManager _workerSubscriptionsManager;
-        public PendingOrdersInitializer(ISellOrdersStore sellOrdersStore,
+        private readonly IPriceFeedSubscriptionRegistry _workerSubscriptionsManager;
+        public PendingSellOrdersBootstrapper(IPendingOrdersStore sellOrdersStore,
             IServiceScopeFactory serviceScopeFactory,
-            IWorkerSubscriptionsManager workerSubscriptionsManager)
+            IPriceFeedSubscriptionRegistry workerSubscriptionsManager)
         {
             _sellOrdersStore = sellOrdersStore;
             _serviceScopeFactory = serviceScopeFactory;

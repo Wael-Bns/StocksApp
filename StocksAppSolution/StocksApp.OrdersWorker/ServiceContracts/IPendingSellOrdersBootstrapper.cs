@@ -1,9 +1,9 @@
 ﻿namespace StocksApp.OrdersWorker.ServiceContracts
 {
     /// <summary>
-    /// Responsible for initializing pending orders from the database into the in-memory store when the worker starts.
+    /// Prepares the worker's runtime state from persisted data at startup.
     /// </summary>
-    public interface IPendingOrdersInitializer
+    public interface IPendingSellOrdersBootstrapper
     {
         Task RestoreAsync(CancellationToken cancellationToken);
     }

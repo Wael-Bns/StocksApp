@@ -3,9 +3,9 @@
 namespace StocksApp.OrdersWorker.Stores
 {
     /// <summary>
-    /// Stores pending sell orders in memory. 
+    /// Holds pending orders in memory and answers queries about them. 
     /// </summary>
-    public interface ISellOrdersStore
+    public interface IPendingOrdersStore
     {
         IReadOnlyList<SellOrderCreatedCommand> TakeTriggeredOrders(string stockSymbol, double currentPrice);
         void AddSellOrder(SellOrderCreatedCommand sellOrderCreatedCommand);

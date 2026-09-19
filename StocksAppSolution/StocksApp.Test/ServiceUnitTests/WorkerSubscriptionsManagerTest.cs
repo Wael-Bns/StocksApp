@@ -9,13 +9,13 @@ namespace StocksApp.Test.ServiceUnitTests
     public class WorkerSubscriptionsManagerTest
     {
         private readonly Mock<IFinnhubWebSocketClient> _finnhubWebSocketClientMock;
-        private readonly WorkerSubscriptionsManager _manager;
+        private readonly PriceFeedSubscriptionRegistry _manager;
 
         public WorkerSubscriptionsManagerTest()
         {
             _finnhubWebSocketClientMock = new Mock<IFinnhubWebSocketClient>();
 
-            _manager = new WorkerSubscriptionsManager(_finnhubWebSocketClientMock.Object);
+            _manager = new PriceFeedSubscriptionRegistry(_finnhubWebSocketClientMock.Object);
         }
 
         [Fact]

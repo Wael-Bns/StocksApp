@@ -5,16 +5,16 @@ using StocksApp.OrdersWorker.ServiceContracts;
 
 namespace StocksApp.OrdersWorker.Services
 {
-    public sealed class OrderMessageProcessor : IOrderMessageProcessor
+    public sealed class WorkerMessageDispatcher : IWorkerMessageDispatcher
     {
         private readonly IWorkerChannel _channel;
         private readonly IReadOnlyDictionary<Type, IWorkerMessageHandler> _handlers;
-        private readonly ILogger<OrderMessageProcessor> _logger;
+        private readonly ILogger<WorkerMessageDispatcher> _logger;
 
-        public OrderMessageProcessor(
+        public WorkerMessageDispatcher(
             IWorkerChannel channel,
             IEnumerable<IWorkerMessageHandler> handlers,
-            ILogger<OrderMessageProcessor> logger)
+            ILogger<WorkerMessageDispatcher> logger)
         {
             _channel = channel;
             _handlers = handlers.ToDictionary(h => h.MessageType);

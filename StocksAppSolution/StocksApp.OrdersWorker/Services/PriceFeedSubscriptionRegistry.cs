@@ -3,11 +3,11 @@ using StocksApp.OrdersWorker.ServiceContracts;
 
 namespace StocksApp.OrdersWorker.Services
 {
-    public class WorkerSubscriptionsManager : IWorkerSubscriptionsManager
+    public class PriceFeedSubscriptionRegistry : IPriceFeedSubscriptionRegistry
     {
         private readonly IFinnhubWebSocketClient _finnhubWebSocketClient;
         private readonly HashSet<string> _subscribedStockSymbols;
-        public WorkerSubscriptionsManager(IFinnhubWebSocketClient finnhubWebSocketClient)
+        public PriceFeedSubscriptionRegistry(IFinnhubWebSocketClient finnhubWebSocketClient)
         {
             _finnhubWebSocketClient = finnhubWebSocketClient;
             _subscribedStockSymbols = new HashSet<string>();

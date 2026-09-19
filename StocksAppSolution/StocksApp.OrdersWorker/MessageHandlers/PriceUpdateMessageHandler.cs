@@ -4,13 +4,16 @@ using StocksApp.OrdersWorker.Stores;
 
 namespace StocksApp.OrdersWorker.MessageHandlers
 {
+    /// <summary>
+    /// Reacts to market price changes.
+    /// </summary>
     public sealed class PriceUpdateMessageHandler : WorkerMessageHandler<PriceUpdateWorkerMessage>
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly ISellOrdersStore _sellOrdersStore;
+        private readonly IPendingOrdersStore _sellOrdersStore;
 
         public PriceUpdateMessageHandler(
-            IServiceScopeFactory scopeFactory, ISellOrdersStore sellOrdersStore)
+            IServiceScopeFactory scopeFactory, IPendingOrdersStore sellOrdersStore)
         {
             _scopeFactory = scopeFactory;
             _sellOrdersStore = sellOrdersStore;

@@ -8,11 +8,11 @@ namespace StocksApp.Test.ServiceUnitTests
 {
     public class SellOrdersStoreTest
     {
-        private readonly SellOrdersStore _sellOrdersStore;
+        private readonly PendingSellOrdersStore _sellOrdersStore;
 
         public SellOrdersStoreTest()
         {
-            _sellOrdersStore = new SellOrdersStore(NullLogger<SellOrdersStore>.Instance);
+            _sellOrdersStore = new PendingSellOrdersStore(NullLogger<PendingSellOrdersStore>.Instance);
         }
 
         [Fact]

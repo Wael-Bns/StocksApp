@@ -11,14 +11,14 @@ namespace StocksApp.Test.ServiceUnitTests
 {
     public class SellOrderCreatedMessageHandlerTest
     {
-        private readonly Mock<IWorkerSubscriptionsManager> _workerSubscriptionsManagerMock;
-        private readonly Mock<ISellOrdersStore> _sellOrdersStoreMock;
+        private readonly Mock<IPriceFeedSubscriptionRegistry> _workerSubscriptionsManagerMock;
+        private readonly Mock<IPendingOrdersStore> _sellOrdersStoreMock;
         private readonly SellOrderCreatedMessageHandler _handler;
 
         public SellOrderCreatedMessageHandlerTest()
         {
-            _workerSubscriptionsManagerMock = new Mock<IWorkerSubscriptionsManager>();
-            _sellOrdersStoreMock = new Mock<ISellOrdersStore>();
+            _workerSubscriptionsManagerMock = new Mock<IPriceFeedSubscriptionRegistry>();
+            _sellOrdersStoreMock = new Mock<IPendingOrdersStore>();
             _handler = new SellOrderCreatedMessageHandler(
                 NullLogger<SellOrderCreatedMessageHandler>.Instance,
                 _workerSubscriptionsManagerMock.Object,

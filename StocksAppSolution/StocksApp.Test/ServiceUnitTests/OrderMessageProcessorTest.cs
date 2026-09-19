@@ -89,13 +89,13 @@ namespace StocksApp.Test.ServiceUnitTests
                 Times.Once);
         }
 
-        private OrderMessageProcessor CreateProcessor(params WorkerMessage[] messages)
+        private WorkerMessageDispatcher CreateProcessor(params WorkerMessage[] messages)
         {
-            return new OrderMessageProcessor(
+            return new WorkerMessageDispatcher(
                 new TestWorkerChannel(messages),
                 new[] { _priceUpdateHandlerMock.Object,
                 _sellOrderHandlerMock.Object },
-                NullLogger<OrderMessageProcessor>.Instance);
+                NullLogger<WorkerMessageDispatcher>.Instance);
         }
 
         private static SellOrderCreatedCommand CreateSellOrderCommand()

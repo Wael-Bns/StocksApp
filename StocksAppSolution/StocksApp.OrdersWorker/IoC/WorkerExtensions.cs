@@ -13,17 +13,17 @@ namespace StocksApp.OrdersWorker.IoC
 
             services.AddSingleton<IWorkerChannel, WorkerChannel>();
 
-            services.AddSingleton<ISellOrdersStore, SellOrdersStore>();
+            services.AddSingleton<IPendingOrdersStore, PendingSellOrdersStore>();
      
-            services.AddSingleton<IPendingOrdersInitializer, PendingOrdersInitializer>();
+            services.AddSingleton<IPendingSellOrdersBootstrapper, PendingSellOrdersBootstrapper>();
             
-            services.AddSingleton<IOrderMessageProcessor, OrderMessageProcessor>();
+            services.AddSingleton<IWorkerMessageDispatcher, WorkerMessageDispatcher>();
 
             services.AddSingleton<IWorkerMessageHandler, PriceUpdateMessageHandler>();
             
             services.AddSingleton<IWorkerMessageHandler, SellOrderCreatedMessageHandler>();
             
-            services.AddSingleton<IWorkerSubscriptionsManager, WorkerSubscriptionsManager>();
+            services.AddSingleton<IPriceFeedSubscriptionRegistry, PriceFeedSubscriptionRegistry>();
 
             return services;
         }

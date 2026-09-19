@@ -4,7 +4,7 @@ using StocksApp.Core.DTO.StockDTO;
 namespace StocksApp.Core.WebSocketClientAbstractions
 {
     /// <summary>
-    ///     Responsible for managing the WebSocket connection to Finnhub .
+    ///     Communicates with the Finnhub real-time feed and exposes its data to the rest of the app.
     /// </summary>
     public interface IFinnhubWebSocketClient
     {

@@ -1,9 +1,9 @@
 ﻿namespace StocksApp.OrdersWorker.ServiceContracts
 {
     /// <summary>
-    ///     Responsible for managing the subscriptions to stock price updates based on the orders in the database.
+    ///  Maintains which symbols the worker is subscribed to on the price feed.
     /// </summary>
-    public interface IWorkerSubscriptionsManager
+    public interface IPriceFeedSubscriptionRegistry
     {
         Task EnsureSubscribedAsync(string stockSymbol, CancellationToken cancellationToken);
     }
