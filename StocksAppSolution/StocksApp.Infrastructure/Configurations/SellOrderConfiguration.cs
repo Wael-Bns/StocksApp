@@ -12,7 +12,7 @@ namespace StocksApp.Infrastructure.Configurations
             builder.HasKey(b => b.SellOrderID);
 
             builder.Property(b => b.StockSymbol)
-                .HasMaxLength(10)
+                .HasMaxLength(25)
                 .IsRequired();
 
             builder.Property(b => b.Price)
