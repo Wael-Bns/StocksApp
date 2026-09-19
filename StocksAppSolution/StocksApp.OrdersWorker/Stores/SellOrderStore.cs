@@ -53,5 +53,15 @@ namespace StocksApp.OrdersWorker.Stores
             }
             return eligible;
         }
+        public bool HasPendingOrders(string stockSymbol)
+        {
+            if (!_pendingSellOrders.TryGetValue(stockSymbol, out var sortedSet))
+                return false;
+
+            lock (sortedSet)
+            {
+                return sortedSet.Count > 0;
+            }
+        }
     }
 }

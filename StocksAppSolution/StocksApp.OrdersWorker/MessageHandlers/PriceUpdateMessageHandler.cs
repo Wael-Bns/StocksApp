@@ -1,5 +1,6 @@
 ﻿using StocksApp.Core.ServiceContracts;
 using StocksApp.OrdersWorker.Messages;
+using StocksApp.OrdersWorker.ServiceContracts;
 using StocksApp.OrdersWorker.Stores;
 
 namespace StocksApp.OrdersWorker.MessageHandlers
@@ -11,15 +12,18 @@ namespace StocksApp.OrdersWorker.MessageHandlers
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IPendingOrdersStore _sellOrdersStore;
+        private readonly IPriceFeedSubscriptionRegistry _priceFeedSubscriptionRegistry;
         private readonly ILogger<PriceUpdateMessageHandler> _logger;
 
         public PriceUpdateMessageHandler(
             IServiceScopeFactory scopeFactory, 
             IPendingOrdersStore sellOrdersStore, 
+            IPriceFeedSubscriptionRegistry priceFeedSubscriptionRegistry,
             ILogger<PriceUpdateMessageHandler> logger)
         {
             _scopeFactory = scopeFactory;
             _sellOrdersStore = sellOrdersStore;
+            _priceFeedSubscriptionRegistry = priceFeedSubscriptionRegistry;
             _logger = logger;
         }
 
@@ -42,6 +46,11 @@ namespace StocksApp.OrdersWorker.MessageHandlers
                 {
                     _sellOrdersStore.AddSellOrder(order);
                 }
+                return;
+            }
+            if(!_sellOrdersStore.HasPendingOrders(message.StockSymbol))
+            {
+                await _priceFeedSubscriptionRegistry.UnsubscribeAsync(message.StockSymbol, cancellationToken);
             }
         }
     }

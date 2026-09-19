@@ -10,5 +10,6 @@ namespace StocksApp.OrdersWorker.Stores
         IReadOnlyList<SellOrderCreatedCommand> TakeTriggeredOrders(string stockSymbol, double currentPrice);
         void AddSellOrder(SellOrderCreatedCommand sellOrderCreatedCommand);
         void RemoveSellOrder(SellOrderCreatedCommand sellOrderCreatedCommand);
+        bool HasPendingOrders(string stockSymbol);
     }
 }

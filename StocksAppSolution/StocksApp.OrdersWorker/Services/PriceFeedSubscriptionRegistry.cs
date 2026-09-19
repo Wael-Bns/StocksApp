@@ -15,9 +15,17 @@ namespace StocksApp.OrdersWorker.Services
 
         public async Task EnsureSubscribedAsync(string stockSymbol, CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrEmpty(stockSymbol) && _subscribedStockSymbols.Add(stockSymbol))
+            if (string.IsNullOrEmpty(stockSymbol) || _subscribedStockSymbols.Contains(stockSymbol))
+                return;
+
+            await _finnhubWebSocketClient.SubscribeAsync(stockSymbol, cancellationToken);
+            _subscribedStockSymbols.Add(stockSymbol);
+        }
+        public async Task UnsubscribeAsync(string stockSymbol, CancellationToken cancellationToken)
+        {
+            if (!string.IsNullOrEmpty(stockSymbol) && _subscribedStockSymbols.Remove(stockSymbol))
             {
-                await _finnhubWebSocketClient.SubscribeAsync(stockSymbol, cancellationToken);
+                await _finnhubWebSocketClient.UnsubscribeAsync(stockSymbol, cancellationToken);
             }
         }
     }

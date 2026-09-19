@@ -6,5 +6,6 @@
     public interface IPriceFeedSubscriptionRegistry
     {
         Task EnsureSubscribedAsync(string stockSymbol, CancellationToken cancellationToken);
+        Task UnsubscribeAsync(string stockSymbol, CancellationToken cancellationToken);
     }
 }
