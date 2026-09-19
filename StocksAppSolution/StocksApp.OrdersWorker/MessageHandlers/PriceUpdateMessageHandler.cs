@@ -11,12 +11,16 @@ namespace StocksApp.OrdersWorker.MessageHandlers
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IPendingOrdersStore _sellOrdersStore;
+        private readonly ILogger<PriceUpdateMessageHandler> _logger;
 
         public PriceUpdateMessageHandler(
-            IServiceScopeFactory scopeFactory, IPendingOrdersStore sellOrdersStore)
+            IServiceScopeFactory scopeFactory, 
+            IPendingOrdersStore sellOrdersStore, 
+            ILogger<PriceUpdateMessageHandler> logger)
         {
             _scopeFactory = scopeFactory;
             _sellOrdersStore = sellOrdersStore;
+            _logger = logger;
         }
 
         protected override async Task HandleAsync(PriceUpdateWorkerMessage message, CancellationToken cancellationToken = default)
@@ -24,11 +28,21 @@ namespace StocksApp.OrdersWorker.MessageHandlers
             var eligibleOrders = _sellOrdersStore.TakeTriggeredOrders(message.StockSymbol, message.Price);
 
             if (eligibleOrders.Count == 0) return;
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var ordersExecutionService = scope.ServiceProvider.GetRequiredService<IOrdersExecutionService>();
 
-            using var scope = _scopeFactory.CreateScope();
-            var ordersExecutionService = scope.ServiceProvider.GetRequiredService<IOrdersExecutionService>();
-
-            await ordersExecutionService.ExecuteSellOrdersAsync(eligibleOrders, cancellationToken);
+                await ordersExecutionService.ExecuteSellOrdersAsync(eligibleOrders, cancellationToken);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("Error while handling price update message for stock {StockSymbol} with price {Price}: {ExceptionMessage}", message.StockSymbol, message.Price, ex.Message);
+                foreach(var order in eligibleOrders)
+                {
+                    _sellOrdersStore.AddSellOrder(order);
+                }
+            }
         }
     }
 }

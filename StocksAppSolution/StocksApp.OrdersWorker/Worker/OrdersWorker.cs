@@ -36,6 +36,7 @@ namespace StocksApp.OrdersWorker.Worker
             using var loopsCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
             _finnhubWebSocketClient.OnPriceUpdatesReceived += ProcessPriceUpdates;
+
             try
             {
                 await _finnhubWebSocketClient.ConnectAsync(cancellationToken);
