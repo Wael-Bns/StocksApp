@@ -22,7 +22,7 @@ namespace StocksApp.Test.ServiceUnitTests
         public async Task AddStockSymbol_NewSymbol_SubscribesToWebSocket()
         {
             // Act
-            await _manager.AddStockSymbol("AAPL", CancellationToken.None);
+            await _manager.EnsureSubscribedAsync("AAPL", CancellationToken.None);
 
             // Assert
             _finnhubWebSocketClientMock.Verify(
@@ -34,8 +34,8 @@ namespace StocksApp.Test.ServiceUnitTests
         public async Task AddStockSymbol_DuplicateSymbol_SubscribesOnlyOnce()
         {
             // Act
-            await _manager.AddStockSymbol("AAPL", CancellationToken.None);
-            await _manager.AddStockSymbol("AAPL", CancellationToken.None);
+            await _manager.EnsureSubscribedAsync("AAPL", CancellationToken.None);
+            await _manager.EnsureSubscribedAsync("AAPL", CancellationToken.None);
 
             // Assert
             _finnhubWebSocketClientMock.Verify(
@@ -49,7 +49,7 @@ namespace StocksApp.Test.ServiceUnitTests
         public async Task AddStockSymbol_NullOrEmptySymbol_DoesNotSubscribe(string? stockSymbol)
         {
             // Act
-            await _manager.AddStockSymbol(stockSymbol!, CancellationToken.None);
+            await _manager.EnsureSubscribedAsync(stockSymbol!, CancellationToken.None);
 
             // Assert
             _finnhubWebSocketClientMock.Verify(

@@ -33,15 +33,15 @@ namespace StocksApp.OrdersWorker.Worker
 
                 _logger.LogInformation("Starting {ServiceName} at: {time}", nameof(OrdersWorker), DateTimeOffset.Now);
                 
-                _finnhubWebSocketClient.OnMessageReceived += ProcessPriceUpdates;
+                _finnhubWebSocketClient.OnPriceUpdatesReceived += ProcessPriceUpdates;
 
                 await _finnhubWebSocketClient.ConnectAsync(cancellationToken);
 
-                await _pendingOrdersInitializer.StartAsync(cancellationToken);
+                await _pendingOrdersInitializer.RestoreAsync(cancellationToken);
 
-                var orderMessageProcessorTask = _orderMessageProcessor.StartAsync(cancellationToken);
+                var orderMessageProcessorTask = _orderMessageProcessor.RunAsync(cancellationToken);
 
-                var finnhubTask = _finnhubWebSocketClient.ReceiveAsync(cancellationToken);
+                var finnhubTask = _finnhubWebSocketClient.ReceiveLoopAsync(cancellationToken);
 
                 await Task.WhenAll(orderMessageProcessorTask, finnhubTask);
             }
@@ -51,7 +51,7 @@ namespace StocksApp.OrdersWorker.Worker
             }
             finally
             {
-                _finnhubWebSocketClient.OnMessageReceived -= ProcessPriceUpdates;
+                _finnhubWebSocketClient.OnPriceUpdatesReceived -= ProcessPriceUpdates;
                 await _finnhubWebSocketClient.DisconnectAsync(CancellationToken.None);
                 _logger.LogInformation("{ServiceName} stopped at: {time}",nameof(OrdersWorker), DateTimeOffset.Now);
             }

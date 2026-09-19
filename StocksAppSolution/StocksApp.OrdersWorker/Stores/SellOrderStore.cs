@@ -37,7 +37,7 @@ namespace StocksApp.OrdersWorker.Stores
                 }
             }
         }
-        public IReadOnlyList<SellOrderCreatedCommand> DequeueEligibleOrders(string stockSymbol, double currentPrice)
+        public IReadOnlyList<SellOrderCreatedCommand> TakeTriggeredOrders(string stockSymbol, double currentPrice)
         {
             var eligible = new List<SellOrderCreatedCommand>();
             if (!_pendingSellOrders.TryGetValue(stockSymbol, out var sortedSet))

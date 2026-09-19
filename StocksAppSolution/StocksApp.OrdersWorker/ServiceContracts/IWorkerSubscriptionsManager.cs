@@ -5,6 +5,6 @@
     /// </summary>
     public interface IWorkerSubscriptionsManager
     {
-        Task AddStockSymbol(string stockSymbol, CancellationToken cancellationToken);
+        Task EnsureSubscribedAsync(string stockSymbol, CancellationToken cancellationToken);
     }
 }

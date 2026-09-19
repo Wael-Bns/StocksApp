@@ -20,7 +20,7 @@ namespace StocksApp.OrdersWorker.Services
             _serviceScopeFactory = serviceScopeFactory;
             _workerSubscriptionsManager = workerSubscriptionsManager;
         }
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public async Task RestoreAsync(CancellationToken cancellationToken)
         {
             var spec = new PendingSellOrdersSpecification();
             using var scope = _serviceScopeFactory.CreateScope();
@@ -29,7 +29,7 @@ namespace StocksApp.OrdersWorker.Services
             foreach(var order in pendingSellOrders)
             {
                 _sellOrdersStore.AddSellOrder(order.ToSellOrderCreatedCommand());
-                await _workerSubscriptionsManager.AddStockSymbol(order.StockSymbol!, cancellationToken);
+                await _workerSubscriptionsManager.EnsureSubscribedAsync(order.StockSymbol!, cancellationToken);
             }
         }
     }

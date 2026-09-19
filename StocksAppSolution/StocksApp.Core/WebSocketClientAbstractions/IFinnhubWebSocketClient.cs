@@ -8,9 +8,9 @@ namespace StocksApp.Core.WebSocketClientAbstractions
     /// </summary>
     public interface IFinnhubWebSocketClient
     {
-        event Func<IReadOnlyCollection<PriceUpdateMessage>, Task>? OnMessageReceived;
+        event Func<IReadOnlyCollection<PriceUpdateMessage>, Task>? OnPriceUpdatesReceived;
         Task ConnectAsync(CancellationToken cancellationToken = default);
-        Task ReceiveAsync(CancellationToken cancellationToken = default);
+        Task ReceiveLoopAsync(CancellationToken cancellationToken = default);
         Task SubscribeAsync(string symbol, CancellationToken cancellationToken = default);
         Task UnsubscribeAsync(string symbol, CancellationToken cancellationToken = default);
         Task DisconnectAsync(CancellationToken cancellationToken = default);

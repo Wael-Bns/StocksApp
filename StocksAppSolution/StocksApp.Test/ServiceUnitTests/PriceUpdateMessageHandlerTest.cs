@@ -39,7 +39,7 @@ namespace StocksApp.Test.ServiceUnitTests
             var message = new PriceUpdateWorkerMessage("AAPL", 100);
 
             _sellOrdersStoreMock
-                .Setup(store => store.DequeueEligibleOrders(message.StockSymbol, message.Price))
+                .Setup(store => store.TakeTriggeredOrders(message.StockSymbol, message.Price))
                 .Returns(Array.Empty<SellOrderCreatedCommand>());
 
             // Act
@@ -64,7 +64,7 @@ namespace StocksApp.Test.ServiceUnitTests
             };
 
             _sellOrdersStoreMock
-                .Setup(store => store.DequeueEligibleOrders(message.StockSymbol, message.Price))
+                .Setup(store => store.TakeTriggeredOrders(message.StockSymbol, message.Price))
                 .Returns(eligibleOrders);
 
             // Act
@@ -87,7 +87,7 @@ namespace StocksApp.Test.ServiceUnitTests
             };
 
             _sellOrdersStoreMock
-                .Setup(store => store.DequeueEligibleOrders(message.StockSymbol, message.Price))
+                .Setup(store => store.TakeTriggeredOrders(message.StockSymbol, message.Price))
                 .Returns(eligibleOrders);
 
             _ordersExecutionServiceMock

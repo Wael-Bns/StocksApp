@@ -20,6 +20,8 @@ namespace StocksApp.Test.ServiceUnitTests
         private readonly Mock<IGenericRepository<BuyOrder>> _buyOrderRepositoryMock;
         private readonly Mock<IGenericRepository<SellOrder>> _sellOrderRepositoryMock;
         private readonly Mock<IFinnHubHttpClient> _finnHubHttpClientMock;
+        private readonly Mock<IGenericRepository<Outbox>> _outboxRepositoryMock;
+        private readonly Mock<IUnitOfWork> _unitOfWork;
 
         private readonly Guid _userId = Guid.NewGuid();
 
@@ -45,11 +47,15 @@ namespace StocksApp.Test.ServiceUnitTests
         {
             _buyOrderRepositoryMock = new Mock<IGenericRepository<BuyOrder>>();
             _sellOrderRepositoryMock = new Mock<IGenericRepository<SellOrder>>();
+            _outboxRepositoryMock = new Mock<IGenericRepository<Outbox>>();
+            _unitOfWork = new Mock<IUnitOfWork>();
             _finnHubHttpClientMock = new Mock<IFinnHubHttpClient>();
 
             _stockService = new StockService(
                 _buyOrderRepositoryMock.Object,
                 _sellOrderRepositoryMock.Object,
+                _outboxRepositoryMock.Object,
+                _unitOfWork.Object,
                 _finnHubHttpClientMock.Object);
         }
 

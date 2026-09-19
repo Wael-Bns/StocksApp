@@ -7,7 +7,7 @@ namespace StocksApp.OrdersWorker.Stores
     /// </summary>
     public interface ISellOrdersStore
     {
-        IReadOnlyList<SellOrderCreatedCommand> DequeueEligibleOrders(string stockSymbol, double currentPrice);
+        IReadOnlyList<SellOrderCreatedCommand> TakeTriggeredOrders(string stockSymbol, double currentPrice);
         void AddSellOrder(SellOrderCreatedCommand sellOrderCreatedCommand);
         void RemoveSellOrder(SellOrderCreatedCommand sellOrderCreatedCommand);
     }

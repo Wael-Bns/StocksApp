@@ -5,6 +5,6 @@
     /// </summary>
     public interface IOrderMessageProcessor
     {
-        Task StartAsync(CancellationToken cancellationToken);
+        Task RunAsync(CancellationToken cancellationToken);
     }
 }

@@ -22,7 +22,7 @@ namespace StocksApp.OrdersWorker.MessageHandlers
         protected override async Task HandleAsync(SellOrderCreatedWorkerMessage message, CancellationToken cancellationToken = default)
         {
             _sellOrdersStore.AddSellOrder(message.SellOrder);
-            await _workerSubscriptionsManager.AddStockSymbol(message.SellOrder.StockSymbol, cancellationToken);
+            await _workerSubscriptionsManager.EnsureSubscribedAsync(message.SellOrder.StockSymbol, cancellationToken);
         }
     }
 }

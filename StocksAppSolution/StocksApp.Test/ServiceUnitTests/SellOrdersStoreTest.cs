@@ -26,7 +26,7 @@ namespace StocksApp.Test.ServiceUnitTests
             _sellOrdersStore.AddSellOrder(order);
 
             // Act
-            var actual = _sellOrdersStore.DequeueEligibleOrders("AAPL", 149);
+            var actual = _sellOrdersStore.TakeTriggeredOrders("AAPL", 149);
 
             // Assert
             actual.Should().BeEmpty();
@@ -45,8 +45,8 @@ namespace StocksApp.Test.ServiceUnitTests
             _sellOrdersStore.AddSellOrder(firstEligible);
 
             // Act
-            var actual = _sellOrdersStore.DequeueEligibleOrders("AAPL", 120);
-            var remaining = _sellOrdersStore.DequeueEligibleOrders("AAPL", 1000);
+            var actual = _sellOrdersStore.TakeTriggeredOrders("AAPL", 120);
+            var remaining = _sellOrdersStore.TakeTriggeredOrders("AAPL", 1000);
 
             // Assert
             actual.Should().ContainInOrder(firstEligible, secondEligible);
@@ -81,7 +81,7 @@ namespace StocksApp.Test.ServiceUnitTests
             _sellOrdersStore.AddSellOrder(first);
 
             // Act
-            var actual = _sellOrdersStore.DequeueEligibleOrders("AAPL", 100);
+            var actual = _sellOrdersStore.TakeTriggeredOrders("AAPL", 100);
 
             // Assert
             actual.Should().ContainInOrder(first, second, third);
@@ -99,7 +99,7 @@ namespace StocksApp.Test.ServiceUnitTests
 
             // Act
             _sellOrdersStore.RemoveSellOrder(order);
-            var actual = _sellOrdersStore.DequeueEligibleOrders("AAPL", 100);
+            var actual = _sellOrdersStore.TakeTriggeredOrders("AAPL", 100);
 
             // Assert
             actual.Should().BeEmpty();

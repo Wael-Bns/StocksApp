@@ -5,6 +5,6 @@
     /// </summary>
     public interface IPendingOrdersInitializer
     {
-        Task StartAsync(CancellationToken cancellationToken);
+        Task RestoreAsync(CancellationToken cancellationToken);
     }
 }

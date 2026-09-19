@@ -31,7 +31,7 @@ namespace StocksApp.Test.ServiceUnitTests
             var processor = CreateProcessor(message);
 
             // Act
-            await processor.StartAsync(CancellationToken.None);
+            await processor.RunAsync(CancellationToken.None);
 
             // Assert
             _priceUpdateHandlerMock.Verify(
@@ -51,7 +51,7 @@ namespace StocksApp.Test.ServiceUnitTests
             var processor = CreateProcessor(message);
 
             // Act
-            await processor.StartAsync(CancellationToken.None);
+            await processor.RunAsync(CancellationToken.None);
 
             // Assert
             _sellOrderHandlerMock.Verify(
@@ -77,7 +77,7 @@ namespace StocksApp.Test.ServiceUnitTests
             var processor = CreateProcessor(failingMessage, nextMessage);
 
             // Act
-            await processor.StartAsync(CancellationToken.None);
+            await processor.RunAsync(CancellationToken.None);
 
             // Assert
             _priceUpdateHandlerMock.Verify(

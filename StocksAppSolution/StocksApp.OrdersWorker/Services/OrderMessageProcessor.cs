@@ -21,7 +21,7 @@ namespace StocksApp.OrdersWorker.Services
             _logger = logger;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public async Task RunAsync(CancellationToken cancellationToken)
         {
             await foreach (var message in _channel.ReadAllAsync(cancellationToken))
             {

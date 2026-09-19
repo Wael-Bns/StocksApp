@@ -18,7 +18,7 @@ namespace StocksApp.OrdersWorker.MessageHandlers
 
         protected override async Task HandleAsync(PriceUpdateWorkerMessage message, CancellationToken cancellationToken = default)
         {
-            var eligibleOrders = _sellOrdersStore.DequeueEligibleOrders(message.StockSymbol, message.Price);
+            var eligibleOrders = _sellOrdersStore.TakeTriggeredOrders(message.StockSymbol, message.Price);
 
             if (eligibleOrders.Count == 0) return;
 

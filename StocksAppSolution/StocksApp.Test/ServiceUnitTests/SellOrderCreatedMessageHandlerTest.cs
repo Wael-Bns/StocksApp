@@ -39,7 +39,7 @@ namespace StocksApp.Test.ServiceUnitTests
             // Assert
             _sellOrdersStoreMock.Verify(store => store.AddSellOrder(sellOrder), Times.Once);
             _workerSubscriptionsManagerMock.Verify(
-                manager => manager.AddStockSymbol(sellOrder.StockSymbol, cancellationToken),
+                manager => manager.EnsureSubscribedAsync(sellOrder.StockSymbol, cancellationToken),
                 Times.Once);
         }
     }

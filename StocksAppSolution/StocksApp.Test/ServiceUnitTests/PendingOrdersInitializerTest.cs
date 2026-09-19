@@ -51,7 +51,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 .ReturnsAsync(pendingOrders);
 
             // Act
-            await _pendingOrdersInitializer.StartAsync(cancellationToken);
+            await _pendingOrdersInitializer.RestoreAsync(cancellationToken);
 
             // Assert
             _sellOrdersStoreMock.Verify(store => store.AddSellOrder(
@@ -60,10 +60,10 @@ namespace StocksApp.Test.ServiceUnitTests
                 It.Is<Domain.Events.SellOrderCreatedCommand>(order => order.StockSymbol == "MSFT")), Times.Once);
 
             _workerSubscriptionsManagerMock.Verify(
-                manager => manager.AddStockSymbol("AAPL", cancellationToken),
+                manager => manager.EnsureSubscribedAsync("AAPL", cancellationToken),
                 Times.Once);
             _workerSubscriptionsManagerMock.Verify(
-                manager => manager.AddStockSymbol("MSFT", cancellationToken),
+                manager => manager.EnsureSubscribedAsync("MSFT", cancellationToken),
                 Times.Once);
         }
 
@@ -76,12 +76,12 @@ namespace StocksApp.Test.ServiceUnitTests
                 .ReturnsAsync(new List<SellOrder>());
 
             // Act
-            await _pendingOrdersInitializer.StartAsync(CancellationToken.None);
+            await _pendingOrdersInitializer.RestoreAsync(CancellationToken.None);
 
             // Assert
             _sellOrdersStoreMock.Verify(store => store.AddSellOrder(It.IsAny<Domain.Events.SellOrderCreatedCommand>()), Times.Never);
             _workerSubscriptionsManagerMock.Verify(
-                manager => manager.AddStockSymbol(It.IsAny<string>(), It.IsAny<CancellationToken>()),
+                manager => manager.EnsureSubscribedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
     }

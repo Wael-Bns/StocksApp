@@ -13,7 +13,7 @@ namespace StocksApp.OrdersWorker.Services
             _subscribedStockSymbols = new HashSet<string>();
         }
 
-        public async Task AddStockSymbol(string stockSymbol, CancellationToken cancellationToken)
+        public async Task EnsureSubscribedAsync(string stockSymbol, CancellationToken cancellationToken)
         {
             if (!string.IsNullOrEmpty(stockSymbol) && _subscribedStockSymbols.Add(stockSymbol))
             {
