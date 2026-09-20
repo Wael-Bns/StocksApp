@@ -52,7 +52,7 @@ namespace StocksApp.IntegrationsTests.Factory
 
                 foreach (var descriptor in massTransitDescriptors)
                     services.Remove(descriptor);
-
+                    
                 services.AddMassTransitTestHarness();
             });
         }

@@ -11,17 +11,17 @@ namespace StocksApp.Test.ServiceUnitTests
 {
     public class SellOrderCreatedMessageHandlerTest
     {
-        private readonly Mock<IPriceFeedSubscriptionRegistry> _workerSubscriptionsManagerMock;
+        private readonly Mock<IPriceFeedSubscriptionRegistry> _priceFeedSubscriptionRegistry;
         private readonly Mock<IPendingOrdersStore> _sellOrdersStoreMock;
         private readonly SellOrderCreatedMessageHandler _handler;
 
         public SellOrderCreatedMessageHandlerTest()
         {
-            _workerSubscriptionsManagerMock = new Mock<IPriceFeedSubscriptionRegistry>();
+            _priceFeedSubscriptionRegistry = new Mock<IPriceFeedSubscriptionRegistry>();
             _sellOrdersStoreMock = new Mock<IPendingOrdersStore>();
             _handler = new SellOrderCreatedMessageHandler(
                 NullLogger<SellOrderCreatedMessageHandler>.Instance,
-                _workerSubscriptionsManagerMock.Object,
+                _priceFeedSubscriptionRegistry.Object,
                 _sellOrdersStoreMock.Object);
         }
 
@@ -38,7 +38,7 @@ namespace StocksApp.Test.ServiceUnitTests
 
             // Assert
             _sellOrdersStoreMock.Verify(store => store.AddSellOrder(sellOrder), Times.Once);
-            _workerSubscriptionsManagerMock.Verify(
+            _priceFeedSubscriptionRegistry.Verify(
                 manager => manager.EnsureSubscribedAsync(sellOrder.StockSymbol, cancellationToken),
                 Times.Once);
         }

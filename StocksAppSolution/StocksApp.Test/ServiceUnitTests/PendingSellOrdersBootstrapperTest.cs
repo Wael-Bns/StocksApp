@@ -11,28 +11,28 @@ using Xunit;
 
 namespace StocksApp.Test.ServiceUnitTests
 {
-    public class PendingOrdersInitializerTest
+    public class PendingSellOrdersBootstrapperTest
     {
         private readonly Mock<IPendingOrdersStore> _sellOrdersStoreMock;
         private readonly Mock<IGenericRepository<SellOrder>> _sellOrdersRepositoryMock;
-        private readonly Mock<IPriceFeedSubscriptionRegistry> _workerSubscriptionsManagerMock;
+        private readonly Mock<IPriceFeedSubscriptionRegistry> _priceFeedSubscriptionRegistry;
         private readonly ServiceProvider _serviceProvider;
-        private readonly PendingSellOrdersBootstrapper _pendingOrdersInitializer;
+        private readonly PendingSellOrdersBootstrapper _pendingSellOrdersBootstrapper;
 
-        public PendingOrdersInitializerTest()
+        public PendingSellOrdersBootstrapperTest()
         {
             _sellOrdersStoreMock = new Mock<IPendingOrdersStore>();
             _sellOrdersRepositoryMock = new Mock<IGenericRepository<SellOrder>>();
-            _workerSubscriptionsManagerMock = new Mock<IPriceFeedSubscriptionRegistry>();
+            _priceFeedSubscriptionRegistry = new Mock<IPriceFeedSubscriptionRegistry>();
 
             _serviceProvider = new ServiceCollection()
                 .AddScoped(_ => _sellOrdersRepositoryMock.Object)
                 .BuildServiceProvider();
 
-            _pendingOrdersInitializer = new PendingSellOrdersBootstrapper(
+            _pendingSellOrdersBootstrapper = new PendingSellOrdersBootstrapper(
                 _sellOrdersStoreMock.Object,
                 _serviceProvider.GetRequiredService<IServiceScopeFactory>(),
-                _workerSubscriptionsManagerMock.Object);
+                _priceFeedSubscriptionRegistry.Object);
         }
 
         [Fact]
@@ -51,7 +51,7 @@ namespace StocksApp.Test.ServiceUnitTests
                 .ReturnsAsync(pendingOrders);
 
             // Act
-            await _pendingOrdersInitializer.RestoreAsync(cancellationToken);
+            await _pendingSellOrdersBootstrapper.RestoreAsync(cancellationToken);
 
             // Assert
             _sellOrdersStoreMock.Verify(store => store.AddSellOrder(
@@ -59,10 +59,10 @@ namespace StocksApp.Test.ServiceUnitTests
             _sellOrdersStoreMock.Verify(store => store.AddSellOrder(
                 It.Is<Domain.Events.SellOrderCreatedCommand>(order => order.StockSymbol == "MSFT")), Times.Once);
 
-            _workerSubscriptionsManagerMock.Verify(
+            _priceFeedSubscriptionRegistry.Verify(
                 manager => manager.EnsureSubscribedAsync("AAPL", cancellationToken),
                 Times.Once);
-            _workerSubscriptionsManagerMock.Verify(
+            _priceFeedSubscriptionRegistry.Verify(
                 manager => manager.EnsureSubscribedAsync("MSFT", cancellationToken),
                 Times.Once);
         }
@@ -76,11 +76,11 @@ namespace StocksApp.Test.ServiceUnitTests
                 .ReturnsAsync(new List<SellOrder>());
 
             // Act
-            await _pendingOrdersInitializer.RestoreAsync(CancellationToken.None);
+            await _pendingSellOrdersBootstrapper.RestoreAsync(CancellationToken.None);
 
             // Assert
             _sellOrdersStoreMock.Verify(store => store.AddSellOrder(It.IsAny<Domain.Events.SellOrderCreatedCommand>()), Times.Never);
-            _workerSubscriptionsManagerMock.Verify(
+            _priceFeedSubscriptionRegistry.Verify(
                 manager => manager.EnsureSubscribedAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }

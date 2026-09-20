@@ -6,12 +6,12 @@ using Xunit;
 
 namespace StocksApp.Test.ServiceUnitTests
 {
-    public class WorkerSubscriptionsManagerTest
+    public class PriceFeedSubscriptionRegistryTest
     {
         private readonly Mock<IFinnhubWebSocketClient> _finnhubWebSocketClientMock;
         private readonly PriceFeedSubscriptionRegistry _manager;
 
-        public WorkerSubscriptionsManagerTest()
+        public PriceFeedSubscriptionRegistryTest()
         {
             _finnhubWebSocketClientMock = new Mock<IFinnhubWebSocketClient>();
 

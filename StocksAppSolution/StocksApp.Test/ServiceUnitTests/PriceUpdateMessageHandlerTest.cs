@@ -1,10 +1,12 @@
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Domain.Events;
 using StocksApp.OrdersWorker.MessageHandlers;
 using StocksApp.OrdersWorker.Messages;
+using StocksApp.OrdersWorker.ServiceContracts;
 using StocksApp.OrdersWorker.Stores;
 using StocksApp.Tests.Common.Builders;
 using Xunit;
@@ -29,7 +31,9 @@ namespace StocksApp.Test.ServiceUnitTests
 
             _handler = new PriceUpdateMessageHandler(
                 _serviceProvider.GetRequiredService<IServiceScopeFactory>(),
-                _sellOrdersStoreMock.Object);
+                _sellOrdersStoreMock.Object,
+                new Mock<IPriceFeedSubscriptionRegistry>().Object,
+                new Mock<ILogger<PriceUpdateMessageHandler>>().Object);
         }
 
         [Fact]
@@ -77,14 +81,14 @@ namespace StocksApp.Test.ServiceUnitTests
         }
 
         [Fact]
-        public async Task HandleAsync_WhenExecutionFails_ThrowsException()
+        public async Task HandleAsync_WhenExecutionFails_ReAddsOrdersToStoreAndDoesNotThrow()
         {
             // Arrange
             var message = new PriceUpdateWorkerMessage("AAPL", 120);
             var eligibleOrders = new List<SellOrderCreatedCommand>
-            {
-                new SellOrderCreatedCommandBuilder().WithStockSymbol("AAPL").WithPrice(100).Build()
-            };
+    {
+        new SellOrderCreatedCommandBuilder().WithStockSymbol("AAPL").WithPrice(100).Build()
+    };
 
             _sellOrdersStoreMock
                 .Setup(store => store.TakeTriggeredOrders(message.StockSymbol, message.Price))
@@ -98,8 +102,14 @@ namespace StocksApp.Test.ServiceUnitTests
             Func<Task> actual = async () => await _handler.HandleAsync(message, CancellationToken.None);
 
             // Assert
-            await actual.Should().ThrowAsync<InvalidOperationException>()
-                .WithMessage("Execution failed");
+            await actual.Should().NotThrowAsync();
+
+            foreach (var order in eligibleOrders)
+            {
+                _sellOrdersStoreMock.Verify(store => store.AddSellOrder(order), Times.Once);
+            }
+
+            _sellOrdersStoreMock.Verify(store => store.HasPendingOrders(It.IsAny<string>()), Times.Never);
         }
     }
 }

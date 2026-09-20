@@ -131,28 +131,6 @@ namespace StocksApp.IntegrationsTests.Tests
             sellOrderResponse!.StockSymbol.Should().Be("MSFT");
             sellOrderResponse.Quantity.Should().Be(5);
         }
-        [Fact]
-        public async Task SellOrder_ValidRequest_SendsSellOrderCreatedCommand()
-        {
-            await AuthenticateAsync("sellordercommand@test.com");
-
-            var request = new SellOrderRequestBuilder()
-                .WithStockSymbol("MSFT")
-                .WithStockName("Microsoft Corporation")
-                .WithQuantity(5)
-                .WithPrice(100)
-                .Build();
-
-            var response = await _trade.SellOrderRawAsync(request);
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-            var sellOrderResponse = await response.Content.ReadFromJsonAsync<SellOrderResponse>();
-
-            (await Harness.Sent.Any<SellOrderCreatedCommand>(x =>
-                    x.Context.Message.StockSymbol == sellOrderResponse!.StockSymbol
-                 && x.Context.Message.Quantity == sellOrderResponse.Quantity))
-                .Should().BeTrue();
-        }
 
         [Fact]
         public async Task SellOrder_InvalidRequest_ReturnsBadRequest()

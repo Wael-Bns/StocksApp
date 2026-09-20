@@ -24,7 +24,7 @@ namespace StocksApp.Test.ServiceUnitTests
         }
 
         [Fact]
-        public async Task StartAsync_PriceUpdateMessage_DispatchesToPriceUpdateHandler()
+        public async Task RunAsync_PriceUpdateMessage_DispatchesToPriceUpdateHandler()
         {
             // Arrange
             var message = new PriceUpdateWorkerMessage("AAPL", 100);
@@ -44,7 +44,7 @@ namespace StocksApp.Test.ServiceUnitTests
         }
 
         [Fact]
-        public async Task StartAsync_SellOrderCreatedMessage_DispatchesToSellOrderHandler()
+        public async Task RunAsync_SellOrderCreatedMessage_DispatchesToSellOrderHandler()
         {
             // Arrange
             var message = new SellOrderCreatedWorkerMessage(CreateSellOrderCommand());
@@ -64,7 +64,7 @@ namespace StocksApp.Test.ServiceUnitTests
         }
 
         [Fact]
-        public async Task StartAsync_WhenHandlerThrows_ContinuesProcessingNextMessage()
+        public async Task RunAsync_WhenHandlerThrows_ContinuesProcessingNextMessage()
         {
             // Arrange
             var failingMessage = new PriceUpdateWorkerMessage("AAPL", 100);
