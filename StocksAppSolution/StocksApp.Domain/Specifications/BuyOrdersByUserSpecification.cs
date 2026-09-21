@@ -1,14 +1,12 @@
-﻿using System.Linq.Expressions;
-using StocksApp.Domain.Entities;
+﻿using StocksApp.Domain.Entities;
 
 namespace StocksApp.Domain.Specifications
 {
-    public class BuyOrdersByUserSpecification : ISpecification<BuyOrder>
+    public class BuyOrdersByUserSpecification : BaseSpecification<BuyOrder>
     {
-        public Expression<Func<BuyOrder, bool>> Criteria { get; }
-        public BuyOrdersByUserSpecification(Guid userId)
+        public BuyOrdersByUserSpecification(Guid userId) : base(o => o.UserId == userId)
         {
-            Criteria = order => order.UserId == userId;
+            ApplyNoTracking();
         }
     }
 }

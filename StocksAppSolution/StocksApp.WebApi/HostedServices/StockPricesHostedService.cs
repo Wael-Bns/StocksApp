@@ -23,13 +23,13 @@ namespace StocksApp.WebApi.HostedServices
                 _logger.LogInformation("Starting {ServiceName}...", nameof(StockPricesHostedService));
                 await _finnhubWebSocketClient.ConnectAsync(stoppingToken);
 
-                _finnhubWebSocketClient.OnMessageReceived += async (message) => await NotifySubscribers(message);
+                _finnhubWebSocketClient.OnPriceUpdatesReceived += async (message) => await NotifySubscribers(message);
             
-                await _finnhubWebSocketClient.ReceiveAsync(stoppingToken);
+                await _finnhubWebSocketClient.ReceiveLoopAsync(stoppingToken);
             }
             finally
             {
-                _finnhubWebSocketClient.OnMessageReceived -= async (message) => await NotifySubscribers(message);
+                _finnhubWebSocketClient.OnPriceUpdatesReceived -= async (message) => await NotifySubscribers(message);
                 await _finnhubWebSocketClient.DisconnectAsync(CancellationToken.None);
                 _logger.LogInformation("{ServiceName} stopped.", nameof(StockPricesHostedService));
             }
@@ -38,6 +38,7 @@ namespace StocksApp.WebApi.HostedServices
         {
             if (priceUpdates != null)
             {
+                _logger.LogInformation("Received {Count} price updates.", priceUpdates.Count);
                 foreach (var trade in priceUpdates)
                 {
                     await _stocksHub.Clients.Group(trade.StockSymbol)

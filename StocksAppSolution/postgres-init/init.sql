@@ -433,3 +433,102 @@ BEGIN
 END $EF$;
 COMMIT;
 
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260716114224_AddOutboxTable') THEN
+    CREATE TABLE "Outbox" (
+        "OutboxId" uuid NOT NULL,
+        "EventType" text NOT NULL,
+        "Payload" jsonb NOT NULL,
+        "CreatedAt" timestamp with time zone NOT NULL DEFAULT (now()),
+        "ProcessedAt" timestamp with time zone,
+        CONSTRAINT "PK_Outbox" PRIMARY KEY ("OutboxId")
+    );
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260716114224_AddOutboxTable') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20260716114224_AddOutboxTable', '8.0.23');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260716121120_AddOutboxNotificationTriggerOnInsert') THEN
+
+                    CREATE OR REPLACE FUNCTION notify_outbox_insert()
+                    RETURNS trigger AS $$
+                    BEGIN
+                        PERFORM pg_notify(
+                            'outbox_inserted',
+                            json_build_object(
+                                'outbox_id', NEW."OutboxId",
+                                'event_type', NEW."EventType",
+                                'payload', NEW."Payload",
+                                'created_at', NEW."CreatedAt"
+                            )::text
+                        );
+                        RETURN NEW;
+                    END;
+                    $$ LANGUAGE plpgsql;
+                
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260716121120_AddOutboxNotificationTriggerOnInsert') THEN
+
+                    CREATE TRIGGER outbox_insert_trigger
+                    AFTER INSERT ON "Outbox"
+                    FOR EACH ROW
+                    EXECUTE FUNCTION notify_outbox_insert();
+                
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260716121120_AddOutboxNotificationTriggerOnInsert') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20260716121120_AddOutboxNotificationTriggerOnInsert', '8.0.23');
+    END IF;
+END $EF$;
+COMMIT;
+
+START TRANSACTION;
+
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260919085417_UpdateStockSymbolLength25') THEN
+    ALTER TABLE "SellOrder" ALTER COLUMN "StockSymbol" TYPE character varying(25);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260919085417_UpdateStockSymbolLength25') THEN
+    ALTER TABLE "BuyOrder" ALTER COLUMN "StockSymbol" TYPE character varying(25);
+    END IF;
+END $EF$;
+
+DO $EF$
+BEGIN
+    IF NOT EXISTS(SELECT 1 FROM "__EFMigrationsHistory" WHERE "MigrationId" = '20260919085417_UpdateStockSymbolLength25') THEN
+    INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+    VALUES ('20260919085417_UpdateStockSymbolLength25', '8.0.23');
+    END IF;
+END $EF$;
+COMMIT;
+

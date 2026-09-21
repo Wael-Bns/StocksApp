@@ -4,15 +4,18 @@ using StocksApp.OrdersWorker.Stores;
 
 namespace StocksApp.OrdersWorker.MessageHandlers
 {
+    /// <summary>
+    /// Reacts to newly created sell orders.
+    /// </summary>
     public sealed class SellOrderCreatedMessageHandler : WorkerMessageHandler<SellOrderCreatedWorkerMessage>
     {
         private readonly ILogger<SellOrderCreatedMessageHandler> _logger;
-        private readonly IWorkerSubscriptionsManager _workerSubscriptionsManager;
-        private readonly ISellOrdersStore _sellOrdersStore;
+        private readonly IPriceFeedSubscriptionRegistry _workerSubscriptionsManager;
+        private readonly IPendingOrdersStore _sellOrdersStore;
 
         public SellOrderCreatedMessageHandler(ILogger<SellOrderCreatedMessageHandler> logger,
-            IWorkerSubscriptionsManager workerSubscriptionsManager,
-            ISellOrdersStore sellOrdersStore)
+            IPriceFeedSubscriptionRegistry workerSubscriptionsManager,
+            IPendingOrdersStore sellOrdersStore)
         {
             _logger = logger;
             _workerSubscriptionsManager = workerSubscriptionsManager;
@@ -22,7 +25,14 @@ namespace StocksApp.OrdersWorker.MessageHandlers
         protected override async Task HandleAsync(SellOrderCreatedWorkerMessage message, CancellationToken cancellationToken = default)
         {
             _sellOrdersStore.AddSellOrder(message.SellOrder);
-            await _workerSubscriptionsManager.AddStockSymbol(message.SellOrder.StockSymbol, cancellationToken);
+            try
+            {
+                await _workerSubscriptionsManager.EnsureSubscribedAsync(message.SellOrder.StockSymbol, cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, "Subscription failed for {StockSymbol}", message.SellOrder.StockSymbol);
+            }
         }
     }
 }

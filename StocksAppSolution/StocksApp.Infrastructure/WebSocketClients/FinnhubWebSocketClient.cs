@@ -15,7 +15,7 @@ namespace StocksApp.Infrastructure.WebSocketClients
         private readonly ClientWebSocket _socket = new ClientWebSocket();
         private readonly FinnhubOptions _finnhubOptions;
         private readonly ILogger<FinnhubWebSocketClient> _logger;
-        public event Func<IReadOnlyCollection<PriceUpdateMessage>, Task>? OnMessageReceived;
+        public event Func<IReadOnlyCollection<PriceUpdateMessage>, Task>? OnPriceUpdatesReceived;
         public FinnhubWebSocketClient(ILogger<FinnhubWebSocketClient> logger, IOptions<FinnhubOptions> finnhubOptions)
         {
             _logger = logger;
@@ -43,7 +43,7 @@ namespace StocksApp.Infrastructure.WebSocketClients
                     true, cancellationToken);
             _logger.LogInformation("Subscribed to stock symbol: {Symbol}", symbol);
         }
-        public async Task ReceiveAsync(CancellationToken cancellationToken = default)
+        public async Task ReceiveLoopAsync(CancellationToken cancellationToken = default)
         {
             byte[] buffer = new byte[4096];
 
@@ -73,9 +73,9 @@ namespace StocksApp.Infrastructure.WebSocketClients
                 FinnhubTradeMessage? tradeMessage = JsonSerializer.Deserialize<FinnhubTradeMessage>(message);
                 IReadOnlyCollection<PriceUpdateMessage>? priceUpdates = tradeMessage?.ToPriceUpdateMessageList();
 
-                if (priceUpdates != null && OnMessageReceived != null)
+                if (priceUpdates != null && OnPriceUpdatesReceived != null)
                 {
-                    await OnMessageReceived.Invoke(priceUpdates);
+                    await OnPriceUpdatesReceived.Invoke(priceUpdates);
                 }
             }
         }

@@ -4,11 +4,11 @@ using StocksApp.OrdersWorker.Comparers;
 
 namespace StocksApp.OrdersWorker.Stores
 {
-    public class SellOrdersStore : ISellOrdersStore
+    public class PendingSellOrdersStore : IPendingOrdersStore
     {
         private readonly ConcurrentDictionary<string, SortedSet<SellOrderCreatedCommand>> _pendingSellOrders;
-        private readonly ILogger<SellOrdersStore> _logger;
-        public SellOrdersStore(ILogger<SellOrdersStore> logger)
+        private readonly ILogger<PendingSellOrdersStore> _logger;
+        public PendingSellOrdersStore(ILogger<PendingSellOrdersStore> logger)
         {
             _pendingSellOrders = new();
             _logger = logger;
@@ -37,7 +37,7 @@ namespace StocksApp.OrdersWorker.Stores
                 }
             }
         }
-        public IReadOnlyList<SellOrderCreatedCommand> DequeueEligibleOrders(string stockSymbol, double currentPrice)
+        public IReadOnlyList<SellOrderCreatedCommand> TakeTriggeredOrders(string stockSymbol, double currentPrice)
         {
             var eligible = new List<SellOrderCreatedCommand>();
             if (!_pendingSellOrders.TryGetValue(stockSymbol, out var sortedSet))
@@ -52,6 +52,16 @@ namespace StocksApp.OrdersWorker.Stores
                 }
             }
             return eligible;
+        }
+        public bool HasPendingOrders(string stockSymbol)
+        {
+            if (!_pendingSellOrders.TryGetValue(stockSymbol, out var sortedSet))
+                return false;
+
+            lock (sortedSet)
+            {
+                return sortedSet.Count > 0;
+            }
         }
     }
 }

@@ -42,8 +42,8 @@ namespace StocksApp.Infrastructure.Migrations
 
                     b.Property<string>("StockSymbol")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -58,6 +58,33 @@ namespace StocksApp.Infrastructure.Migrations
 
                             t.HasCheckConstraint("CK_BuyOrder_Quantity", "\"Quantity\" > 0");
                         });
+                });
+
+            modelBuilder.Entity("StocksApp.Domain.Entities.Outbox", b =>
+                {
+                    b.Property<Guid>("OutboxId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("OutboxId");
+
+                    b.ToTable("Outbox", (string)null);
                 });
 
             modelBuilder.Entity("StocksApp.Domain.Entities.SellOrder", b =>
@@ -83,8 +110,8 @@ namespace StocksApp.Infrastructure.Migrations
 
                     b.Property<string>("StockSymbol")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
+                        .HasMaxLength(25)
+                        .HasColumnType("character varying(25)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");

@@ -5,11 +5,11 @@ namespace StocksApp.IntegrationsTests.Fakes
 {
     public class FakeFinnhubWebSocketClient : IFinnhubWebSocketClient
     {
-        public event Func<IReadOnlyCollection<PriceUpdateMessage>, Task>? OnMessageReceived;
+        public event Func<IReadOnlyCollection<PriceUpdateMessage>, Task>? OnPriceUpdatesReceived;
 
         public Task ConnectAsync(CancellationToken ct = default) => Task.CompletedTask;
 
-        public Task ReceiveAsync(CancellationToken ct = default) => Task.CompletedTask;
+        public Task ReceiveLoopAsync(CancellationToken ct = default) => Task.CompletedTask;
 
         public Task DisconnectAsync(CancellationToken ct = default) => Task.CompletedTask;
 

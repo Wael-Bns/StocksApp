@@ -2,6 +2,9 @@
 
 namespace StocksApp.OrdersWorker.MessageHandlers
 {
+    /// <summary>
+    /// Define the contract every message handler follows, so messages can be routed by type.
+    /// </summary>
     public interface IWorkerMessageHandler
     {
         Type MessageType { get; }

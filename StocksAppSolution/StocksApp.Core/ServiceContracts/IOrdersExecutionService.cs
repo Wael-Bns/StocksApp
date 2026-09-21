@@ -3,7 +3,7 @@
 namespace StocksApp.Core.ServiceContracts
 {
     /// <summary>
-    /// Responsible for executing sell orders based on the provided requests.
+    /// Executes orders and persists their outcome.
     /// </summary>
     public interface IOrdersExecutionService
     {

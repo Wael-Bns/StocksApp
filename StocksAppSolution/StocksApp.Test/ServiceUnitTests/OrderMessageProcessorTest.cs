@@ -17,21 +17,21 @@ namespace StocksApp.Test.ServiceUnitTests
         public OrderMessageProcessorTest()
         {
             _priceUpdateHandlerMock = new Mock<IWorkerMessageHandler>();
-            _sellOrderHandlerMock = new Mock<IWorkerMessageHandler>();
+            _priceUpdateHandlerMock.Setup(h => h.MessageType).Returns(typeof(PriceUpdateWorkerMessage));
 
-            _priceUpdateHandlerMock.SetupGet(h => h.MessageType).Returns(typeof(PriceUpdateWorkerMessage));
-            _sellOrderHandlerMock.SetupGet(h => h.MessageType).Returns(typeof(SellOrderCreatedWorkerMessage));
+            _sellOrderHandlerMock = new Mock<IWorkerMessageHandler>();
+            _sellOrderHandlerMock.Setup(h => h.MessageType).Returns(typeof(SellOrderCreatedWorkerMessage));
         }
 
         [Fact]
-        public async Task StartAsync_PriceUpdateMessage_DispatchesToPriceUpdateHandler()
+        public async Task RunAsync_PriceUpdateMessage_DispatchesToPriceUpdateHandler()
         {
             // Arrange
             var message = new PriceUpdateWorkerMessage("AAPL", 100);
             var processor = CreateProcessor(message);
 
             // Act
-            await processor.StartAsync(CancellationToken.None);
+            await processor.RunAsync(CancellationToken.None);
 
             // Assert
             _priceUpdateHandlerMock.Verify(
@@ -44,14 +44,14 @@ namespace StocksApp.Test.ServiceUnitTests
         }
 
         [Fact]
-        public async Task StartAsync_SellOrderCreatedMessage_DispatchesToSellOrderHandler()
+        public async Task RunAsync_SellOrderCreatedMessage_DispatchesToSellOrderHandler()
         {
             // Arrange
-            var message = new SellOrderCreatedWorkerMessage(CreateSellOrder());
+            var message = new SellOrderCreatedWorkerMessage(CreateSellOrderCommand());
             var processor = CreateProcessor(message);
 
             // Act
-            await processor.StartAsync(CancellationToken.None);
+            await processor.RunAsync(CancellationToken.None);
 
             // Assert
             _sellOrderHandlerMock.Verify(
@@ -64,11 +64,11 @@ namespace StocksApp.Test.ServiceUnitTests
         }
 
         [Fact]
-        public async Task StartAsync_WhenHandlerThrows_ContinuesProcessingNextMessage()
+        public async Task RunAsync_WhenHandlerThrows_ContinuesProcessingNextMessage()
         {
             // Arrange
             var failingMessage = new PriceUpdateWorkerMessage("AAPL", 100);
-            var nextMessage = new SellOrderCreatedWorkerMessage(CreateSellOrder());
+            var nextMessage = new SellOrderCreatedWorkerMessage(CreateSellOrderCommand());
 
             _priceUpdateHandlerMock
                 .Setup(handler => handler.HandleAsync(failingMessage, It.IsAny<CancellationToken>()))
@@ -77,7 +77,7 @@ namespace StocksApp.Test.ServiceUnitTests
             var processor = CreateProcessor(failingMessage, nextMessage);
 
             // Act
-            await processor.StartAsync(CancellationToken.None);
+            await processor.RunAsync(CancellationToken.None);
 
             // Assert
             _priceUpdateHandlerMock.Verify(
@@ -89,15 +89,16 @@ namespace StocksApp.Test.ServiceUnitTests
                 Times.Once);
         }
 
-        private OrderMessageProcessor CreateProcessor(params WorkerMessage[] messages)
+        private WorkerMessageDispatcher CreateProcessor(params WorkerMessage[] messages)
         {
-            return new OrderMessageProcessor(
+            return new WorkerMessageDispatcher(
                 new TestWorkerChannel(messages),
-                new[] { _priceUpdateHandlerMock.Object, _sellOrderHandlerMock.Object },
-                NullLogger<OrderMessageProcessor>.Instance);
+                new[] { _priceUpdateHandlerMock.Object,
+                _sellOrderHandlerMock.Object },
+                NullLogger<WorkerMessageDispatcher>.Instance);
         }
 
-        private static SellOrderCreatedCommand CreateSellOrder()
+        private static SellOrderCreatedCommand CreateSellOrderCommand()
         {
             return new SellOrderCreatedCommand
             {

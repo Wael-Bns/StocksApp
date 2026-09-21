@@ -32,9 +32,9 @@ namespace StocksApp.Infrastructure.IoC
 
             services.Configure<RabbitMqOptions>(configuration.GetSection(RabbitMqOptions.SectionName));
 
-            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
-            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IOutboxRepository, OutboxRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -47,7 +47,6 @@ namespace StocksApp.Infrastructure.IoC
             if(!environment.IsEnvironment("Test"))
             {
                 string connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("No connection string was provided");
-                
                 services.AddDbContext<ApplicationDbContext>(options =>
                 {
                     options.UseNpgsql(connectionString);
