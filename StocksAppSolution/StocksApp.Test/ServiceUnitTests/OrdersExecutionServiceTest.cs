@@ -6,6 +6,7 @@ using StocksApp.Domain.Enums;
 using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Domain.Specifications;
 using StocksApp.Tests.Common.Builders;
+using StocksApp.Domain.Events;
 using Xunit;
 
 namespace StocksApp.Test.ServiceUnitTests
