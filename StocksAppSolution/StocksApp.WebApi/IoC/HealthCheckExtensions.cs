@@ -1,5 +1,9 @@
-﻿using StocksApp.Infrastructure.Options;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
+using StocksApp.Infrastructure.Options;
 
 namespace StocksApp.WebApi.IoC
 {
@@ -10,19 +14,29 @@ namespace StocksApp.WebApi.IoC
         {
             var rabbitMqOptions = configuration
                 .GetSection(RabbitMqOptions.SectionName)
-                .Get<RabbitMqOptions>()!;
+                .Get<RabbitMqOptions>();
 
-            services.AddSingleton<IConnection>(_ =>
-            {
-                var factory = new ConnectionFactory { Uri = new Uri(rabbitMqOptions.ToAmqpUri()) };
-                return factory.CreateConnectionAsync().GetAwaiter().GetResult();
-            });
+            var postgresConnectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("DefaultConnection string is missing.");
 
-            services.AddHealthChecks()
+            var healthChecksBuilder = services.AddHealthChecks()
                 .AddNpgSql(
-                    configuration.GetConnectionString("DefaultConnection")!,
-                    name: "PostgreSQL")
-                .AddRabbitMQ(name: "RabbitMQ");
+                    postgresConnectionString,
+                    name: "PostgreSQL",
+                    tags: new[] { "db", "data" });
+
+            if (rabbitMqOptions != null)
+            {
+                // Health check resolves this async factory on-demand when /health is called
+                healthChecksBuilder.AddRabbitMQ(
+                    async sp =>
+                    {
+                        var factory = new ConnectionFactory { Uri = new Uri(rabbitMqOptions.ToAmqpUri()) };
+                        return await factory.CreateConnectionAsync();
+                    },
+                    name: "RabbitMQ",
+                    tags: new[] { "messaging", "rabbitmq" });
+            }
 
             return services;
         }

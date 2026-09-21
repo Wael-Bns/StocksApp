@@ -4,7 +4,6 @@ using FluentAssertions;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.DTO.StockDTO;
-using StocksApp.Domain.Events;
 using StocksApp.IntegrationsTests.Collection;
 using StocksApp.IntegrationsTests.Factory;
 using StocksApp.IntegrationsTests.Helpers;
