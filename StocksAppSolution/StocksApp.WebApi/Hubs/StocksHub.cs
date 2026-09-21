@@ -4,12 +4,11 @@ using StocksApp.Core.WebSocketClientAbstractions;
 
 namespace StocksApp.WebApi.Hubs
 {
-    /// <summary>
-    /// Responsible for sending real-time stock price updates to clients subscribed to specific stock symbols.
-    /// </summary>
     public class StocksHub : Hub
     {
         private static readonly ConcurrentDictionary<string, int> SubscriptionCounts = new();
+        private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> ConnectionSymbols = new();
+
         private readonly ILogger<StocksHub> _logger;
         private readonly IFinnhubWebSocketClient _finnhubWebSocketClient;
 
@@ -19,45 +18,52 @@ namespace StocksApp.WebApi.Hubs
             _finnhubWebSocketClient = finnhubWebSocketClient;
         }
 
-        public override async Task OnConnectedAsync()
+        public async Task SubscribeToSymbol(string symbol)
         {
-            _logger.LogInformation(
-                $"Client connected to {nameof(StocksHub)}: {Context.ConnectionId}");
+            symbol = symbol.ToUpperInvariant();
+            var symbols = ConnectionSymbols.GetOrAdd(Context.ConnectionId, _ => new ConcurrentDictionary<string, byte>());
 
-            var httpContext = Context.GetHttpContext();
-            string? symbol = httpContext?.Request.Query["symbol"].ToString();
-
-            if (!string.IsNullOrEmpty(symbol))
+            if (symbols.TryAdd(symbol, 0))
             {
+                await Groups.AddToGroupAsync(Context.ConnectionId, symbol);
                 int newCount = SubscriptionCounts.AddOrUpdate(symbol, 1, (_, count) => count + 1);
-
                 if (newCount == 1)
                 {
                     await _finnhubWebSocketClient.SubscribeAsync(symbol);
                 }
-
-                await Groups.AddToGroupAsync(Context.ConnectionId, symbol);
             }
+        }
 
+        public async Task UnsubscribeFromSymbol(string symbol)
+        {
+            symbol = symbol.ToUpperInvariant();
+            if (ConnectionSymbols.TryGetValue(Context.ConnectionId, out var symbols) && symbols.TryRemove(symbol, out _))
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, symbol);
+                int newCount = SubscriptionCounts.AddOrUpdate(symbol, 0, (_, count) => Math.Max(0, count - 1));
+                if (newCount <= 0)
+                {
+                    SubscriptionCounts.TryRemove(symbol, out _);
+                    await _finnhubWebSocketClient.UnsubscribeAsync(symbol);
+                }
+            }
+        }
+
+        public override async Task OnConnectedAsync()
+        {
+            _logger.LogInformation($"Client connected to {nameof(StocksHub)}: {Context.ConnectionId}");
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            var httpContext = Context.GetHttpContext();
-            string? symbol = httpContext?.Request.Query["symbol"].ToString();
+            _logger.LogInformation($"Client disconnected from {nameof(StocksHub)}: {Context.ConnectionId}");
 
-            _logger.LogInformation(
-                $"Client disconnected from {nameof(StocksHub)}: {Context.ConnectionId}");
-
-            if (!string.IsNullOrEmpty(symbol))
+            if (ConnectionSymbols.TryRemove(Context.ConnectionId, out var symbols))
             {
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, symbol);
-
-                if (SubscriptionCounts.TryGetValue(symbol, out int count))
+                foreach (var symbol in symbols.Keys)
                 {
-                    int newCount = SubscriptionCounts.AddOrUpdate(symbol, 0, (_, count) => count - 1);
-
+                    int newCount = SubscriptionCounts.AddOrUpdate(symbol, 0, (_, count) => Math.Max(0, count - 1));
                     if (newCount <= 0)
                     {
                         SubscriptionCounts.TryRemove(symbol, out _);

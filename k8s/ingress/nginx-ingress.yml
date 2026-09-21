@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: stocksapp-ingress
+  namespace: ${DEPLOY_NAMESPACE}
+  annotations:
+    nginx.ingress.kubernetes.io/websocket-services: "stocksapp-webapi-service"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: stocks-${DEPLOY_NAMESPACE}.129.212.170.235.nip.io
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: stocksapp-webapi-service
+            port:
+              number: 80
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: stocksapp-frontend-service
+            port:
+              number: 80

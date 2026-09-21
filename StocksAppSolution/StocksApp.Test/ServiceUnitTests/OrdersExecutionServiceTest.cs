@@ -7,7 +7,6 @@ using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Domain.Specifications;
 using StocksApp.Tests.Common.Builders;
 using Xunit;
-using StocksApp.Domain.Events;
 
 namespace StocksApp.Test.ServiceUnitTests
 {

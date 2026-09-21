@@ -16,6 +16,7 @@ namespace StocksApp.Core.Services
         {
             _sellOrderRepository = sellOrderRepository;
             _unitOfWork = unitOfWork;
+            _logger = logger;
         }
 
         public async Task ExecuteSellOrdersAsync(IReadOnlyCollection<SellOrderCreatedCommand> orders, CancellationToken cancellationToken)
@@ -37,6 +38,7 @@ namespace StocksApp.Core.Services
 
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
                 await _unitOfWork.CommitTransactionAsync(cancellationToken);
+                _logger.LogInformation("Executed {OrdersCount} sell orders", sellOrders.Count);
             }
             catch (Exception ex)
             {

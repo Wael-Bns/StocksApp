@@ -4,7 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using StocksApp.WebApi.HostedServices;
 using StocksApp.WebApi.Options;
 
-namespace StocksApp.WebApi
+namespace StocksApp.WebApi.IoC
 {
     public static class WebApiExtensions
     {

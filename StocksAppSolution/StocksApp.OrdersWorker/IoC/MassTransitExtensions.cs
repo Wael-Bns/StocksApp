@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using StocksApp.Infrastructure.Helpers;
+using StocksApp.Infrastructure.Options;
 using StocksApp.OrdersWorker.MessageBroker;
 
 namespace StocksApp.OrdersWorker.IoC
@@ -10,7 +11,7 @@ namespace StocksApp.OrdersWorker.IoC
             this IServiceCollection services,
             IConfiguration configuration)
         {
-            var settings = configuration.GetSection("RabbitMQ").Get<RabbitMQSettings>()
+            var settings = configuration.GetSection("RabbitMQ").Get<RabbitMqOptions>()
                 ?? throw new InvalidOperationException("RabbitMQ settings are not configured.");
 
             services.AddMassTransit(x =>

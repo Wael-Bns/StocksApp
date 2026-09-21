@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migration-job
+  namespace: ${DEPLOY_NAMESPACE}
+spec:
+  ttlSecondsAfterFinished: 300  
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: db-migration
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: db-migration
+          image: ghcr.io/${REPO_OWNER}/stocksapp.webapi:${IMAGE_TAG}
+          imagePullPolicy: Always
+          command: ["/app/efbundle"]
+          envFrom:
+            - configMapRef:
+                name: stocksapp-config
+            - secretRef:
+                name: webapi-secrets

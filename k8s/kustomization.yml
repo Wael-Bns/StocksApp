@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Namespaces & Secrets
+  - namespaces/namespace.yml
+  - configs/secrets.yml
+  - configs/configmap.yml
+
+  # StatefulSets (Databases / Messaging)
+  - statefulsets/postgres-statefulset.yml
+  - statefulsets/rabbitmq-statefulset.yml
+
+  # Services (Networking)
+  - services/postgres-service.yml
+  - services/rabbitmq-service.yml
+  - services/stocksapp-webapi-service.yml
+  - services/stocksapp-frontend-service.yml
+
+  # Jobs
+  - jobs/migration-job.yml
+
+  # Deployments (Applications)
+  - deployments/webapi-deployment.yml
+  - deployments/ordersworker-deployment.yml
+  - deployments/stocksapp-frontend-deployment.yml
+
+  # Ingress
+  - ingress/nginx-ingress.yml
