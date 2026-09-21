@@ -24,8 +24,15 @@ namespace StocksApp.OrdersWorker.MessageHandlers
 
         protected override async Task HandleAsync(SellOrderCreatedWorkerMessage message, CancellationToken cancellationToken = default)
         {
-            await _workerSubscriptionsManager.EnsureSubscribedAsync(message.SellOrder.StockSymbol, cancellationToken);
             _sellOrdersStore.AddSellOrder(message.SellOrder);
+            try
+            {
+                await _workerSubscriptionsManager.EnsureSubscribedAsync(message.SellOrder.StockSymbol, cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogWarning(ex, "Subscription failed for {StockSymbol}", message.SellOrder.StockSymbol);
+            }
         }
     }
 }
