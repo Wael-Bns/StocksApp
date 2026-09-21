@@ -31,11 +31,12 @@ namespace StocksApp.OrdersWorker.Services
         }
         public async Task UnsubscribeAsync(string stockSymbol, CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrEmpty(stockSymbol) && _subscribedStockSymbols.Remove(stockSymbol))
-            {
-                await _pipeline.ExecuteAsync(
-                    async token => await _finnhubWebSocketClient.UnsubscribeAsync(stockSymbol, token), cancellationToken);
-            }
+            if (string.IsNullOrEmpty(stockSymbol) || !_subscribedStockSymbols.Contains(stockSymbol))
+                return;
+
+            await _pipeline.ExecuteAsync(
+                async token => await _finnhubWebSocketClient.UnsubscribeAsync(stockSymbol, token), cancellationToken);
+            _subscribedStockSymbols.Remove(stockSymbol);
         }
     }
 }
