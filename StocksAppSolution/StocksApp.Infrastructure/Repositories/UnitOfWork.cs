@@ -10,22 +10,22 @@ namespace StocksApp.Infrastructure.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task BeginTransactionAsync(CancellationToken cancellationToken)
+        public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
             await _dbContext.Database.BeginTransactionAsync(cancellationToken);
         }
 
-        public async Task CommitTransactionAsync(CancellationToken cancellationToken)
+        public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
         {
             await _dbContext.Database.CommitTransactionAsync(cancellationToken);
         }
 
-        public async Task RollbackTransactionAsync(CancellationToken cancellationToken)
+        public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
         {
             await _dbContext.Database.RollbackTransactionAsync(cancellationToken);
         }
 
-        public async Task SaveChangesAsync(CancellationToken cancellationToken)
+        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             await _dbContext.SaveChangesAsync(cancellationToken);
         }

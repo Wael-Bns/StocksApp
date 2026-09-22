@@ -27,32 +27,24 @@ namespace StocksApp.Infrastructure.Repositories
                 .ExecuteUpdateAsync(s => s.SetProperty(o => o.ProcessedAt, DateTime.UtcNow)
                                           .SetProperty(o => o.Status, OutboxStatus.Processed));
         }
-        public async Task RecordFailure(Guid outboxId, string error, int maxRetries, TimeSpan backoff)
+        public async Task RecordTransientFailure(Guid outboxId, string error, int retryCount, OutboxStatus status, DateTime? nextRetryAt)
         {
-            var outbox = await _context.Set<Outbox>().FindAsync(outboxId);
-            outbox!.RetryCount++;
-            outbox.LastError = error;
-
-            outbox.Status = outbox.RetryCount >= maxRetries
-                ? OutboxStatus.Failed
-                : OutboxStatus.Pending;
-
-            outbox.NextRetryAt = outbox.Status == OutboxStatus.Pending
-                ? DateTime.UtcNow.Add(backoff)
-                : null;
-
-            await _context.SaveChangesAsync();
+            await _context.Set<Outbox>()
+                .Where(o => o.OutboxId == outboxId)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(o => o.RetryCount, retryCount)
+                    .SetProperty(o => o.LastError, error)
+                    .SetProperty(o => o.Status, status)
+                    .SetProperty(o => o.NextRetryAt, nextRetryAt));
         }
         public async Task MarkAsFailed(Guid outboxId, string error)
         {
-            var outbox = await _context.Set<Outbox>().FindAsync(outboxId);
-            if (outbox is null) return;
-
-            outbox.Status = OutboxStatus.Failed;
-            outbox.LastError = error;
-            outbox.NextRetryAt = null;
-
-            await _context.SaveChangesAsync();
+            var outbox = await _context.Set<Outbox>()
+                .Where(o => o.OutboxId == outboxId)
+                .ExecuteUpdateAsync(o => 
+                             o.SetProperty(o => o.Status, OutboxStatus.Failed)
+                              .SetProperty(o => o.LastError, error)
+                              .SetProperty(o => o.NextRetryAt, null as DateTime?));
         }
     }
 }
