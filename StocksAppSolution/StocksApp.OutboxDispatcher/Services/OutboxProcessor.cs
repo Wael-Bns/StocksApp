@@ -2,6 +2,7 @@
 using StocksApp.Core.Exceptions;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Domain.Entities;
+using StocksApp.Domain.Enums;
 using StocksApp.Domain.Notifications;
 using StocksApp.Domain.RepositoryContracts;
 using StocksApp.OutboxDispatcher.Options;
@@ -24,7 +25,6 @@ namespace StocksApp.OutboxDispatcher.Services
             _outboxRepository = outboxRepository;
             _options = options.Value;
         }
-
         private async Task HandleMessage(string eventName, string payload, Guid outboxId, int retryCount)
         {
             if (!_eventHandlers.TryGetValue(eventName, out var handler))
@@ -45,13 +45,7 @@ namespace StocksApp.OutboxDispatcher.Services
             }
             catch (Exception ex)
             {
-                await _outboxRepository.RecordFailure(
-                    outboxId,
-                    ex.Message,
-                    maxRetries: _options.MaxRetries,
-                    backoff: ComputeBackoff(retryCount));
-
-                _logger.LogError(ex, "Failed processing outbox event {OutboxId} (attempt {RetryCount})", outboxId, retryCount);
+                await HandleTransientFailureAsync(outboxId, retryCount, ex);
             }
         }
         private static TimeSpan ComputeBackoff(int retryCount)
@@ -59,6 +53,31 @@ namespace StocksApp.OutboxDispatcher.Services
             var seconds = Math.Min(Math.Pow(2, retryCount) * 5, 300);// cap at 5 min
             var jitter = Random.Shared.NextDouble() * 0.3 * seconds;
             return TimeSpan.FromSeconds(seconds + jitter);
+        }
+        private async Task HandleTransientFailureAsync(Guid outboxId, int retryCount, Exception ex)
+        {
+            var newRetryCount = retryCount + 1;
+            var exhausted = newRetryCount >= _options.MaxRetries;
+
+            var outbox = new Outbox
+            {
+                OutboxId = outboxId,
+                RetryCount = newRetryCount,
+                LastError = ex.Message,
+                Status = exhausted ? OutboxStatus.Failed : OutboxStatus.Pending,
+                NextRetryAt = exhausted ? null : DateTime.UtcNow.Add(ComputeBackoff(newRetryCount))
+            };
+
+            await _outboxRepository.UpdateAsync(outbox);
+
+            if (exhausted)
+            {
+                _logger.LogCritical(ex, "Outbox event {OutboxId} exhausted {RetryCount} retries and was dead-lettered", outboxId, newRetryCount);
+            }
+            else
+            {
+                _logger.LogError(ex, "Failed processing outbox event {OutboxId} (attempt {RetryCount}/{MaxRetries})", outboxId, newRetryCount, _options.MaxRetries);
+            }
         }
         public async Task ProcessNotificationAsync(OutboxNotification notification)
         {

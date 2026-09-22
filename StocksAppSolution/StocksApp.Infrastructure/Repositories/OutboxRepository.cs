@@ -45,14 +45,12 @@ namespace StocksApp.Infrastructure.Repositories
         }
         public async Task MarkAsFailed(Guid outboxId, string error)
         {
-            var outbox = await _context.Set<Outbox>().FindAsync(outboxId);
-            if (outbox is null) return;
-
-            outbox.Status = OutboxStatus.Failed;
-            outbox.LastError = error;
-            outbox.NextRetryAt = null;
-
-            await _context.SaveChangesAsync();
+            var outbox = await _context.Set<Outbox>()
+                .Where(o => o.OutboxId == outboxId)
+                .ExecuteUpdateAsync(o => 
+                             o.SetProperty(o => o.Status, OutboxStatus.Failed)
+                              .SetProperty(o => o.LastError, error)
+                              .SetProperty(o => o.NextRetryAt, null as DateTime?));
         }
     }
 }
