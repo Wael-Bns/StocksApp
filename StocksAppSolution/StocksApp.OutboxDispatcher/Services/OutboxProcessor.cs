@@ -7,12 +7,12 @@ namespace StocksApp.OutboxDispatcher.Services
 {
     public class OutboxProcessor : IOutboxProcessor
     {
-        private readonly Dictionary<string,IOutboxEventHandler> _handlers;
+        private readonly Dictionary<string,IOutboxEventHandler> _eventHandlers;
         private readonly ILogger<OutboxProcessor> _logger;
         private readonly IOutboxRepository _outboxRepository;
         public OutboxProcessor(IEnumerable<IOutboxEventHandler> handlers,ILogger<OutboxProcessor> logger , IOutboxRepository outboxRepository)
         {
-            _handlers = handlers.ToDictionary(h => h.EventType);
+            _eventHandlers = handlers.ToDictionary(h => h.EventType);
             _logger = logger;
             _outboxRepository = outboxRepository;
         }
@@ -21,9 +21,9 @@ namespace StocksApp.OutboxDispatcher.Services
         {
             try
             {
-                if(!_handlers.TryGetValue(notification.EventType, out var handler))
+                if(!_eventHandlers.TryGetValue(notification.Event, out var handler))
                 {
-                    _logger.LogError("No handler registered for {EventType}", notification.EventType);
+                    _logger.LogError("No handler registered for {EventType}", notification.Event);
                     return;
                 }
                 await handler.HandleAsync(notification.Payload.GetRawText());
@@ -41,9 +41,9 @@ namespace StocksApp.OutboxDispatcher.Services
             {
                 try
                 {
-                    if(!_handlers.TryGetValue(unprocessedEvent.EventType.AssemblyQualifiedName!,out var handler))
+                    if(!_eventHandlers.TryGetValue(unprocessedEvent.Event,out var handler))
                     {
-                        _logger.LogError("No handler registered for {EventType}", unprocessedEvent.EventType.AssemblyQualifiedName);
+                        _logger.LogError("No handler registered for {EventType}", unprocessedEvent.Event);
                         continue;
                     }
                     await handler.HandleAsync(unprocessedEvent.Payload);

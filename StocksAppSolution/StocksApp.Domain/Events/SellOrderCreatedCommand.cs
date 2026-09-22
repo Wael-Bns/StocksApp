@@ -1,9 +1,12 @@
 ﻿using StocksApp.Domain.Entities;
+using StocksApp.OutboxDispatcher.Constants;
 
 namespace StocksApp.Domain.Events
 {
-    public class SellOrderCreatedCommand
+    public class SellOrderCreatedCommand : IOutboxEvent
     {
+        public static string EventName => EventNames.SellOrderCreatedCommand;
+
         public Guid SellOrderId { get; set; }
         public Guid UserId { get; set; }
         public string StockSymbol { get; set; } = string.Empty;

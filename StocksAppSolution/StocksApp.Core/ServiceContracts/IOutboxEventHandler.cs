@@ -6,6 +6,6 @@
     public interface IOutboxEventHandler
     {
         string EventType { get; }
-        Task HandleAsync(string @event);
+        Task HandleAsync(string payload);
     }
 }

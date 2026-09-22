@@ -21,14 +21,14 @@ namespace StocksApp.OutboxDispatcher
         {
             try
             {
-                _logger.LogInformation("OutboxDispatcherService is starting.");
+                _logger.LogInformation("OutboxDispatcherService is starting...");
                 _listener.OnNotificationReceived += ProcessNotificationReceived;
                 _listener.OnPeriodicChecks += ProcessPeriodicChecks;
                 await _listener.ListenAsync(stoppingToken);
             }
             finally
             {
-                _logger.LogInformation("OutboxDispatcherService is stopping.");
+                _logger.LogInformation("OutboxDispatcherService is stopping...");
                 _listener.OnNotificationReceived -= ProcessNotificationReceived;
                 _listener.OnPeriodicChecks -= ProcessPeriodicChecks;
             }

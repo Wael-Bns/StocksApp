@@ -12,12 +12,6 @@ namespace StocksApp.Infrastructure.Configurations
 
             builder.HasKey(o => o.OutboxId);
 
-            builder.Property(o => o.EventType)
-                .HasConversion(
-                    t => t.AssemblyQualifiedName!,
-                    s => Type.GetType(s)!)
-                .IsRequired();
-
             builder.Property(o => o.Payload)
                 .HasColumnType("jsonb")
                 .IsRequired();
