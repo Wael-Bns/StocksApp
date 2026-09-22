@@ -19,11 +19,13 @@ services:
       - "8088:8080"
       - "8089:8081"
     depends_on:
-      - rabbitmq-container
-      - postgres-container
+      rabbitmq-container:
+        condition: service_healthy
+      postgres-container:
+        condition: service_healthy
     networks:
       - stocksapp-network
-  
+
   ordersworker:
     image: ordersworker:dev
     build:
@@ -39,8 +41,10 @@ services:
       - Observability__ServiceName=StocksApp.OrdersWorker
       - Observability__OtlpEndpoint=
     depends_on:
-      - rabbitmq-container
-      - postgres-container
+      rabbitmq-container:
+        condition: service_healthy
+      postgres-container:
+        condition: service_healthy
     networks:
       - stocksapp-network
 
@@ -61,8 +65,10 @@ services:
       - Observability__OtlpEndpoint=
       - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341
     depends_on:
-      - rabbitmq-container
-      - postgres-container
+      rabbitmq-container:
+        condition: service_healthy
+      postgres-container:
+        condition: service_healthy
     networks:
       - stocksapp-network
 
@@ -87,6 +93,12 @@ services:
       - "5434:5432"
     volumes:
       - ./postgres-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d stocksappdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - stocksapp-network
 
@@ -98,6 +110,12 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     networks:
       - stocksapp-network
 
