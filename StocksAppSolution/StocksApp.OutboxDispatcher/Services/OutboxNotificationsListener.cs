@@ -50,14 +50,21 @@ namespace StocksApp.OutboxDispatcher.Services
                 try
                 {
                     _logger.LogInformation("Received database notification on channel {Channel}", e.Channel);
+                    var notification = JsonSerializer.Deserialize<OutboxNotification>(e.Payload);
                     if (OnNotificationReceived != null)
                     {
                         foreach (Func<OutboxNotification, Task> handler in OnNotificationReceived.GetInvocationList())
                         {
-                            var notification = JsonSerializer.Deserialize<OutboxNotification>(e.Payload);
                             if(notification != null)
                             {
-                                await handler(notification);
+                                try
+                                {
+                                    await handler(notification);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.LogError(ex, "Error in notification handler.");
+                                }
                             }
                         }
                     }
