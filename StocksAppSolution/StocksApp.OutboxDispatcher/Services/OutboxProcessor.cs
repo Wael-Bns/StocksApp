@@ -75,6 +75,7 @@ namespace StocksApp.OutboxDispatcher.Services
             var newStatus = exhausted ? OutboxStatus.Failed : OutboxStatus.Pending;
             DateTime? nextRetryAt = exhausted ? null : DateTime.UtcNow.Add(ComputeBackoff(newRetryCount));
 
+            // Record the transient failure in the outbox repository
             await _outboxRepository.RecordTransientFailure(outboxId, ex.Message, newRetryCount, newStatus, nextRetryAt);
 
             if (exhausted)
