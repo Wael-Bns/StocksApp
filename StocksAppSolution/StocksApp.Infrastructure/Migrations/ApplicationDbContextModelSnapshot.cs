@@ -71,7 +71,7 @@ namespace StocksApp.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<string>("Event")
+                    b.Property<string>("EventName")
                         .IsRequired()
                         .HasColumnType("text");
 

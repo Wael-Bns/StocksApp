@@ -21,9 +21,9 @@ namespace StocksApp.OutboxDispatcher.Services
         {
             try
             {
-                if(!_eventHandlers.TryGetValue(notification.Event, out var handler))
+                if(!_eventHandlers.TryGetValue(notification.EventName, out var handler))
                 {
-                    _logger.LogError("No handler registered for {EventType}", notification.Event);
+                    _logger.LogError("No handler registered for {EventType}", notification.EventName);
                     return;
                 }
                 await handler.HandleAsync(notification.Payload.GetRawText());
@@ -41,9 +41,9 @@ namespace StocksApp.OutboxDispatcher.Services
             {
                 try
                 {
-                    if(!_eventHandlers.TryGetValue(unprocessedEvent.Event,out var handler))
+                    if(!_eventHandlers.TryGetValue(unprocessedEvent.EventName,out var handler))
                     {
-                        _logger.LogError("No handler registered for {EventType}", unprocessedEvent.Event);
+                        _logger.LogError("No handler registered for {EventType}", unprocessedEvent.EventName);
                         continue;
                     }
                     await handler.HandleAsync(unprocessedEvent.Payload);

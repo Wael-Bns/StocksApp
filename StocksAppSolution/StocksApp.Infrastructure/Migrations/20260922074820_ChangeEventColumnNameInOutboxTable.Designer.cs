@@ -12,7 +12,7 @@ using StocksApp.Infrastructure;
 namespace StocksApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260922071639_ChangeEventColumnNameInOutboxTable")]
+    [Migration("20260922074820_ChangeEventColumnNameInOutboxTable")]
     partial class ChangeEventColumnNameInOutboxTable
     {
         /// <inheritdoc />
@@ -74,7 +74,7 @@ namespace StocksApp.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<string>("Event")
+                    b.Property<string>("EventName")
                         .IsRequired()
                         .HasColumnType("text");
 
