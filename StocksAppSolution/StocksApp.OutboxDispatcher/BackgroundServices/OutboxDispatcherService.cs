@@ -39,7 +39,7 @@ namespace StocksApp.OutboxDispatcher.BackgroundServices
             _logger.LogInformation("Received notification: {Notification}", notification);
             using var scope = _serviceScopeFactory.CreateScope();
             var outboxProcessor = scope.ServiceProvider.GetRequiredService<IOutboxProcessor>();
-            await outboxProcessor.PublishNotificationAsync(notification);
+            await outboxProcessor.ProcessNotificationAsync(notification);
         }
     }
 }

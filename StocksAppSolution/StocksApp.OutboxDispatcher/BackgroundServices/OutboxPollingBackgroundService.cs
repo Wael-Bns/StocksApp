@@ -47,7 +47,7 @@ namespace StocksApp.OutboxDispatcher.BackgroundServices
             var outboxProcessor = scope.ServiceProvider.GetRequiredService<IOutboxProcessor>();
 
             var unprocessedEvents = await outboxRepository.GetUnprocessedEvents();
-            await outboxProcessor.PublishUnprocessedEvents(unprocessedEvents);
+            await outboxProcessor.ProcessUnprocessedEvents(unprocessedEvents);
         }
     }
 }

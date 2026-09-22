@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using StocksApp.Core.MessageBroker.Publisher;
+﻿using StocksApp.Core.MessageBroker.Publisher;
 using StocksApp.Domain.Events;
 
 namespace StocksApp.OutboxDispatcher.EventHandlers

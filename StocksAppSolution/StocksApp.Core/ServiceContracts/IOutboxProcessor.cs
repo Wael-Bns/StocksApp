@@ -13,11 +13,11 @@ namespace StocksApp.Core.ServiceContracts
         /// </summary>
         /// <param name="notification">Database Notification containing the event payload</param>
         /// <returns></returns>
-        Task PublishNotificationAsync(OutboxNotification notification);
+        Task ProcessNotificationAsync(OutboxNotification notification);
         /// <summary>
         /// Publishes unprocessed events.
         /// </summary>
         /// <returns></returns>
-        Task PublishUnprocessedEvents(List<Outbox> unprocessedEvents);
+        Task ProcessUnprocessedEvents(List<Outbox> unprocessedEvents);
     }
 }

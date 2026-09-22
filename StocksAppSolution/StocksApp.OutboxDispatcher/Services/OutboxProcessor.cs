@@ -17,7 +17,7 @@ namespace StocksApp.OutboxDispatcher.Services
             _outboxRepository = outboxRepository;
         }
 
-        public async Task PublishNotificationAsync(OutboxNotification notification)
+        public async Task ProcessNotificationAsync(OutboxNotification notification)
         {
             try
             {
@@ -27,7 +27,7 @@ namespace StocksApp.OutboxDispatcher.Services
                     return;
                 }
                 await handler.HandleAsync(notification.Payload.GetRawText());
-                await _outboxRepository.MarkAsProcessed(Guid.Parse(notification.OutboxId));
+                await _outboxRepository.MarkAsProcessed(notification.OutboxId);
             }
             catch (Exception ex)
             {
@@ -35,7 +35,7 @@ namespace StocksApp.OutboxDispatcher.Services
             }
         }
 
-        public async Task PublishUnprocessedEvents(List<Outbox> unprocessedEvents)
+        public async Task ProcessUnprocessedEvents(List<Outbox> unprocessedEvents)
         {
             foreach (var unprocessedEvent in unprocessedEvents)
             {
