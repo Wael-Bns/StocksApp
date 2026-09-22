@@ -7,7 +7,7 @@ using StocksApp.OrdersWorker.Messages;
 using StocksApp.OrdersWorker.Services;
 using Xunit;
 
-namespace StocksApp.Test.ServiceUnitTests
+namespace StocksApp.Test.OrdersWorker
 {
     public class OrderMessageProcessorTest
     {

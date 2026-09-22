@@ -11,7 +11,7 @@ using StocksApp.OrdersWorker.Stores;
 using StocksApp.Tests.Common.Builders;
 using Xunit;
 
-namespace StocksApp.Test.ServiceUnitTests
+namespace StocksApp.Test.OrdersWorker
 {
     public class PriceUpdateMessageHandlerTest
     {
