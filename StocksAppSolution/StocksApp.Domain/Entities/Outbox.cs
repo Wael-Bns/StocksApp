@@ -1,4 +1,5 @@
-﻿using StocksApp.Domain.Events;
+﻿using StocksApp.Domain.Enums;
+using StocksApp.Domain.Events;
 
 namespace StocksApp.Domain.Entities
 {
@@ -9,7 +10,13 @@ namespace StocksApp.Domain.Entities
         public string Payload { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime? ProcessedAt { get; set; }
+
+        public int RetryCount { get; set; }
+        public DateTime? NextRetryAt { get; set; }
+        public string? LastError { get; set; }
+        public OutboxStatus Status { get; set; } = OutboxStatus.Pending;
     }
+
     public static class OutboxExtensions
     {
         public static Outbox ToOutbox<TEvent>(this TEvent @event) where TEvent : IOutboxEvent
@@ -19,7 +26,9 @@ namespace StocksApp.Domain.Entities
                 OutboxId = Guid.NewGuid(),
                 EventName = TEvent.EventName,
                 Payload = System.Text.Json.JsonSerializer.Serialize(@event),
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                RetryCount = 0,
+                Status = OutboxStatus.Pending
             };
         }
     }

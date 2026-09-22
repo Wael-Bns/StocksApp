@@ -19,6 +19,11 @@ namespace StocksApp.Infrastructure.Configurations
             builder.Property(o => o.CreatedAt)
                 .HasDefaultValueSql("now()")
                 .IsRequired();
+
+            builder.Property(o => o.Status)
+                .HasConversion<string>()
+                .HasMaxLength(20)
+                .IsRequired();
         }
     }
 }

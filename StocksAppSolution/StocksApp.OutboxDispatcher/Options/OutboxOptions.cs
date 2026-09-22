@@ -5,6 +5,7 @@
         public const string SectionName = "OutboxOptions";
         public string ConnectionString { get; set; } = string.Empty;
         public string NotificationChannel { get; set; } = "outbox_inserted";
+        public int MaxRetries { get; set; } = 3;
         public TimeSpan FallbackPollInterval { get; set; } = TimeSpan.FromSeconds(10);
         public int BatchSize { get; set; } = 100;
         public TimeSpan ReconnectDelay { get; set; } = TimeSpan.FromSeconds(5);

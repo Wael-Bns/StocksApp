@@ -6,5 +6,7 @@ namespace StocksApp.Domain.RepositoryContracts
     {
         Task MarkAsProcessed(Guid outboxId);
         Task<List<Outbox>> GetUnprocessedEvents();
+        Task RecordFailure(Guid outboxId, string error, int maxRetries, TimeSpan backoff);
+        Task MarkAsFailed(Guid outboxId, string error);
     }
 }
