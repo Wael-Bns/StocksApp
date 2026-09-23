@@ -12,18 +12,17 @@ namespace StocksApp.Infrastructure.Configurations
 
             builder.HasKey(o => o.OutboxId);
 
-            builder.Property(o => o.EventType)
-                .HasConversion(
-                    t => t.AssemblyQualifiedName!,
-                    s => Type.GetType(s)!)
-                .IsRequired();
-
             builder.Property(o => o.Payload)
                 .HasColumnType("jsonb")
                 .IsRequired();
 
             builder.Property(o => o.CreatedAt)
                 .HasDefaultValueSql("now()")
+                .IsRequired();
+
+            builder.Property(o => o.Status)
+                .HasConversion<string>()
+                .HasMaxLength(20)
                 .IsRequired();
         }
     }

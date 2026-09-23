@@ -10,7 +10,7 @@ using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 using StocksApp.Tests.Common.Builders;
 
-namespace StocksApp.Test.ServiceUnitTests
+namespace StocksApp.Test.Core
 {
     public class UserServiceTest
     {

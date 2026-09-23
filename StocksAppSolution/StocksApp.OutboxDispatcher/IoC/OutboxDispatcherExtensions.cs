@@ -13,7 +13,6 @@ namespace StocksApp.OutboxDispatcher.IoC
             
             services.AddSingleton<IOutboxNotificationsListener, OutboxNotificationsListener>();
             services.AddScoped<IOutboxEventHandler, SellOrderCreatedCommandOutboxHandler>();
-
             services.AddScoped<IOutboxProcessor, OutboxProcessor>();
 
             return services;

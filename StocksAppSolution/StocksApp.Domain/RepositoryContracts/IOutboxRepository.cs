@@ -1,4 +1,5 @@
 ﻿using StocksApp.Domain.Entities;
+using StocksApp.Domain.Enums;
 
 namespace StocksApp.Domain.RepositoryContracts
 {
@@ -6,5 +7,7 @@ namespace StocksApp.Domain.RepositoryContracts
     {
         Task MarkAsProcessed(Guid outboxId);
         Task<List<Outbox>> GetUnprocessedEvents();
+        Task RecordTransientFailure(Guid outboxId, string error, int retryCount, OutboxStatus status, DateTime? nextRetryAt);
+        Task MarkAsFailed(Guid outboxId, string error);
     }
 }

@@ -12,7 +12,7 @@ using StocksApp.Core.Services;
 using StocksApp.Tests.Common.Builders;
 using Xunit;
 
-namespace StocksApp.Test.ServiceUnitTests
+namespace StocksApp.Test.Core
 {
     public class AuthServiceTest
     {

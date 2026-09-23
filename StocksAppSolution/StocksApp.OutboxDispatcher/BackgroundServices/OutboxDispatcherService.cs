@@ -1,8 +1,7 @@
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Domain.Notifications;
-using StocksApp.Domain.RepositoryContracts;
 
-namespace StocksApp.OutboxDispatcher
+namespace StocksApp.OutboxDispatcher.BackgroundServices
 {
     public class OutboxDispatcherService : BackgroundService
     {
@@ -10,10 +9,13 @@ namespace StocksApp.OutboxDispatcher
         private readonly IOutboxNotificationsListener _listener;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public OutboxDispatcherService(ILogger<OutboxDispatcherService> logger, IOutboxNotificationsListener outboxNotificationsListener, IServiceScopeFactory serviceScopeFactory)
+        public OutboxDispatcherService(
+            ILogger<OutboxDispatcherService> logger,
+            IOutboxNotificationsListener listener,
+            IServiceScopeFactory serviceScopeFactory)
         {
             _logger = logger;
-            _listener = outboxNotificationsListener;
+            _listener = listener;
             _serviceScopeFactory = serviceScopeFactory;
         }
 
@@ -21,35 +23,23 @@ namespace StocksApp.OutboxDispatcher
         {
             try
             {
-                _logger.LogInformation("OutboxDispatcherService is starting.");
+                _logger.LogInformation("OutboxDispatcherService is starting...");
                 _listener.OnNotificationReceived += ProcessNotificationReceived;
-                _listener.OnPeriodicChecks += ProcessPeriodicChecks;
                 await _listener.ListenAsync(stoppingToken);
             }
             finally
             {
-                _logger.LogInformation("OutboxDispatcherService is stopping.");
+                _logger.LogInformation("OutboxDispatcherService is stopping...");
                 _listener.OnNotificationReceived -= ProcessNotificationReceived;
-                _listener.OnPeriodicChecks -= ProcessPeriodicChecks;
             }
         }
+
         private async Task ProcessNotificationReceived(OutboxNotification notification)
         {
             _logger.LogInformation("Received notification: {Notification}", notification);
             using var scope = _serviceScopeFactory.CreateScope();
             var outboxProcessor = scope.ServiceProvider.GetRequiredService<IOutboxProcessor>();
-            await outboxProcessor.PublishNotificationAsync(notification);
-        }
-        private async Task ProcessPeriodicChecks()
-        {
-            using var scope = _serviceScopeFactory.CreateScope();
-
-            var outboxRepository = scope.ServiceProvider.GetRequiredService<IOutboxRepository>();
-            var outboxProcessor = scope.ServiceProvider.GetRequiredService<IOutboxProcessor>();
-            
-            var unprocessedEvents = await outboxRepository.GetUnprocessedEvents();
-            
-            await outboxProcessor.PublishUnprocessedEvents(unprocessedEvents);
+            await outboxProcessor.ProcessNotificationAsync(notification);
         }
     }
 }

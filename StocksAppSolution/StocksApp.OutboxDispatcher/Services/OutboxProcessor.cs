@@ -1,59 +1,88 @@
-﻿using StocksApp.Core.ServiceContracts;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Options;
+using StocksApp.Core.Exceptions;
+using StocksApp.Core.ServiceContracts;
 using StocksApp.Domain.Entities;
+using StocksApp.Domain.Enums;
 using StocksApp.Domain.Notifications;
 using StocksApp.Domain.RepositoryContracts;
+using StocksApp.OutboxDispatcher.Options;
 
 namespace StocksApp.OutboxDispatcher.Services
 {
     public class OutboxProcessor : IOutboxProcessor
     {
-        private readonly Dictionary<string,IOutboxEventHandler> _handlers;
+        private readonly Dictionary<string,IOutboxEventHandler> _eventHandlers;
         private readonly ILogger<OutboxProcessor> _logger;
         private readonly IOutboxRepository _outboxRepository;
-        public OutboxProcessor(IEnumerable<IOutboxEventHandler> handlers,ILogger<OutboxProcessor> logger , IOutboxRepository outboxRepository)
+        private readonly OutboxOptions _options;
+        public OutboxProcessor(IEnumerable<IOutboxEventHandler> handlers,
+            ILogger<OutboxProcessor> logger,
+            IOutboxRepository outboxRepository,
+            IOptions<OutboxOptions> options)
         {
-            _handlers = handlers.ToDictionary(h => h.EventType);
+            _eventHandlers = handlers.ToDictionary(h => h.EventType);
             _logger = logger;
             _outboxRepository = outboxRepository;
+            _options = options.Value;
         }
-
-        public async Task PublishNotificationAsync(OutboxNotification notification)
+        private async Task HandleMessage(Guid outboxId, string payload ,string eventName, int retryCount)
         {
+            if (!_eventHandlers.TryGetValue(eventName, out var handler))
+            {
+                _logger.LogError("No handler registered for {EventType}", eventName);
+                return;
+            }
+
             try
             {
-                if(!_handlers.TryGetValue(notification.EventType, out var handler))
-                {
-                    _logger.LogError("No handler registered for {EventType}", notification.EventType);
-                    return;
-                }
-                await handler.HandleAsync(notification.Payload.GetRawText());
-                await _outboxRepository.MarkAsProcessed(Guid.Parse(notification.OutboxId));
+                await handler.HandleAsync(payload);
+                await _outboxRepository.MarkAsProcessed(outboxId);
+            }
+            catch (JsonException ex)
+            {
+                await _outboxRepository.MarkAsFailed(outboxId, ex.Message);
+                _logger.LogCritical(ex, "Outbox event {OutboxId} has an unparseable payload — dead-lettered immediately", outboxId);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed processing outbox notification {OutboxId}", notification.OutboxId);
+                await HandleTransientFailureAsync(outboxId, retryCount, ex);
             }
         }
-
-        public async Task PublishUnprocessedEvents(List<Outbox> unprocessedEvents)
+        private static TimeSpan ComputeBackoff(int retryCount)
         {
-            foreach (var unprocessedEvent in unprocessedEvents)
+            var seconds = Math.Min(Math.Pow(2, retryCount) * 5, 300);// cap at 5 min
+            var jitter = Random.Shared.NextDouble() * 0.3 * seconds;
+            return TimeSpan.FromSeconds(seconds + jitter);
+        }
+        public async Task ProcessNotificationAsync(OutboxNotification notification)
+        {
+            string payload = notification.Payload.GetRawText();
+            await HandleMessage(notification.OutboxId, payload, notification.EventName, retryCount: 0);
+        }
+
+        public async Task ProcessUnprocessedEvents(List<Outbox> unprocessedEvents)
+        {
+            foreach (var evt in unprocessedEvents)
             {
-                try
-                {
-                    if(!_handlers.TryGetValue(unprocessedEvent.EventType.AssemblyQualifiedName!,out var handler))
-                    {
-                        _logger.LogError("No handler registered for {EventType}", unprocessedEvent.EventType.AssemblyQualifiedName);
-                        continue;
-                    }
-                    await handler.HandleAsync(unprocessedEvent.Payload);
-                    await _outboxRepository.MarkAsProcessed(unprocessedEvent.OutboxId);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed processing outbox event {OutboxId}", unprocessedEvent.OutboxId);
-                }
+               await HandleMessage(evt.OutboxId, evt.Payload, evt.EventName, evt.RetryCount);       
             }
+        }
+        private async Task HandleTransientFailureAsync(Guid outboxId, int retryCount, Exception ex)
+        {
+            var newRetryCount = retryCount + 1;
+            var exhausted = newRetryCount >= _options.MaxRetries;
+
+            var newStatus = exhausted ? OutboxStatus.Failed : OutboxStatus.Pending;
+            DateTime? nextRetryAt = exhausted ? null : DateTime.UtcNow.Add(ComputeBackoff(newRetryCount));
+
+            // Record the transient failure in the outbox repository
+            await _outboxRepository.RecordTransientFailure(outboxId, ex.Message, newRetryCount, newStatus, nextRetryAt);
+
+            if (exhausted)
+                _logger.LogCritical(ex, "Outbox event {OutboxId} exhausted {RetryCount} retries and was dead-lettered", outboxId, newRetryCount);
+            else
+                _logger.LogError(ex, "Failed processing outbox event {OutboxId} (attempt {RetryCount}/{MaxRetries})", outboxId, newRetryCount, _options.MaxRetries);
         }
     }
 }
