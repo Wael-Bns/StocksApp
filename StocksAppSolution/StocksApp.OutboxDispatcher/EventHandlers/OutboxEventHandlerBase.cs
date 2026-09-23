@@ -12,10 +12,16 @@ namespace StocksApp.OutboxDispatcher.EventHandlers
 
         public async Task HandleAsync(string payload)
         {
-            var @event = JsonSerializer.Deserialize<TEvent>(payload)
-                ?? throw new OutboxDeserializationException(typeof(TEvent), payload);
-
-            await HandleEventAsync(@event);
+            try
+            {
+                var @event = JsonSerializer.Deserialize<TEvent>(payload)
+                    ?? throw new JsonException($"Deserialized {typeof(TEvent).Name} payload was null.");
+                await HandleEventAsync(@event);
+            }
+            catch(JsonException)
+            {
+                throw;
+            }
         }
 
         protected abstract Task HandleEventAsync(TEvent @event);

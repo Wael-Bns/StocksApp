@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Options;
 using StocksApp.Core.Exceptions;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Domain.Entities;
@@ -38,7 +39,7 @@ namespace StocksApp.OutboxDispatcher.Services
                 await handler.HandleAsync(payload);
                 await _outboxRepository.MarkAsProcessed(outboxId);
             }
-            catch (OutboxDeserializationException ex)
+            catch (JsonException ex)
             {
                 await _outboxRepository.MarkAsFailed(outboxId, ex.Message);
                 _logger.LogCritical(ex, "Outbox event {OutboxId} has an unparseable payload — dead-lettered immediately", outboxId);

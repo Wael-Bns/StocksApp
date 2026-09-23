@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Text.Json;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -85,7 +86,7 @@ namespace StocksApp.Test.OutboxDispatcher
                 .Build();
             _outboxEventHandlerMock
                 .Setup(h => h.HandleAsync(It.IsAny<string>()))
-                .ThrowsAsync(new OutboxDeserializationException(typeof(object), "bad payload"));
+                .ThrowsAsync(new JsonException("bad payload"));
 
             // Act
             await _outboxProcessor.ProcessNotificationAsync(notification);
