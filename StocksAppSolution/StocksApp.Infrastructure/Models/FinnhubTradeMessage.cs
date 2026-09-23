@@ -47,7 +47,7 @@ namespace StocksApp.Infrastructure.Models
             {
                 StockSymbol = Symbol,
                 Price = (double)Price,
-                timestamp = Timestamp,
+                Timestamp = Timestamp,
                 Volume = (double)Volume
             };
         }

@@ -1,5 +1,4 @@
-﻿using MassTransit;
-using StocksApp.Core.DTO.StockDTO;
+﻿using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Domain.Events;
 
 namespace StocksApp.OrdersWorker.Messages

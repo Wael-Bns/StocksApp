@@ -20,11 +20,13 @@ namespace StocksApp.Infrastructure.IoC
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
         {
+            // Http clients
             services.AddHttpClient<IFinnHubHttpClient, FinnhubHttpClient>(options =>
             {
                 options.BaseAddress = new Uri("https://finnhub.io/api/v1/");
             });
 
+            // Configurations
             services.Configure<FinnhubOptions>(options =>
             {
                 options.ApiKey = configuration["FinnhubApiKey"] ?? string.Empty;
@@ -32,16 +34,19 @@ namespace StocksApp.Infrastructure.IoC
 
             services.Configure<RabbitMqOptions>(configuration.GetSection(RabbitMqOptions.SectionName));
 
+            // Transient
+            services.AddTransient<IPasswordHasher, BCryptPasswordHasher>();
+
+            // Scoped 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
             services.AddScoped<IOutboxRepository, OutboxRepository>();
 
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            services.AddTransient<IPasswordHasher, BCryptPasswordHasher>();
-
             services.AddScoped<IStockService, StockService>();
 
+            //Singleton
             services.AddSingleton<IFinnhubWebSocketClient, FinnhubWebSocketClient>();
 
             if(!environment.IsEnvironment("Test"))
