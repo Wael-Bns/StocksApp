@@ -2,7 +2,7 @@ using System.Threading.Channels;
 using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.WebSocketClientAbstractions;
 
-namespace StocksApp.PriceFeed
+namespace StocksApp.PriceFeed.BackgroundServices
 {
     public sealed class FinnhubIngestionService : BackgroundService
     {

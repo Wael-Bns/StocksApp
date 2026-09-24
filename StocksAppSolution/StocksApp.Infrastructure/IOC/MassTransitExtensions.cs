@@ -10,12 +10,13 @@ namespace StocksApp.Infrastructure.IoC
 {
     public static class MassTransitExtensions
     {
-        public static IServiceCollection AddRabbitMqCommandSender(this IServiceCollection services,IConfiguration configuration)
+        public static IServiceCollection AddRabbitMqProducers(this IServiceCollection services,IConfiguration configuration)
         {
             var settings = configuration.GetSection(RabbitMqOptions.SectionName).Get<RabbitMqOptions>()
                 ?? throw new InvalidOperationException("RabbitMQ settings are not configured.");
 
             services.AddCommandBusProfiles();
+            services.AddEventBusProfiles();
 
             services.AddMassTransit(x =>
             {
@@ -29,6 +30,9 @@ namespace StocksApp.Infrastructure.IoC
 
                     foreach (var profile in ctx.GetServices<ICommandBusProfile>())
                         profile.ConfigureMessages(cfg);
+
+                    foreach (var profile in ctx.GetServices<IEventBusProfile>())
+                        profile.ConfigureMessages(cfg);
                 });
             });
 
@@ -39,6 +43,15 @@ namespace StocksApp.Infrastructure.IoC
         public static IServiceCollection AddCommandBusProfiles(this IServiceCollection services)
         {
             services.AddTransient<ICommandBusProfile, OrderCreatedCommandBusProfile>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddEventBusProfiles(this IServiceCollection services)
+        {
+            services.AddTransient<IEventBusProfile, PriceTickPublishedEventBusProfile>();
+            services.AddTransient<IEventBusProfile, NeedSymbolEventBusProfile>();
+            services.AddTransient<IEventBusProfile, ReleaseSymbolEventBusProfile>();
 
             return services;
         }

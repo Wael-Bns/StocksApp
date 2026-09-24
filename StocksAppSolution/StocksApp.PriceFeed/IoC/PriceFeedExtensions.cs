@@ -1,5 +1,6 @@
 ﻿using System.Threading.Channels;
 using StocksApp.Core.DTO.StockDTO;
+using StocksApp.PriceFeed.BackgroundServices;
 using StocksApp.PriceFeed.Registries;
 
 namespace StocksApp.PriceFeed.IoC
@@ -19,7 +20,9 @@ namespace StocksApp.PriceFeed.IoC
             services.AddSingleton(sp => sp.GetRequiredService<Channel<PriceUpdateMessage>>().Writer);
             services.AddSingleton<ISymbolRegistry, SymbolRegistry>();
 
+            services.AddHostedService<TickPublisherService>();
             services.AddHostedService<FinnhubIngestionService>();
+
             return services;
         }
     }
