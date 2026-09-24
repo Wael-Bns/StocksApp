@@ -11,7 +11,8 @@ builder.Services
     .AddInfrastructure(builder.Configuration, builder.Environment)
     .AddCore(builder.Configuration)
     .AddWorkerServices()
-    .AddRabbitMqConsumers(builder.Configuration);
+    .AddRabbitMqConsumers(builder.Configuration)
+    .AddPriceFeedSubscriber(builder.Configuration);
 
 if(!builder.Environment.IsEnvironment("Test"))
 {

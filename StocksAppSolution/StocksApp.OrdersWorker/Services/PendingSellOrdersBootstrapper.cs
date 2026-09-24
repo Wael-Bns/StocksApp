@@ -11,14 +11,17 @@ namespace StocksApp.OrdersWorker.Services
     {
         private readonly IPendingOrdersStore _sellOrdersStore;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly IPriceFeedSubscriptionRegistry _workerSubscriptionsManager;
+        private readonly IPriceFeedSubscriptionRegistry _priceFeedSubscriptionRegistry;
+        private readonly ILogger<PendingSellOrdersBootstrapper> _logger;
         public PendingSellOrdersBootstrapper(IPendingOrdersStore sellOrdersStore,
             IServiceScopeFactory serviceScopeFactory,
-            IPriceFeedSubscriptionRegistry workerSubscriptionsManager)
+            IPriceFeedSubscriptionRegistry priceFeedSubscriptionRegistry,
+            ILogger<PendingSellOrdersBootstrapper> logger)
         {
             _sellOrdersStore = sellOrdersStore;
             _serviceScopeFactory = serviceScopeFactory;
-            _workerSubscriptionsManager = workerSubscriptionsManager;
+            _priceFeedSubscriptionRegistry = priceFeedSubscriptionRegistry;
+            _logger = logger;
         }
         public async Task RestoreAsync(CancellationToken cancellationToken)
         {
@@ -28,8 +31,18 @@ namespace StocksApp.OrdersWorker.Services
             var pendingSellOrders = await service.ListAsync(spec);
             foreach(var order in pendingSellOrders)
             {
-                _sellOrdersStore.AddSellOrder(order.ToSellOrderCreatedCommand());
-                await _workerSubscriptionsManager.EnsureSubscribedAsync(order.StockSymbol!, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                try
+                {
+                    await _priceFeedSubscriptionRegistry.EnsureSubscribedAsync(order.StockSymbol!, cancellationToken);
+                    _sellOrdersStore.AddSellOrder(order.ToSellOrderCreatedCommand());
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    _logger.LogError(ex,
+                        "Failed to restore pending sell order {OrderId} for symbol {Symbol}; skipping",
+                        order.SellOrderID, order.StockSymbol);
+                }
             }
         }
     }

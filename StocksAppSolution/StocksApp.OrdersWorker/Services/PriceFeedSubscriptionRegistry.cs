@@ -1,6 +1,6 @@
 ﻿using Polly;
 using Polly.Registry;
-using StocksApp.Core.WebSocketClientAbstractions;
+using StocksApp.Core.ServiceContracts;
 using StocksApp.OrdersWorker.Resilience;
 using StocksApp.OrdersWorker.ServiceContracts;
 
@@ -8,13 +8,14 @@ namespace StocksApp.OrdersWorker.Services
 {
     public class PriceFeedSubscriptionRegistry : IPriceFeedSubscriptionRegistry
     {
-        private readonly IFinnhubWebSocketClient _finnhubWebSocketClient;
+        private readonly IPriceFeedSubscriber _priceFeedSubscriber;
         private readonly HashSet<string> _subscribedStockSymbols;
         private readonly ResiliencePipeline _pipeline;
-        public PriceFeedSubscriptionRegistry(IFinnhubWebSocketClient finnhubWebSocketClient,
+        public PriceFeedSubscriptionRegistry(
+            IPriceFeedSubscriber priceFeedSubscriber,
             ResiliencePipelineProvider<string> pipelineProvider)
         {
-            _finnhubWebSocketClient = finnhubWebSocketClient;
+            _priceFeedSubscriber = priceFeedSubscriber;
             _subscribedStockSymbols = new HashSet<string>();
             _pipeline = pipelineProvider.GetPipeline(ResilienceOptions.PriceFeedSubscriptionPipeline);
         }
@@ -25,7 +26,7 @@ namespace StocksApp.OrdersWorker.Services
                 return;
 
             await _pipeline.ExecuteAsync(
-            async token => await _finnhubWebSocketClient.SubscribeAsync(stockSymbol, token), cancellationToken);
+            async token => await _priceFeedSubscriber.SubscribeAsync(stockSymbol, token), cancellationToken);
 
             _subscribedStockSymbols.Add(stockSymbol);
         }
@@ -35,7 +36,7 @@ namespace StocksApp.OrdersWorker.Services
                 return;
 
             await _pipeline.ExecuteAsync(
-                async token => await _finnhubWebSocketClient.UnsubscribeAsync(stockSymbol, token), cancellationToken);
+                async token => await _priceFeedSubscriber.UnsubscribeAsync(stockSymbol, token), cancellationToken);
             _subscribedStockSymbols.Remove(stockSymbol);
         }
     }

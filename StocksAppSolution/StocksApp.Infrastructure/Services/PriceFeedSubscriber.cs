@@ -70,18 +70,42 @@ namespace StocksApp.Infrastructure.Services
                 }
 
                 var consumer = new AsyncEventingBasicConsumer(_channel);
+                
                 consumer.ReceivedAsync += async (_, ea) =>
                 {
                     var json = Encoding.UTF8.GetString(ea.Body.Span);
-                    var tick = JsonSerializer.Deserialize<PriceTickPublished>(json);
-                    if (tick is not null && OnPriceTick is not null)
-                        await OnPriceTick(tick);
+                    await DispatchTickAsync(json);
                 };
+
                 await _channel.BasicConsumeAsync(_queueName, autoAck: true, consumer, ct);
             }
             finally { _channelLock.Release(); }
         }
+        private async Task DispatchTickAsync(string json)
+        {
+            PriceTickPublished? tick;
+            try
+            {
+                tick = JsonSerializer.Deserialize<PriceTickPublished>(json);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Failed to deserialize price tick payload: {Json}", json);
+                return;
+            }
 
+            if (tick is null) return;
+
+            await RaisePriceTickAsync(tick);
+        }
+        private async Task RaisePriceTickAsync(IPriceTickPublished tick)
+        {
+            var handler = OnPriceTick;
+            if (handler is null) return;
+
+            var invocations = handler.GetInvocationList().Cast<Func<IPriceTickPublished, Task>>();
+            await Task.WhenAll(invocations.Select(h => h(tick)));
+        }
         public async Task SubscribeAsync(string symbol, CancellationToken ct = default)
         {
             symbol = symbol.Trim().ToUpperInvariant();

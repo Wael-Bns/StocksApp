@@ -5,11 +5,11 @@
     /// </summary>
     public interface IPriceTickPublished
     {
-        string Symbol { get; }
+        string StockSymbol { get; }
 
-        decimal Price { get; }
+        double Price { get; }
 
-        decimal? Volume { get; }
+        double? Volume { get; }
 
         DateTimeOffset TradedAtUtc { get; }
     }

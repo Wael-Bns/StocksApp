@@ -1,5 +1,5 @@
-using StocksApp.Core.DTO.StockDTO;
-using StocksApp.Core.WebSocketClientAbstractions;
+using StocksApp.Core.ServiceContracts;
+using StocksApp.Domain.Events;
 using StocksApp.OrdersWorker.Channels;
 using StocksApp.OrdersWorker.Messages;
 using StocksApp.OrdersWorker.ServiceContracts;
@@ -11,44 +11,34 @@ namespace StocksApp.OrdersWorker.Worker
     /// </summary>
     public class OrdersWorker : BackgroundService
     {
-        private readonly IFinnhubWebSocketClient _finnhubWebSocketClient;
-        private readonly IPendingSellOrdersBootstrapper _pendingOrdersInitializer;
+        private readonly IPriceFeedSubscriber _priceFeedSubscriber;
+        private readonly IPendingSellOrdersBootstrapper _pendingSellOrdersBootstrapper;
         private readonly IWorkerMessageDispatcher _workerMessageDispatcher;
         private readonly IWorkerChannel _channel;
-        private ILogger<OrdersWorker> _logger;
-        public OrdersWorker(IFinnhubWebSocketClient finnhubWebSocketClient,
-            IPendingSellOrdersBootstrapper pendingOrdersInitializer,
+        private readonly ILogger<OrdersWorker> _logger;
+        public OrdersWorker(IPriceFeedSubscriber priceFeedSubscriber,
+            IPendingSellOrdersBootstrapper pendingSellOrdersBootstrapper,
             IWorkerMessageDispatcher workerMessageDispatcher,
             IWorkerChannel channel,
             ILogger<OrdersWorker> logger)
         {
-            _finnhubWebSocketClient = finnhubWebSocketClient;
-            _pendingOrdersInitializer = pendingOrdersInitializer;
+            _priceFeedSubscriber = priceFeedSubscriber;
+            _pendingSellOrdersBootstrapper = pendingSellOrdersBootstrapper;
             _workerMessageDispatcher = workerMessageDispatcher;
-            _channel = channel; 
+            _channel = channel;
             _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Starting {ServiceName} at: {time}", nameof(OrdersWorker), DateTimeOffset.Now);
-
-            using var loopsCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-            _finnhubWebSocketClient.OnPriceUpdatesReceived += ProcessPriceUpdates;
+            _priceFeedSubscriber.OnPriceTick += ProcessPriceTick;
 
             try
             {
-                await _finnhubWebSocketClient.ConnectAsync(cancellationToken);
+                await _pendingSellOrdersBootstrapper.RestoreAsync(cancellationToken);
 
-                await _pendingOrdersInitializer.RestoreAsync(cancellationToken);
-
-                var consumerTask = _workerMessageDispatcher.RunAsync(cancellationToken);
-
-                var finnhubTask = _finnhubWebSocketClient.ReceiveLoopAsync(cancellationToken);
-
-                var firstStoppedTask = await Task.WhenAny(consumerTask, finnhubTask);
-                await firstStoppedTask;
+                await _workerMessageDispatcher.RunAsync(cancellationToken);
 
                 if (!cancellationToken.IsCancellationRequested)
                 {
@@ -61,21 +51,16 @@ namespace StocksApp.OrdersWorker.Worker
             }
             finally
             {
-                loopsCts.Cancel();
-                _finnhubWebSocketClient.OnPriceUpdatesReceived -= ProcessPriceUpdates;
-                await _finnhubWebSocketClient.DisconnectAsync(CancellationToken.None);
+                _priceFeedSubscriber.OnPriceTick -= ProcessPriceTick;
                 _logger.LogInformation("{ServiceName} stopped at: {time}",nameof(OrdersWorker), DateTimeOffset.Now);
             }
         }
-        private async Task ProcessPriceUpdates(IReadOnlyCollection<PriceUpdateMessage> priceUpdates)
+        private async Task ProcessPriceTick(IPriceTickPublished priceTick)
         {
-            if (priceUpdates != null)
+            if (priceTick != null)
             {
-                foreach (var priceUpdate in priceUpdates)
-                {
-                    var priceUpdateWorkerMessage = priceUpdate.ToPriceUpdateWorkerMessage();
-                    await _channel.EnqueueAsync(priceUpdateWorkerMessage);
-                }
+                var priceUpdateWorkerMessage = priceTick.ToPriceUpdateWorkerMessage();
+                await _channel.EnqueueAsync(priceUpdateWorkerMessage);
             }
         }
     }

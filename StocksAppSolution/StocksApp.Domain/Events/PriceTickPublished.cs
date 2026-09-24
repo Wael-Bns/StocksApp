@@ -1,8 +1,8 @@
 ﻿namespace StocksApp.Domain.Events
 {
     public sealed record PriceTickPublished(
-        string Symbol,
-        decimal Price,
-        decimal? Volume,
+        string StockSymbol,
+        double Price,
+        double? Volume,
         DateTimeOffset TradedAtUtc) : IPriceTickPublished;
 }

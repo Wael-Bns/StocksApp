@@ -9,7 +9,7 @@ namespace StocksApp.OrdersWorker.Channels
         public WorkerChannel()
         {
             _channel = Channel.CreateBounded<WorkerMessage>(
-            new BoundedChannelOptions(200)
+            new BoundedChannelOptions(10_000)
             {
                 FullMode = BoundedChannelFullMode.Wait,
                 SingleReader = true,

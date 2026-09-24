@@ -16,7 +16,7 @@ namespace StocksApp.OrdersWorker.Messages
 
     public static class WorkerMessageExtensions
     {
-        public static PriceUpdateWorkerMessage ToPriceUpdateWorkerMessage(this PriceUpdateMessage priceUpdateMessage)
+        public static PriceUpdateWorkerMessage ToPriceUpdateWorkerMessage(this IPriceTickPublished priceUpdateMessage)
         {
             return new PriceUpdateWorkerMessage(
                 priceUpdateMessage.StockSymbol,

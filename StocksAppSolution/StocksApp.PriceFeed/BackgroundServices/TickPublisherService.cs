@@ -30,8 +30,8 @@ namespace StocksApp.PriceFeed.BackgroundServices
                     await _publishEndpoint.Publish<IPriceTickPublished>(
                         new PriceTickPublished(
                             update.StockSymbol,
-                            (decimal)update.Price,
-                            (decimal?)update.Volume,
+                            update.Price,
+                            update.Volume,
                             DateTimeOffset.FromUnixTimeMilliseconds(update.Timestamp)),
                         ctx => ctx.SetRoutingKey(update.StockSymbol),
                         stoppingToken);
