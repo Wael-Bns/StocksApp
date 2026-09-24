@@ -1,7 +1,9 @@
 ﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
+using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.WebSocketClientAbstractions;
 
-namespace StocksApp.PriceFeed.Registries
+namespace StocksApp.Core.Services
 {
     public sealed class SymbolRegistry : ISymbolRegistry
     {

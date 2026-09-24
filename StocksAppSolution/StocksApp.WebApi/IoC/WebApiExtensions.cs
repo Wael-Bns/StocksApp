@@ -1,7 +1,10 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using StocksApp.Core.ServiceContracts;
+using StocksApp.Infrastructure.IoC;
 using StocksApp.WebApi.HostedServices;
+using StocksApp.WebApi.Notifications;
 using StocksApp.WebApi.Options;
 
 namespace StocksApp.WebApi.IoC
@@ -54,6 +57,10 @@ namespace StocksApp.WebApi.IoC
             services.Configure<TradeOptions>(configuration.GetSection(TradeOptions.SectionName));
 
             services.AddHostedService<StockPricesHostedService>();
+
+            services.AddSingleton<IPriceTickNotifier, SignalRPriceTickNotifier>();
+
+            services.AddPriceFeedSubscriber(configuration);
 
             return services;
         }

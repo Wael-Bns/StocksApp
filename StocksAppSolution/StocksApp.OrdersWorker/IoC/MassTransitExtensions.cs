@@ -7,7 +7,7 @@ namespace StocksApp.OrdersWorker.IoC
 {
     public static class MassTransitExtensions
     {
-        public static IServiceCollection AddRabbitMqConsumers(
+        public static IServiceCollection AddRabbitMqWorkerConsumers(
             this IServiceCollection services,
             IConfiguration configuration)
         {

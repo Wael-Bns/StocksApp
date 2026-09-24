@@ -5,13 +5,20 @@ using StocksApp.OrdersWorker.Worker;
 using StocksApp.Observability;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+builder.Services.Configure<ServiceProviderOptions>(options =>
+{
+    options.ValidateScopes = true;
+    options.ValidateOnBuild = true;
+});
+
 builder.Services.AddHostedService<OrdersWorker>();
 
 builder.Services
     .AddInfrastructure(builder.Configuration, builder.Environment)
     .AddCore(builder.Configuration)
     .AddWorkerServices()
-    .AddRabbitMqConsumers(builder.Configuration)
+    .AddRabbitMqWorkerConsumers(builder.Configuration)
     .AddPriceFeedSubscriber(builder.Configuration);
 
 if(!builder.Environment.IsEnvironment("Test"))

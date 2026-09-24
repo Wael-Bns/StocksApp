@@ -9,7 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddWebApi(builder.Configuration)
                 .AddCore(builder.Configuration)
-                .AddInfrastructure(builder.Configuration, builder.Environment);
+                .AddInfrastructure(builder.Configuration, builder.Environment)
+                .AddInfrastructureMessaging(builder.Configuration);
 
 if(!builder.Environment.IsEnvironment("Test"))
 {

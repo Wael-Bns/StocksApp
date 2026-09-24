@@ -37,7 +37,6 @@ namespace StocksApp.OrdersWorker.Worker
             try
             {
                 await _pendingSellOrdersBootstrapper.RestoreAsync(cancellationToken);
-
                 await _workerMessageDispatcher.RunAsync(cancellationToken);
 
                 if (!cancellationToken.IsCancellationRequested)
@@ -52,15 +51,25 @@ namespace StocksApp.OrdersWorker.Worker
             finally
             {
                 _priceFeedSubscriber.OnPriceTick -= ProcessPriceTick;
-                _logger.LogInformation("{ServiceName} stopped at: {time}",nameof(OrdersWorker), DateTimeOffset.Now);
+                _logger.LogInformation("{ServiceName} stopped at: {time}", nameof(OrdersWorker), DateTimeOffset.Now);
             }
         }
-        private async Task ProcessPriceTick(IPriceTickPublished priceTick)
+
+        private async Task ProcessPriceTick(IPriceTickPublished priceTick, CancellationToken cancellationToken)
         {
-            if (priceTick != null)
+            if (priceTick is null) return;
+
+            try
             {
                 var priceUpdateWorkerMessage = priceTick.ToPriceUpdateWorkerMessage();
-                await _channel.EnqueueAsync(priceUpdateWorkerMessage);
+                await _channel.EnqueueAsync(priceUpdateWorkerMessage, cancellationToken);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to enqueue price update for {Symbol}; tick dropped", priceTick.StockSymbol);
             }
         }
     }

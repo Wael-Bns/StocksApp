@@ -1,3 +1,4 @@
+using StocksApp.Core;
 using StocksApp.Infrastructure.IoC;
 using StocksApp.PriceFeed.IoC;
 
@@ -5,8 +6,9 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services
     .AddPriceFeedServices()
-    .AddRabbitMqConsumers(builder.Configuration)
-    .AddRabbitMqProducers(builder.Configuration);
+    .AddInfrastructure(builder.Configuration, builder.Environment)
+    .AddInfrastructureMessaging(builder.Configuration);
+
 
 var host = builder.Build();
 host.Run();

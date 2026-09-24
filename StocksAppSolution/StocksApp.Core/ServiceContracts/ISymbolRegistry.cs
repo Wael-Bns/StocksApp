@@ -1,4 +1,4 @@
-﻿namespace StocksApp.PriceFeed.Registries
+﻿namespace StocksApp.Core.ServiceContracts
 {
     public interface ISymbolRegistry
     {

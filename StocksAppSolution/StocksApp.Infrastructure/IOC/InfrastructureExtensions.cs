@@ -47,6 +47,7 @@ namespace StocksApp.Infrastructure.IoC
             services.AddScoped<IStockService, StockService>();
 
             //Singleton
+            services.AddSingleton<ISymbolRegistry, SymbolRegistry>();
             services.AddSingleton<IFinnhubWebSocketClient, FinnhubWebSocketClient>();
 
             if(!environment.IsEnvironment("Test"))

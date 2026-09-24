@@ -10,17 +10,18 @@ namespace StocksApp.Core
     {
         public static IServiceCollection AddCore(this IServiceCollection services, IConfiguration configuration)
         {
-
-            services.AddScoped<IStockService, StockService>();
-
-            services.AddScoped<IUserService, UserService>();
-
+            //Transient
             services.AddTransient<ITokenService, JwtService>();
-
             services.AddTransient<IAuthService, AuthService>();
 
+            //Scoped
+            services.AddScoped<IStockService, StockService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<IOrdersExecutionService, OrdersExecutionService>();
-            
+
+            //Singleton
+            services.AddSingleton<ISymbolRegistry, SymbolRegistry>();
+
             // Configure Options pattern 
             services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
 
