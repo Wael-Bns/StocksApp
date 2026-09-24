@@ -1,0 +1,111 @@
+﻿using System.Text;
+using System.Text.Json;
+using MassTransit;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using StocksApp.Core.ServiceContracts;
+using StocksApp.Domain.Events;
+using StocksApp.Infrastructure.Helpers;
+using StocksApp.Infrastructure.Options;
+
+namespace StocksApp.Infrastructure.Services
+{
+    public sealed class PriceFeedSubscriber : IPriceFeedSubscriber
+    {
+        private readonly IPublishEndpoint _publishEndpoint;
+        private readonly RabbitMqOptions _rabbitOptions;
+        private readonly string _exchangeName;
+        private readonly string _subscriberId;
+        private readonly ILogger<PriceFeedSubscriber> _logger;
+
+        private IConnection? _connection;
+        private IChannel? _channel;
+        private string? _queueName;
+        private readonly HashSet<string> _boundSymbols = new();
+        private readonly SemaphoreSlim _channelLock = new(1, 1);
+
+        public event Func<IPriceTickPublished, Task>? OnPriceTick;
+
+        public PriceFeedSubscriber(
+            IPublishEndpoint publishEndpoint,
+            IOptions<RabbitMqOptions> rabbitOptions,
+            IOptions<PriceFeedClientOptions> clientOptions,
+            ILogger<PriceFeedSubscriber> logger)
+        {
+            _publishEndpoint = publishEndpoint;
+            _rabbitOptions = rabbitOptions.Value;
+            _exchangeName = RabbitMQExchanges.PricesExchange;
+            _subscriberId = clientOptions.Value.SubscriberId;
+            _logger = logger;
+        }
+
+        private async Task EnsureChannelAsync(CancellationToken ct)
+        {
+            if (_channel is not null) return;
+            await _channelLock.WaitAsync(ct);
+            try
+            {
+                if (_channel is not null) return;
+
+                var factory = new ConnectionFactory
+                {
+                    HostName = _rabbitOptions.HostName,
+                    UserName = _rabbitOptions.UserName,
+                    Password = _rabbitOptions.Password,
+                };
+
+                _connection = await factory.CreateConnectionAsync($"price-feed-subscriber-{_subscriberId}", ct);
+                _channel = await _connection.CreateChannelAsync(cancellationToken: ct);
+
+                var declareResult = await _channel.QueueDeclareAsync(
+                    queue: string.Empty, durable: false, exclusive: true, autoDelete: true,
+                    cancellationToken: ct);
+                _queueName = declareResult.QueueName;
+
+                if(_queueName == null)
+                {
+                    throw new InvalidOperationException("An unexpected error occurred in queue declaration");
+                }
+
+                var consumer = new AsyncEventingBasicConsumer(_channel);
+                consumer.ReceivedAsync += async (_, ea) =>
+                {
+                    var json = Encoding.UTF8.GetString(ea.Body.Span);
+                    var tick = JsonSerializer.Deserialize<PriceTickPublished>(json);
+                    if (tick is not null && OnPriceTick is not null)
+                        await OnPriceTick(tick);
+                };
+                await _channel.BasicConsumeAsync(_queueName, autoAck: true, consumer, ct);
+            }
+            finally { _channelLock.Release(); }
+        }
+
+        public async Task SubscribeAsync(string symbol, CancellationToken ct = default)
+        {
+            symbol = symbol.Trim().ToUpperInvariant();
+            await EnsureChannelAsync(ct);
+
+            await _publishEndpoint.Publish<INeedSymbol>(new NeedSymbol(symbol, _subscriberId), ct);
+
+            if (_boundSymbols.Add(symbol))
+                await _channel!.QueueBindAsync(_queueName!, _exchangeName, routingKey: symbol, cancellationToken: ct);
+        }
+
+        public async Task UnsubscribeAsync(string symbol, CancellationToken ct = default)
+        {
+            symbol = symbol.Trim().ToUpperInvariant();
+            await _publishEndpoint.Publish<IReleaseSymbol>(new ReleaseSymbol(symbol, _subscriberId), ct);
+
+            if (_boundSymbols.Remove(symbol) && _channel is not null)
+                await _channel.QueueUnbindAsync(_queueName!, _exchangeName, routingKey: symbol, cancellationToken: ct);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_channel is not null) await _channel.CloseAsync();
+            if (_connection is not null) await _connection.CloseAsync();
+        }
+    }
+}
