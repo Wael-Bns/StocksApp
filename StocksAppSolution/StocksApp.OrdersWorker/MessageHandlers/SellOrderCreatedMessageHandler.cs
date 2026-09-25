@@ -31,7 +31,10 @@ namespace StocksApp.OrdersWorker.MessageHandlers
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogWarning(ex, "Subscription failed for {StockSymbol}", message.SellOrder.StockSymbol);
+                _sellOrdersStore.RemoveSellOrder(message.SellOrder);
+                _logger.LogWarning(ex, "Subscription failed for {StockSymbol}; rolled back sell order {OrderId}",
+                    message.SellOrder.StockSymbol, message.SellOrder.SellOrderId);
+                throw;
             }
         }
     }
