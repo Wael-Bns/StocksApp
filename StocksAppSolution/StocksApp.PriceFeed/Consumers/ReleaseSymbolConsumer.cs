@@ -1,9 +1,8 @@
 ﻿using MassTransit;
-using Microsoft.Extensions.Logging;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Domain.Events;
 
-namespace StocksApp.Infrastructure.MessageBroker.Consumers
+namespace StocksApp.PriceFeed.Consumers
 {
     public class ReleaseSymbolConsumer : IConsumer<IReleaseSymbol>
     {

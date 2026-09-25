@@ -2,9 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StocksApp.Core.MessageBroker.Publisher;
-using StocksApp.Infrastructure.Helpers;
 using StocksApp.Infrastructure.MessageBroker;
-using StocksApp.Infrastructure.MessageBroker.Consumers;
 using StocksApp.Infrastructure.MessageBroker.Profiles;
 using StocksApp.Infrastructure.Options;
 
@@ -14,20 +12,19 @@ namespace StocksApp.Infrastructure.IoC
     {
         public static IServiceCollection AddInfrastructureMessaging(
             this IServiceCollection services,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            Action<IBusRegistrationConfigurator>? registerConsumers = null,
+            Action<IRabbitMqBusFactoryConfigurator, IBusRegistrationContext>? configureReceiveEndpoints = null)
         {
             var settings = configuration.GetSection(RabbitMqOptions.SectionName).Get<RabbitMqOptions>()
                 ?? throw new InvalidOperationException("RabbitMQ settings are not configured.");
 
-            // Register profiles
             services.AddCommandBusProfiles();
             services.AddEventBusProfiles();
 
-            // SINGLE MassTransit registration
             services.AddMassTransit(x =>
             {
-                x.AddConsumer<NeedSymbolConsumer>();
-                x.AddConsumer<ReleaseSymbolConsumer>();
+                registerConsumers?.Invoke(x);
 
                 x.UsingRabbitMq((ctx, cfg) =>
                 {
@@ -37,17 +34,8 @@ namespace StocksApp.Infrastructure.IoC
                         h.Password(settings.Password!);
                     });
 
-                    cfg.ReceiveEndpoint(RabbitMQQueues.NeedSymbolQueue, e =>
-                    {
-                        e.ConfigureConsumer<NeedSymbolConsumer>(ctx);
-                    });
+                    configureReceiveEndpoints?.Invoke(cfg, ctx);
 
-                    cfg.ReceiveEndpoint(RabbitMQQueues.ReleaseSymbolQueue, e =>
-                    {
-                        e.ConfigureConsumer<ReleaseSymbolConsumer>(ctx);
-                    });
-
-                    // Configure Producer/Publish Profiles
                     foreach (var profile in ctx.GetServices<ICommandBusProfile>())
                         profile.ConfigureMessages(cfg);
 

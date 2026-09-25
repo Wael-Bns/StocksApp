@@ -1,8 +1,11 @@
-using StocksApp.Core;
+using MassTransit;
+using StocksApp.Core.IoC;
+using StocksApp.Infrastructure.Helpers;
 using StocksApp.Infrastructure.IoC;
-using StocksApp.OrdersWorker.IoC;
-using StocksApp.OrdersWorker.Worker;
 using StocksApp.Observability;
+using StocksApp.OrdersWorker.IoC;
+using StocksApp.OrdersWorker.MessageBroker;
+using StocksApp.OrdersWorker.Worker;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -15,13 +18,31 @@ builder.Services.Configure<ServiceProviderOptions>(options =>
 builder.Services.AddHostedService<OrdersWorker>();
 
 builder.Services
-    .AddInfrastructure(builder.Configuration, builder.Environment)
-    .AddCore(builder.Configuration)
     .AddWorkerServices()
-    .AddRabbitMqWorkerConsumers(builder.Configuration)
+    .AddStockCore()
+    .AddPersistence(builder.Configuration, builder.Environment)
+    .AddInfrastructureMessaging(
+        builder.Configuration,
+        registerConsumers: x =>
+        {
+            x.AddConsumer<SellOrderCreatedConsumer>();
+        },
+        configureReceiveEndpoints: (cfg, ctx) =>
+        {
+            cfg.ReceiveEndpoint(RabbitMQQueues.SellOrderCreatedQueue, e =>
+            {
+                e.Bind(RabbitMQExchanges.OrdersExchange, b =>
+                {
+                    b.ExchangeType = "direct";
+                    b.RoutingKey = "sellorder.created";
+                });
+
+                e.ConfigureConsumer<SellOrderCreatedConsumer>(ctx);
+            });
+        })
     .AddPriceFeedSubscriber(builder.Configuration);
 
-if(!builder.Environment.IsEnvironment("Test"))
+if (!builder.Environment.IsEnvironment("Test"))
 {
     builder.Services.AddObservability(builder.Configuration);
 }

@@ -1,4 +1,5 @@
 ﻿using StocksApp.Core.ServiceContracts;
+using StocksApp.Core.Services;
 using StocksApp.OutboxDispatcher.EventHandlers;
 using StocksApp.OutboxDispatcher.Options;
 using StocksApp.OutboxDispatcher.Services;
@@ -14,6 +15,7 @@ namespace StocksApp.OutboxDispatcher.IoC
             services.AddSingleton<IOutboxNotificationsListener, OutboxNotificationsListener>();
             services.AddScoped<IOutboxEventHandler, SellOrderCreatedCommandOutboxHandler>();
             services.AddScoped<IOutboxProcessor, OutboxProcessor>();
+            services.AddScoped<IOrdersExecutionService, OrdersExecutionService>();
 
             return services;
         }
