@@ -9,7 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApiFramework(builder.Configuration)
     .AddIdentityCore(builder.Configuration)
+    .AddAuthInfrastructure()
     .AddStockCore()
+    .AddFinnhubClient(builder.Configuration)
     .AddPersistence(builder.Configuration, builder.Environment)
     .AddInfrastructureMessaging(builder.Configuration)
     .AddPriceFeedSubscriber(builder.Configuration)

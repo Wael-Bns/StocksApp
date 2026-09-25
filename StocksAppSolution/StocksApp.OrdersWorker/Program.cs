@@ -19,7 +19,6 @@ builder.Services.AddHostedService<OrdersWorker>();
 
 builder.Services
     .AddWorkerServices()
-    .AddStockCore()
     .AddPersistence(builder.Configuration, builder.Environment)
     .AddInfrastructureMessaging(
         builder.Configuration,
