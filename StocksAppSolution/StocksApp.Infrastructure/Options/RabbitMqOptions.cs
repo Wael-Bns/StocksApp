@@ -2,7 +2,7 @@
 {
     public class RabbitMqOptions
     {
-        public const string SectionName = "RabbitMq";
+        public const string SectionName = "RabbitMQ";
         public string HostName { get; init; } = default!;
         public string UserName { get; init; } = default!;
         public string Password { get; init; } = default!;

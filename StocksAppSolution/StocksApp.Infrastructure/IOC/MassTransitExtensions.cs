@@ -16,9 +16,11 @@ namespace StocksApp.Infrastructure.IoC
             Action<IBusRegistrationConfigurator>? registerConsumers = null,
             Action<IRabbitMqBusFactoryConfigurator, IBusRegistrationContext>? configureReceiveEndpoints = null)
         {
-            var settings = configuration.GetSection(RabbitMqOptions.SectionName).Get<RabbitMqOptions>()
+            var rabbitMqSection = configuration.GetSection(RabbitMqOptions.SectionName);
+            var settings = rabbitMqSection.Get<RabbitMqOptions>()
                 ?? throw new InvalidOperationException("RabbitMQ settings are not configured.");
 
+            services.Configure<RabbitMqOptions>(rabbitMqSection);
             services.AddCommandBusProfiles();
             services.AddEventBusProfiles();
 

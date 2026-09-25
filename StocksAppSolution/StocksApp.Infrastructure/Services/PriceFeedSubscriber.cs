@@ -9,6 +9,7 @@ using RabbitMQ.Client.Events;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Domain.Events;
 using StocksApp.Infrastructure.Helpers;
+using StocksApp.Infrastructure.MessageBroker;
 using StocksApp.Infrastructure.Options;
 
 namespace StocksApp.Infrastructure.Services
@@ -95,7 +96,7 @@ namespace StocksApp.Infrastructure.Services
             PriceTickPublished? tick;
             try
             {
-                tick = JsonSerializer.Deserialize<PriceTickPublished>(json);
+                tick = JsonSerializer.Deserialize<MasstransitEnvelope<PriceTickPublished>>(json, RabbitMqJsonOptions.Default)?.Message;
             }
             catch (JsonException ex)
             {
