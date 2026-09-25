@@ -63,7 +63,7 @@ namespace StocksApp.Infrastructure.Services
 
                 await _channel.ExchangeDeclareAsync(
                 exchange: _exchangeName,
-                type: ExchangeType.Topic,   
+                type: ExchangeType.Topic,
                 durable: true,              
                 autoDelete: false,          
                 cancellationToken: ct);

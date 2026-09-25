@@ -23,6 +23,15 @@ class SignalRService {
   private statusListeners = new Set<StatusListener>();
   private status: HubStatus = "disconnected";
 
+  constructor() {
+      // Attach event listener inside constructor where `this.connection` is accessible
+      if (typeof window !== "undefined") {
+        window.addEventListener("beforeunload", () => {
+          void this.connection?.stop();
+        });
+      }
+    }
+
   private setStatus(status: HubStatus): void {
     this.status = status;
     this.statusListeners.forEach((listener) => listener(status));

@@ -22,6 +22,11 @@ namespace StocksApp.Infrastructure.Configurations
             builder.Property(b => b.Quantity)
                 .IsRequired();
 
+            builder.Property(b => b.Status)
+                .HasConversion<string>()
+                .HasMaxLength(50)
+                .IsRequired();
+
             builder.HasOne(s => s.User)
                     .WithMany(u => u.SellOrders)
                     .HasForeignKey(s => s.UserId)

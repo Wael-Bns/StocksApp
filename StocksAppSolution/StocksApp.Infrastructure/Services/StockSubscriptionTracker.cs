@@ -54,7 +54,6 @@ namespace StocksApp.Infrastructure.Services
                 state.TransitionLock.Release();
             }
         }
-
         public async Task RemoveInterestAsync(string connectionId, string symbol, CancellationToken ct = default)
         {
             symbol = symbol.Trim().ToUpperInvariant();
