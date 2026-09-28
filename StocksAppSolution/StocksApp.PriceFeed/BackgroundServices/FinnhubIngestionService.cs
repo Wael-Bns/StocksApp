@@ -1,6 +1,8 @@
 using System.Threading.Channels;
+using MassTransit.Transports.Fabric;
 using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.WebSocketClientAbstractions;
+using StocksApp.PriceFeed.Diagnostics;
 
 namespace StocksApp.PriceFeed.BackgroundServices
 {
@@ -8,15 +10,18 @@ namespace StocksApp.PriceFeed.BackgroundServices
     {
         private readonly IFinnhubWebSocketClient _client;
         private readonly ChannelWriter<PriceUpdateMessage> _writer;
+        private readonly PriceFeedMetrics _metrics;
         private readonly ILogger<FinnhubIngestionService> _logger;
 
         public FinnhubIngestionService(
             IFinnhubWebSocketClient client,
             ChannelWriter<PriceUpdateMessage> writer,
+            PriceFeedMetrics metrics,
             ILogger<FinnhubIngestionService> logger)
         {
             _client = client;
             _writer = writer;
+            _metrics = metrics;
             _logger = logger;
         }
 
@@ -43,8 +48,8 @@ namespace StocksApp.PriceFeed.BackgroundServices
         {
             foreach (var update in updates)
             {
-                if (!_writer.TryWrite(update))
-                    _logger.LogWarning("Tick channel full — dropped an update for {Symbol}", update.StockSymbol);
+                _metrics.TickReceived();
+                _writer.TryWrite(update);
             }
             return Task.CompletedTask;
         }
