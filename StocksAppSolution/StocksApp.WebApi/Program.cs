@@ -1,4 +1,4 @@
-using StocksApp.Core;
+using StocksApp.Core.IoC;
 using StocksApp.Infrastructure.IoC;
 using StocksApp.Observability;
 using StocksApp.WebApi.Hubs;
@@ -7,11 +7,18 @@ using StocksApp.WebApi.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddWebApi(builder.Configuration)
-                .AddCore(builder.Configuration)
-                .AddInfrastructure(builder.Configuration, builder.Environment);
+builder.Services.AddApiFramework(builder.Configuration)
+    .AddIdentityCore(builder.Configuration)
+    .AddAuthInfrastructure()
+    .AddStockCore()
+    .AddFinnhubClient(builder.Configuration)
+    .AddPersistence(builder.Configuration, builder.Environment)
+    .AddInfrastructureMessaging(builder.Configuration)
+    .AddPriceFeedSubscriber(builder.Configuration)
+    .AddPriceFeedNotifications();
 
-if(!builder.Environment.IsEnvironment("Test"))
+
+if (!builder.Environment.IsEnvironment("Test"))
 {
     builder.Services.AddObservability(builder.Configuration)
         .AddInfrastructureHealthChecks(builder.Configuration);

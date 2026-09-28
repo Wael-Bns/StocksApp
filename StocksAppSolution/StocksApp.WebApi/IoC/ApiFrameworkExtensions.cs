@@ -1,16 +1,16 @@
 ﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using StocksApp.WebApi.HostedServices;
 using StocksApp.WebApi.Options;
 
 namespace StocksApp.WebApi.IoC
 {
-    public static class WebApiExtensions
+    public static class ApiFrameworkExtensions
     {
-        public static IServiceCollection AddWebApi(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddApiFramework(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddControllers();
+
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -30,30 +30,24 @@ namespace StocksApp.WebApi.IoC
                         Encoding.UTF8.GetBytes(configuration["JWT:Key"]!))
                 };
             });
+
             services.AddSignalR();
 
             services.AddCors(options =>
             {
                 options.AddDefaultPolicy(builder =>
                 {
-                    builder.WithOrigins(
-                            "http://localhost:5173",
-                            "http://localhost:3000"
-                        )
+                    builder.WithOrigins("http://localhost:5173", "http://localhost:3000")
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
                 });
             });
 
-            // Configure Swagger for API documentation
             services.AddEndpointsApiExplorer();
-            
             services.AddSwaggerGen();
 
             services.Configure<TradeOptions>(configuration.GetSection(TradeOptions.SectionName));
-
-            services.AddHostedService<StockPricesHostedService>();
 
             return services;
         }

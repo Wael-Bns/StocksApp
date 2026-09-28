@@ -13,6 +13,7 @@ services:
       - RabbitMQ__Port=5672
       - RabbitMQ__UserName=admin
       - RabbitMQ__Password=admin
+      - PriceFeedClient__SubscriberId=webapi
       - Observability__ServiceName=StocksApp.WebApi
       - Observability__OtlpEndpoint=
     ports:
@@ -38,6 +39,7 @@ services:
       - RabbitMQ__Port=5672
       - RabbitMQ__UserName=admin
       - RabbitMQ__Password=admin
+      - PriceFeedClient__SubscriberId=ordersworker
       - Observability__ServiceName=StocksApp.OrdersWorker
       - Observability__OtlpEndpoint=
     depends_on:
@@ -47,6 +49,28 @@ services:
         condition: service_healthy
     networks:
       - stocksapp-network
+  
+  pricefeed:
+    image: stocks-pricefeed:dev
+    build:
+      context: .
+      dockerfile: StocksApp.PriceFeed/Dockerfile
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres-container;Port=5432;Database=stocksappdb;Username=postgres;Password=password;
+      - RabbitMQ__HostName=rabbitmq-container
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=admin
+      - RabbitMQ__Password=admin
+      - PriceFeedClient__SubscriberId=pricefeed
+      - Observability__ServiceName=StocksApp.OrdersWorker
+      - Observability__OtlpEndpoint=
+    depends_on:
+      rabbitmq-container:
+        condition: service_healthy
+    networks:
+      - stocksapp-network
+   
 
   outboxdispatcher:
     image: outboxdispatcher:dev

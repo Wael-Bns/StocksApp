@@ -2,6 +2,7 @@ using FluentAssertions;
 using Moq;
 using Polly;
 using Polly.Registry;
+using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.WebSocketClientAbstractions;
 using StocksApp.OrdersWorker.Services;
 using Xunit;
@@ -10,14 +11,14 @@ namespace StocksApp.Test.OrdersWorker
 {
     public class PriceFeedSubscriptionRegistryTest
     {
-        private readonly Mock<IFinnhubWebSocketClient> _finnhubWebSocketClientMock;
+        private readonly Mock<IPriceFeedSubscriber> _priceFeedSubscriberMock;
         private readonly PriceFeedSubscriptionRegistry _registry;
 
         public PriceFeedSubscriptionRegistryTest()
         {
-            _finnhubWebSocketClientMock = new Mock<IFinnhubWebSocketClient>();
+            _priceFeedSubscriberMock = new Mock<IPriceFeedSubscriber>();
 
-            _registry = new PriceFeedSubscriptionRegistry(_finnhubWebSocketClientMock.Object,
+            _registry = new PriceFeedSubscriptionRegistry(_priceFeedSubscriberMock.Object,
                 CreatePipelineProvider());
         }
 
@@ -41,7 +42,7 @@ namespace StocksApp.Test.OrdersWorker
             await _registry.EnsureSubscribedAsync("AAPL", CancellationToken.None);
 
             // Assert
-            _finnhubWebSocketClientMock.Verify(
+            _priceFeedSubscriberMock.Verify(
                 client => client.SubscribeAsync("AAPL", It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -54,7 +55,7 @@ namespace StocksApp.Test.OrdersWorker
             await _registry.EnsureSubscribedAsync("AAPL", CancellationToken.None);
 
             // Assert
-            _finnhubWebSocketClientMock.Verify(
+            _priceFeedSubscriberMock.Verify(
                 client => client.SubscribeAsync("AAPL", It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -68,7 +69,7 @@ namespace StocksApp.Test.OrdersWorker
             await _registry.EnsureSubscribedAsync(stockSymbol!, CancellationToken.None);
 
             // Assert
-            _finnhubWebSocketClientMock.Verify(
+            _priceFeedSubscriberMock.Verify(
                 client => client.SubscribeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
@@ -80,7 +81,7 @@ namespace StocksApp.Test.OrdersWorker
         {
             await _registry.EnsureSubscribedAsync("AAPL", CancellationToken.None);
 
-            _finnhubWebSocketClientMock.Verify(
+            _priceFeedSubscriberMock.Verify(
                 c => c.SubscribeAsync("AAPL", It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -91,7 +92,7 @@ namespace StocksApp.Test.OrdersWorker
             await _registry.EnsureSubscribedAsync("AAPL", CancellationToken.None);
             await _registry.EnsureSubscribedAsync("AAPL", CancellationToken.None);
 
-            _finnhubWebSocketClientMock.Verify(
+            _priceFeedSubscriberMock.Verify(
                 c => c.SubscribeAsync("AAPL", It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -103,7 +104,7 @@ namespace StocksApp.Test.OrdersWorker
         {
             await _registry.EnsureSubscribedAsync(stockSymbol!, CancellationToken.None);
 
-            _finnhubWebSocketClientMock.Verify(
+            _priceFeedSubscriberMock.Verify(
                 c => c.SubscribeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
@@ -111,7 +112,7 @@ namespace StocksApp.Test.OrdersWorker
         [Fact]
         public async Task EnsureSubscribedAsync_WhenClientFails_Throws_AndLaterCallRetriesSubscription()
         {
-            _finnhubWebSocketClientMock
+            _priceFeedSubscriberMock
                 .SetupSequence(c => c.SubscribeAsync("AAPL", It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException())
                 .Returns(Task.CompletedTask);
@@ -122,7 +123,7 @@ namespace StocksApp.Test.OrdersWorker
             // The failure must not leave the symbol marked as subscribed.
             await _registry.EnsureSubscribedAsync("AAPL", CancellationToken.None);
 
-            _finnhubWebSocketClientMock.Verify(
+            _priceFeedSubscriberMock.Verify(
                 c => c.SubscribeAsync("AAPL", It.IsAny<CancellationToken>()),
                 Times.Exactly(2));
         }
@@ -136,7 +137,7 @@ namespace StocksApp.Test.OrdersWorker
 
             await _registry.UnsubscribeAsync("AAPL", CancellationToken.None);
 
-            _finnhubWebSocketClientMock.Verify(
+            _priceFeedSubscriberMock.Verify(
                 c => c.UnsubscribeAsync("AAPL", It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -146,7 +147,7 @@ namespace StocksApp.Test.OrdersWorker
         {
             await _registry.UnsubscribeAsync("AAPL", CancellationToken.None);
 
-            _finnhubWebSocketClientMock.Verify(
+            _priceFeedSubscriberMock.Verify(
                 c => c.UnsubscribeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
@@ -158,7 +159,7 @@ namespace StocksApp.Test.OrdersWorker
         {
             await _registry.UnsubscribeAsync(stockSymbol!, CancellationToken.None);
 
-            _finnhubWebSocketClientMock.Verify(
+            _priceFeedSubscriberMock.Verify(
                 c => c.UnsubscribeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()),
                 Times.Never);
         }
@@ -171,7 +172,7 @@ namespace StocksApp.Test.OrdersWorker
             await _registry.UnsubscribeAsync("AAPL", CancellationToken.None);
             await _registry.UnsubscribeAsync("AAPL", CancellationToken.None);
 
-            _finnhubWebSocketClientMock.Verify(
+            _priceFeedSubscriberMock.Verify(
                 c => c.UnsubscribeAsync("AAPL", It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -183,7 +184,7 @@ namespace StocksApp.Test.OrdersWorker
             await _registry.UnsubscribeAsync("AAPL", CancellationToken.None);
             await _registry.EnsureSubscribedAsync("AAPL", CancellationToken.None);
 
-            _finnhubWebSocketClientMock.Verify(
+            _priceFeedSubscriberMock.Verify(
                 c => c.SubscribeAsync("AAPL", It.IsAny<CancellationToken>()),
                 Times.Exactly(2));
         }
@@ -193,7 +194,7 @@ namespace StocksApp.Test.OrdersWorker
         {
             await _registry.EnsureSubscribedAsync("AAPL", CancellationToken.None);
 
-            _finnhubWebSocketClientMock
+            _priceFeedSubscriberMock
                 .SetupSequence(c => c.UnsubscribeAsync("AAPL", It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException())
                 .Returns(Task.CompletedTask);
@@ -204,7 +205,7 @@ namespace StocksApp.Test.OrdersWorker
             // The registry must still consider the symbol subscribed, so this call has to reach the client again.
             await _registry.UnsubscribeAsync("AAPL", CancellationToken.None);
 
-            _finnhubWebSocketClientMock.Verify(
+            _priceFeedSubscriberMock.Verify(
                 c => c.UnsubscribeAsync("AAPL", It.IsAny<CancellationToken>()),
                 Times.Exactly(2));
         }

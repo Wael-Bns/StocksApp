@@ -1,5 +1,4 @@
-﻿using MassTransit;
-using StocksApp.Core.DTO.StockDTO;
+﻿using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Domain.Events;
 
 namespace StocksApp.OrdersWorker.Messages
@@ -17,7 +16,7 @@ namespace StocksApp.OrdersWorker.Messages
 
     public static class WorkerMessageExtensions
     {
-        public static PriceUpdateWorkerMessage ToPriceUpdateWorkerMessage(this PriceUpdateMessage priceUpdateMessage)
+        public static PriceUpdateWorkerMessage ToPriceUpdateWorkerMessage(this IPriceTickPublished priceUpdateMessage)
         {
             return new PriceUpdateWorkerMessage(
                 priceUpdateMessage.StockSymbol,

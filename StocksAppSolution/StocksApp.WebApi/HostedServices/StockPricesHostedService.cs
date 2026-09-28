@@ -1,50 +1,45 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using StocksApp.Core.DTO.StockDTO;
-using StocksApp.Core.WebSocketClientAbstractions;
-using StocksApp.WebApi.Hubs;
+﻿using StocksApp.Core.ServiceContracts;
+using StocksApp.Domain.Events;
 
 namespace StocksApp.WebApi.HostedServices
 {
-    public class StockPricesHostedService : BackgroundService
+    public sealed class StockPricesHostedService : BackgroundService
     {
         private readonly ILogger<StockPricesHostedService> _logger;
-        private readonly IHubContext<StocksHub> _stocksHub;
-        private readonly IFinnhubWebSocketClient _finnhubWebSocketClient;
-        public StockPricesHostedService(ILogger<StockPricesHostedService> logger, IHubContext<StocksHub> stocksHub, IFinnhubWebSocketClient finnhubWebSocketClient)
+        private readonly IPriceFeedSubscriber _priceFeedSubscriber;
+        private readonly IPriceTickNotifier _notifier;
+
+        public StockPricesHostedService(
+            ILogger<StockPricesHostedService> logger,
+            IPriceFeedSubscriber priceFeedSubscriber,
+            IPriceTickNotifier notifier)
         {
             _logger = logger;
-            _stocksHub = stocksHub;
-            _finnhubWebSocketClient = finnhubWebSocketClient;
+            _priceFeedSubscriber = priceFeedSubscriber;
+            _notifier = notifier;
         }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _logger.LogInformation("Starting {ServiceName}...", nameof(StockPricesHostedService));
+            _priceFeedSubscriber.OnPriceTick += OnPriceTickAsync;
+
             try
             {
-                _logger.LogInformation("Starting {ServiceName}...", nameof(StockPricesHostedService));
-                await _finnhubWebSocketClient.ConnectAsync(stoppingToken);
-
-                _finnhubWebSocketClient.OnPriceUpdatesReceived += async (message) => await NotifySubscribers(message);
-            
-                await _finnhubWebSocketClient.ReceiveLoopAsync(stoppingToken);
+                await Task.Delay(Timeout.Infinite, stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                _logger.LogInformation("{ServiceName} is stopping due to cancellation.", nameof(StockPricesHostedService));
             }
             finally
             {
-                _finnhubWebSocketClient.OnPriceUpdatesReceived -= async (message) => await NotifySubscribers(message);
-                await _finnhubWebSocketClient.DisconnectAsync(CancellationToken.None);
+                _priceFeedSubscriber.OnPriceTick -= OnPriceTickAsync;
                 _logger.LogInformation("{ServiceName} stopped.", nameof(StockPricesHostedService));
             }
         }
-        private async Task NotifySubscribers(IReadOnlyCollection<PriceUpdateMessage> priceUpdates)
-        {
-            if (priceUpdates != null)
-            {
-                _logger.LogInformation("Received {Count} price updates.", priceUpdates.Count);
-                foreach (var trade in priceUpdates)
-                {
-                    await _stocksHub.Clients.Group(trade.StockSymbol)
-                        .SendAsync("ReceivePriceUpdate", trade.StockSymbol, trade.Price);
-                }
-            }
-        }
+
+        private Task OnPriceTickAsync(IPriceTickPublished priceTick, CancellationToken ct)
+            => _notifier.NotifyAsync(priceTick, ct);
     }
 }

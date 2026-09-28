@@ -8,8 +8,8 @@ builder.Services.AddHostedService<OutboxPollingBackgroundService>();
 
 builder.Services
     .AddOutboxDispatcherServices(builder.Configuration)
-    .AddInfrastructure(builder.Configuration, builder.Environment)
-    .AddRabbitMqCommandSender(builder.Configuration);
+    .AddPersistence(builder.Configuration, builder.Environment)
+    .AddInfrastructureMessaging(builder.Configuration);
 
 var host = builder.Build();
 host.Run();

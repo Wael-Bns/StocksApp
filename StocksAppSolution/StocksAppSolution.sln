@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StocksApp.Observability", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StocksApp.OrdersWorker", "StocksApp.OrdersWorker\StocksApp.OrdersWorker.csproj", "{080B91EE-FF6A-4D46-D083-71CF072BEB54}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StocksApp.PriceFeed", "StocksApp.PriceFeed\StocksApp.PriceFeed.csproj", "{1E457329-73E5-40AC-AAAD-706A1B1EA78D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +81,10 @@ Global
 		{080B91EE-FF6A-4D46-D083-71CF072BEB54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{080B91EE-FF6A-4D46-D083-71CF072BEB54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{080B91EE-FF6A-4D46-D083-71CF072BEB54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E457329-73E5-40AC-AAAD-706A1B1EA78D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E457329-73E5-40AC-AAAD-706A1B1EA78D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E457329-73E5-40AC-AAAD-706A1B1EA78D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E457329-73E5-40AC-AAAD-706A1B1EA78D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -94,6 +100,7 @@ Global
 		{26182B4E-F152-DD5B-2788-3FB21C468FA4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{5A2916F2-4DD1-44A0-A386-43E484D247C0} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{080B91EE-FF6A-4D46-D083-71CF072BEB54} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{1E457329-73E5-40AC-AAAD-706A1B1EA78D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C6179D63-F3B6-4606-B081-2C54FBE0B8E0}

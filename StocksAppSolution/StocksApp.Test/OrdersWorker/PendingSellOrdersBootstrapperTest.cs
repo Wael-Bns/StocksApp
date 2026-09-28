@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using StocksApp.Domain.Entities;
 using StocksApp.Domain.RepositoryContracts;
@@ -32,7 +33,8 @@ namespace StocksApp.Test.OrdersWorker
             _pendingSellOrdersBootstrapper = new PendingSellOrdersBootstrapper(
                 _sellOrdersStoreMock.Object,
                 _serviceProvider.GetRequiredService<IServiceScopeFactory>(),
-                _priceFeedSubscriptionRegistry.Object);
+                _priceFeedSubscriptionRegistry.Object,
+                NullLogger<PendingSellOrdersBootstrapper>.Instance);
         }
 
         [Fact]

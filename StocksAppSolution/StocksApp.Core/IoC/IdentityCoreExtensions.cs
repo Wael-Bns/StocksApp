@@ -4,26 +4,17 @@ using StocksApp.Core.Options;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 
-namespace StocksApp.Core
+namespace StocksApp.Core.IoC
 {
-    public static class CoreExtensions
+    public static class IdentityCoreExtensions
     {
-        public static IServiceCollection AddCore(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddIdentityCore(this IServiceCollection services, IConfiguration configuration)
         {
-
-            services.AddScoped<IStockService, StockService>();
-
+            services.AddTransient<ITokenService, JwtService>();
+            services.AddTransient<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
 
-            services.AddTransient<ITokenService, JwtService>();
-
-            services.AddTransient<IAuthService, AuthService>();
-
-            services.AddScoped<IOrdersExecutionService, OrdersExecutionService>();
-            
-            // Configure Options pattern 
             services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
-
             services.Configure<RefreshTokenOptions>(configuration.GetSection(RefreshTokenOptions.SectionName));
 
             return services;

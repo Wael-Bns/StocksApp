@@ -23,6 +23,15 @@ class SignalRService {
   private statusListeners = new Set<StatusListener>();
   private status: HubStatus = "disconnected";
 
+  constructor() {
+      // Attach event listener inside constructor where `this.connection` is accessible
+      if (typeof window !== "undefined") {
+        window.addEventListener("beforeunload", () => {
+          void this.connection?.stop();
+        });
+      }
+    }
+
   private setStatus(status: HubStatus): void {
     this.status = status;
     this.statusListeners.forEach((listener) => listener(status));
@@ -55,7 +64,10 @@ class SignalRService {
         .build();
 
       this.connection.onreconnecting(() => this.setStatus("reconnecting"));
-      this.connection.onreconnected(() => this.setStatus("connected"));
+      this.connection.onreconnected(() => {
+        this.setStatus("connected");
+        void this.resubscribeToSymbols();
+      });
       this.connection.onclose(() => this.setStatus("disconnected"));
 
       this.connection.on(
@@ -72,11 +84,23 @@ class SignalRService {
         .then(() => this.setStatus("connected"))
         .catch((error) => {
           this.setStatus("disconnected");
+          this.connection = null;
+          this.connectPromise = null;
           throw error;
         });
     }
 
     await this.connectPromise;
+  }
+
+  private async resubscribeToSymbols(): Promise<void> {
+    if (!this.connection) return;
+
+    await Promise.all(
+      [...this.listeners.keys()].map((symbol) =>
+        this.connection!.invoke(SIGNALR_METHODS.subscribe, symbol),
+      ),
+    );
   }
 
   /**
