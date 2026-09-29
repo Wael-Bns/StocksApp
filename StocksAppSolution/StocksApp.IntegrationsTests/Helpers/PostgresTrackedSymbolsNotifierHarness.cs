@@ -7,28 +7,36 @@ namespace StocksApp.IntegrationsTests.Helpers
     internal sealed class PostgresTrackedSymbolsNotifierHarness : IAsyncDisposable
     {
         public static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(5);
+        private static readonly TimeSpan DefaultRetryInterval = TimeSpan.FromMilliseconds(100);
 
         private readonly CancellationTokenSource _cts = new();
         private readonly Task _run;
         private readonly PostgresTrackedSymbolsNotifier _notifier;
 
-        private PostgresTrackedSymbolsNotifierHarness(string connectionString)
+        private PostgresTrackedSymbolsNotifierHarness(string connectionString, TimeSpan? retryInterval)
         {
             _notifier = new PostgresTrackedSymbolsNotifier(
-                new LeaderElectionOptions { ConnectionString = connectionString },
+                new LeaderElectionOptions
+                {
+                    ConnectionString = connectionString,
+                    RetryInterval = retryInterval ?? DefaultRetryInterval
+                },
                 NullLogger<PostgresTrackedSymbolsNotifier>.Instance);
 
-            _run = _notifier.RunAsync(_cts.Token); // kept, so failures surface instead of vanishing
+            _run = _notifier.RunAsync(_cts.Token);
         }
 
         /// <param name="consumeStartupSignal">
         /// When true, waits for the start-up signal and consumes it, which also proves
         /// LISTEN is active. Pass false to test the start-up signal itself.
         /// </param>
+        /// <param name="retryInterval">
+        /// How long the notifier waits before reconnecting after a dropped connection.
+        /// </param>
         public static async Task<PostgresTrackedSymbolsNotifierHarness> StartAsync(
-            string connectionString, bool consumeStartupSignal = true)
+            string connectionString, bool consumeStartupSignal = true, TimeSpan? retryInterval = null)
         {
-            var harness = new PostgresTrackedSymbolsNotifierHarness(connectionString);
+            var harness = new PostgresTrackedSymbolsNotifierHarness(connectionString, retryInterval);
 
             if (consumeStartupSignal)
             {
@@ -39,7 +47,7 @@ namespace StocksApp.IntegrationsTests.Helpers
                 }
                 catch
                 {
-                    await harness.DisposeAsync(); // don't leak a running notifier if start-up fails
+                    await harness.DisposeAsync();
                     throw;
                 }
             }

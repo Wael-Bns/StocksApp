@@ -8,7 +8,10 @@ public class PostgresTrackedSymbolsNotifierTest : IClassFixture<PostgresFixture>
 {
     private readonly PostgresFixture _pg;
 
-    public PostgresTrackedSymbolsNotifierTest(PostgresFixture pg) => _pg = pg;
+    public PostgresTrackedSymbolsNotifierTest(PostgresFixture pg)
+    {
+        _pg = pg;
+    }
 
     [Fact]
     public async Task Start_SignalsImmediately_WithoutAnyDbChange()
@@ -16,9 +19,9 @@ public class PostgresTrackedSymbolsNotifierTest : IClassFixture<PostgresFixture>
         await using var sut = await PostgresTrackedSymbolsNotifierHarness.StartAsync(
             _pg.ConnectionString, consumeStartupSignal: false);
 
-        var signalled = await sut.WaitForSignalAsync();
+        var isSignalled = await sut.WaitForSignalAsync();
 
-        signalled.Should().BeTrue();
+        isSignalled.Should().BeTrue();
     }
 
     [Fact]
@@ -28,6 +31,19 @@ public class PostgresTrackedSymbolsNotifierTest : IClassFixture<PostgresFixture>
 
         await PgNotify.SendAsync(_pg.ConnectionString, DbChannelNames.TrackedSymbolsChanged);
 
+        var isSignalled = await sut.WaitForSignalAsync();
+
+        isSignalled.Should().BeTrue();
+    }
+    [Fact]
+    public async Task ListenerConnectionKilled_NotifierReconnectsAndSignalsAgain()
+    {
+        await using var sut = await PostgresTrackedSymbolsNotifierHarness.StartAsync(_pg.ConnectionString);
+
+        await PgAdmin.TerminateByApplicationNameAsync(
+            _pg.ConnectionString, PgApplicationNames.TrackedSymbolsNotifier);
+
+        // reconnect re-issues LISTEN and raises the same startup-style signal
         var signalled = await sut.WaitForSignalAsync();
 
         signalled.Should().BeTrue();

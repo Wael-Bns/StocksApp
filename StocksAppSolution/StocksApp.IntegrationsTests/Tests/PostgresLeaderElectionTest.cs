@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Npgsql;
 using StocksApp.Infrastructure.LeaderElection;
 using StocksApp.Infrastructure.Options;
+using StocksApp.IntegrationsTests.Helpers;
 using Testcontainers.PostgreSql;
 
 namespace StocksApp.IntegrationsTests.Tests
@@ -59,7 +60,7 @@ namespace StocksApp.IntegrationsTests.Tests
             var standbyTask = CreateElection(_pg.ConnectionString, key)
                 .AcquireAsync(CancellationToken.None);
 
-            await TerminateLockHolderAsync(key);
+            await PgAdmin.TerminateAdvisoryLockHolderAsync(_pg.ConnectionString, key);
 
             // standby polls every ~100ms, the old leader heartbeats every 1s: the standby wins the race
             var standby = await standbyTask.WaitAsync(TimeSpan.FromSeconds(5));
@@ -107,18 +108,6 @@ namespace StocksApp.IntegrationsTests.Tests
                 FenceAfter = fenceAfter ?? TimeSpan.FromSeconds(10)
             }),
                 NullLogger<PostgresLeaderElection>.Instance);
-
-        // small keys only: classid = 0, objid = key
-        private async Task TerminateLockHolderAsync(long key)
-        {
-            await using var admin = new NpgsqlConnection(_pg.ConnectionString);
-            await admin.OpenAsync();
-            await using var cmd = new NpgsqlCommand(
-                "SELECT pg_terminate_backend(pid) FROM pg_locks " +
-                "WHERE locktype = 'advisory' AND granted AND objid = @k", admin);
-            cmd.Parameters.AddWithValue("k", key);
-            await cmd.ExecuteNonQueryAsync();
-        }
 
         private static async Task WaitUntilCancelledAsync(CancellationToken token, TimeSpan timeout)
         {

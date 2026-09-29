@@ -1,11 +1,12 @@
 ﻿using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using StocksApp.Core.ServiceContracts;
 using StocksApp.Infrastructure.Options;
 
 namespace StocksApp.Infrastructure.LeaderElection
 {
-    public sealed class PostgresTrackedSymbolsNotifier /* : ITrackedSymbolsNotifier, pending your answer above */
+    public sealed class PostgresTrackedSymbolsNotifier : ITrackedSymbolsNotifier
     {
         private readonly string _connectionString;
         private readonly TimeSpan _retryInterval;
@@ -23,7 +24,8 @@ namespace StocksApp.Infrastructure.LeaderElection
                 KeepAlive = 5,
                 TcpKeepAlive = true,
                 TcpKeepAliveTime = 5,
-                TcpKeepAliveInterval = 2
+                TcpKeepAliveInterval = 2,
+                ApplicationName = PgApplicationNames.TrackedSymbolsNotifier
             }.ConnectionString;
             _retryInterval = options.RetryInterval;
             _logger = logger;
