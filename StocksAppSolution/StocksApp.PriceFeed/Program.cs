@@ -1,10 +1,14 @@
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using StocksApp.Core.ServiceContracts;
+using StocksApp.Core.Services;
 using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Infrastructure;
 using StocksApp.Infrastructure.Helpers;
 using StocksApp.Infrastructure.IoC;
+using StocksApp.Infrastructure.LeaderElection;
+using StocksApp.Infrastructure.Options;
 using StocksApp.Infrastructure.Repositories;
 using StocksApp.Infrastructure.Services;
 using StocksApp.PriceFeed.Consumers;
@@ -32,7 +36,14 @@ builder.Services
                 e.ConfigureConsumer<ReleaseSymbolConsumer>(ctx));
         });
 
+
 builder.Services.AddSingleton<ITrackedSymbolStore, TrackedSymbolStore>();
+builder.Services.AddSingleton<ITrackedSymbolsNotifier>(sp =>
+    new PostgresTrackedSymbolsNotifier(
+        sp.GetRequiredService<IOptions<LeaderElectionOptions>>().Value,
+        sp.GetRequiredService<ILogger<PostgresTrackedSymbolsNotifier>>()));
+
+builder.Services.AddSingleton<ISubscriptionReconciler, SubscriptionReconciler>();
 
 var host = builder.Build();
 host.Run();

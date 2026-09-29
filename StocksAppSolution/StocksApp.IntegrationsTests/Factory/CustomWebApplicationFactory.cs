@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 using StocksApp.Core.HttpClientAbstractions;
 using StocksApp.Core.WebSocketClientAbstractions;
 using StocksApp.Infrastructure;
-using StocksApp.IntegrationsTests.Fakes;
+using StocksApp.Tests.Common.Fakes;
 
 namespace StocksApp.IntegrationsTests.Factory
 {

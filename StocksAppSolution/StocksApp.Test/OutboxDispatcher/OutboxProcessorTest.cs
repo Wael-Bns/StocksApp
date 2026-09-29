@@ -1,9 +1,7 @@
 ﻿using System.Text.Json;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using StocksApp.Core.Exceptions;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Domain.Entities;
 using StocksApp.Domain.Enums;
