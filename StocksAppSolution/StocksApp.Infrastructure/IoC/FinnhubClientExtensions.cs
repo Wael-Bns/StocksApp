@@ -25,7 +25,6 @@ namespace StocksApp.Infrastructure.IoC
             });
 
             services.AddSingleton<IFinnhubWebSocketClient, FinnhubWebSocketClient>();
-            services.AddSingleton<ISymbolRegistry, SymbolRegistry>();
 
             return services;
         }

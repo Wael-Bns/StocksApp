@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\StocksApp.Core\StocksApp.Core.csproj" />
     <ProjectReference Include="..\StocksApp.Domain\StocksApp.Domain.csproj" />
+    <ProjectReference Include="..\StocksApp.PriceFeed\StocksApp.PriceFeed.csproj" />
   </ItemGroup>
 
 </Project>

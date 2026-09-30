@@ -1,7 +1,7 @@
 ﻿using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.HttpClientAbstractions;
 
-namespace StocksApp.IntegrationsTests.Fakes
+namespace StocksApp.Tests.Common.Fakes
 {
     public class FakeFinnhubHttpClient : IFinnHubHttpClient
     {
