@@ -10,6 +10,7 @@ namespace StocksApp.Infrastructure
         public DbSet<User> Users { get; set; }
         public DbSet<Outbox> Outbox { get; set; }
         public DbSet<TrackedSymbol> TrackedSymbols { get; set; }
+        public DbSet<Candle1m> Candles1m { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
