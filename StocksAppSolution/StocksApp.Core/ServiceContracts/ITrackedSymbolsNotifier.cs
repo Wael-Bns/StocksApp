@@ -9,7 +9,7 @@ namespace StocksApp.Core.ServiceContracts
     /// </summary>
     public interface ITrackedSymbolsNotifier
     {
-        ChannelReader<bool> ChangedChannelReader { get; }
+        ChannelReader<bool> TrackedSymbolsChannelReader { get; }
 
         /// <summary>Runs until ct is cancelled; retries its own connection internally.</summary>
         Task RunAsync(CancellationToken ct);

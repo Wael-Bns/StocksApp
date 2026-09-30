@@ -1,19 +1,22 @@
 ﻿using System.Threading.Channels;
+using Microsoft.Extensions.Configuration;
 using StocksApp.Core.DTO.StockDTO;
 using StocksApp.PriceFeed.BackgroundServices;
 using StocksApp.PriceFeed.Diagnostics;
+using StocksApp.PriceFeed.Options;
 
 namespace StocksApp.PriceFeed.IoC
 {
     public static class PriceFeedExtensions
     {
-        public static IServiceCollection AddPriceFeedServices(this IServiceCollection services)
+        public static IServiceCollection AddPriceFeedServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddSingleton<PriceFeedMetrics>();
+            services.Configure<PriceFeedIngestionOptions>(configuration.GetSection(PriceFeedIngestionOptions.SectionName));
 
+            services.AddSingleton<IPriceFeedMetrics, PriceFeedMetrics>();
             services.AddSingleton(sp =>
             {
-                var metrics = sp.GetRequiredService<PriceFeedMetrics>();
+                var metrics = sp.GetRequiredService<IPriceFeedMetrics>();
                 var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("PriceFeed.Channel");
                 long dropCount = 0;
 
@@ -34,6 +37,7 @@ namespace StocksApp.PriceFeed.IoC
                                 n, dropped.StockSymbol);
                     });
             });
+
 
             services.AddSingleton(sp => sp.GetRequiredService<Channel<PriceUpdateMessage>>().Reader);
             services.AddSingleton(sp => sp.GetRequiredService<Channel<PriceUpdateMessage>>().Writer);

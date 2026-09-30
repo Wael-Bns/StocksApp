@@ -17,7 +17,7 @@ using StocksApp.PriceFeed.IoC;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services
-    .AddPriceFeedServices()
+    .AddPriceFeedServices(builder.Configuration)
     .AddPersistence(builder.Configuration, builder.Environment)
     .AddFinnhubClient(builder.Configuration)
     .AddInfrastructureMessaging(

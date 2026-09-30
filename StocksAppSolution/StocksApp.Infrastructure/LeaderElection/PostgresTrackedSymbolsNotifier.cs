@@ -31,7 +31,7 @@ namespace StocksApp.Infrastructure.LeaderElection
             _logger = logger;
         }
 
-        public ChannelReader<bool> ChangedChannelReader => _changed.Reader;
+        public ChannelReader<bool> TrackedSymbolsChannelReader => _changed.Reader;
 
         public async Task RunAsync(CancellationToken ct)
         {

@@ -8,13 +8,13 @@ public sealed class TickPublisherService : BackgroundService
 {
     private readonly ChannelReader<PriceUpdateMessage> _reader;
     private readonly IBus _bus;
-    private readonly PriceFeedMetrics _metrics;
+    private readonly IPriceFeedMetrics _metrics;
     private readonly ILogger<TickPublisherService> _logger;
 
     public TickPublisherService(
         ChannelReader<PriceUpdateMessage> reader,
         IBus bus,
-        PriceFeedMetrics metrics,
+        IPriceFeedMetrics metrics,
         ILogger<TickPublisherService> logger)
     {
         _reader = reader;

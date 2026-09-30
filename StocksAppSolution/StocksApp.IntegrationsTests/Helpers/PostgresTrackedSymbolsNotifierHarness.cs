@@ -43,7 +43,7 @@ namespace StocksApp.IntegrationsTests.Helpers
                 try
                 {
                     await harness.WaitForSignalAsync();
-                    await harness._notifier.ChangedChannelReader.ReadAsync();
+                    await harness._notifier.TrackedSymbolsChannelReader.ReadAsync();
                 }
                 catch
                 {
@@ -61,7 +61,7 @@ namespace StocksApp.IntegrationsTests.Helpers
         /// </summary>
         public async Task<bool> WaitForSignalAsync(TimeSpan? timeout = null)
         {
-            var wait = _notifier.ChangedChannelReader.WaitToReadAsync().AsTask()
+            var wait = _notifier.TrackedSymbolsChannelReader.WaitToReadAsync().AsTask()
                 .WaitAsync(timeout ?? DefaultTimeout);
 
             var first = await Task.WhenAny(wait, _run);
