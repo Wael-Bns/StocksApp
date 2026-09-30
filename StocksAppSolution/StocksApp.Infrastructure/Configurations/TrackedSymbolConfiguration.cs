@@ -14,7 +14,7 @@ namespace StocksApp.Infrastructure.Configurations
             builder.HasKey(t => t.Symbol);
 
             builder.Property(t => t.Symbol)
-                .HasMaxLength(25)          // same as BuyOrder.StockSymbol
+                .HasMaxLength(25)          
                 .IsRequired();
 
             builder.Property(t => t.DisplayName)

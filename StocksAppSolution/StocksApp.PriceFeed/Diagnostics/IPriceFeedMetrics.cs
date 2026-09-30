@@ -2,6 +2,8 @@
 {
     public interface IPriceFeedMetrics
     {
+        void ReconnectAttempted();
+        void SymbolCounts(int desired, int actual);
         void TickReceived();
         void TickPublished();
         void TickDropped();

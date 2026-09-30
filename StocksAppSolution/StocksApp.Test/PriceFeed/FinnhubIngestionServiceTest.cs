@@ -199,7 +199,7 @@ namespace StocksApp.Test.PriceFeed
             _client.ReceiveLoopBehaviors.Enqueue(RecordingFinnhubWebSocketClient.RunsUntilCancelled());
             _reconcilerMock.SetupSequence(r => r.ReconcileAsync(It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException(ReconcileFailureMessage))
-                .Returns(Task.CompletedTask);
+                .Returns(Task.FromResult(new ReconciliationResult()));
 
             await _service.StartAsync(CancellationToken.None);
             await WaitUntilAsync(() => ReconcileCount() >= 1);

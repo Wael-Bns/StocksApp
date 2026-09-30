@@ -5,6 +5,7 @@ using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.WebSocketClientAbstractions;
 using StocksApp.PriceFeed.Diagnostics;
 using StocksApp.PriceFeed.Options;
+using static MassTransit.ValidationResultExtensions;
 
 namespace StocksApp.PriceFeed.BackgroundServices
 {
@@ -76,6 +77,7 @@ namespace StocksApp.PriceFeed.BackgroundServices
             var listenTask = _notifier.RunAsync(ct);   // retries internally if its DB connection drops
 
             var backoff = _options.InitialBackoff;
+            var isFirstConnect = true;
             try
             {
                 while (!ct.IsCancellationRequested)
@@ -87,6 +89,8 @@ namespace StocksApp.PriceFeed.BackgroundServices
                     try
                     {
                         await _client.ConnectAsync(ct);
+                        if (!isFirstConnect) _metrics.ReconnectAttempted();
+                        isFirstConnect = false;
                         _metrics.SocketConnected();
                         _reconciler.Reset();   // fresh socket = nothing subscribed
 
@@ -133,7 +137,9 @@ namespace StocksApp.PriceFeed.BackgroundServices
             {
                 try
                 {
-                    await _reconciler.ReconcileAsync(ct);
+                    var result = await _reconciler.ReconcileAsync(ct);
+                    if (result.DesiredCount >= 0)
+                        _metrics.SymbolCounts(result.DesiredCount, result.ActualCount);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {

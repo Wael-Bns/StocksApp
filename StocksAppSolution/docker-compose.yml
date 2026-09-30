@@ -55,6 +55,8 @@ services:
     build:
       context: .
       dockerfile: StocksApp.PriceFeed/Dockerfile
+    deploy:
+      replicas: 2
     environment:
       - DOTNET_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=postgres-container;Port=5432;Database=stocksappdb;Username=postgres;Password=password;
@@ -63,10 +65,12 @@ services:
       - RabbitMQ__UserName=admin
       - RabbitMQ__Password=admin
       - PriceFeedClient__SubscriberId=pricefeed
-      - Observability__ServiceName=StocksApp.OrdersWorker
-      - Observability__OtlpEndpoint=
+      - LeaderElection__ConnectionString=Host=postgres-container;Port=5432;Database=stocksappdb;Username=postgres;Password=password; 
+      - Observability__ServiceName=StocksApp.PriceFeed
     depends_on:
       rabbitmq-container:
+        condition: service_healthy
+      postgres-container:
         condition: service_healthy
     networks:
       - stocksapp-network

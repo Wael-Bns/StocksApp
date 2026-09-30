@@ -23,7 +23,7 @@ namespace StocksApp.Core.Services
 
         public void Reset() => _actual.Clear();
 
-        public async Task ReconcileAsync(CancellationToken ct)
+        public async Task<ReconciliationResult> ReconcileAsync(CancellationToken ct)
         {
             IReadOnlySet<string> desired;
             try
@@ -36,16 +36,15 @@ namespace StocksApp.Core.Services
             }
             catch (Exception ex)
             {
-                // DB unreachable: keep whatever is currently subscribed and try again next pass
                 _logger.LogWarning(ex, "Could not read tracked symbols; leaving current subscriptions as-is.");
-                return;
+                return ReconciliationResult.Unknown(_actual.Count);
             }
 
             var toAdd = desired.Except(_actual).ToArray();
             var toRemove = _actual.Except(desired).ToArray();
 
             if (toAdd.Length == 0 && toRemove.Length == 0)
-                return;
+                return new ReconciliationResult(desired.Count, _actual.Count);
 
             var added = new List<string>();
             var removed = new List<string>();
@@ -69,6 +68,8 @@ namespace StocksApp.Core.Services
             if (added.Count > 0 || removed.Count > 0)
                 _logger.LogInformation("Reconciled subscriptions. Added: [{Added}]. Removed: [{Removed}].",
                     string.Join(", ", added), string.Join(", ", removed));
+
+            return new ReconciliationResult(desired.Count, _actual.Count);
         }
     }
 }

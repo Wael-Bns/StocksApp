@@ -60,8 +60,6 @@ namespace StocksApp.Infrastructure.IoC
         public static IServiceCollection AddEventBusProfiles(this IServiceCollection services)
         {
             services.AddTransient<IEventBusProfile, PriceTickPublishedEventBusProfile>();
-            services.AddTransient<IEventBusProfile, NeedSymbolEventBusProfile>();
-            services.AddTransient<IEventBusProfile, ReleaseSymbolEventBusProfile>();
             return services;
         }
     }
