@@ -2,9 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
+using StocksApp.Core.Options;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Infrastructure.Caching;
-using StocksApp.Infrastructure.Options;
 
 namespace StocksApp.Infrastructure.IoC
 {

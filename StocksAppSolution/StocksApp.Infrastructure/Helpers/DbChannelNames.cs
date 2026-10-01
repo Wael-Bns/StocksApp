@@ -1,4 +1,4 @@
-﻿namespace StocksApp.Infrastructure.LeaderElection
+﻿namespace StocksApp.Infrastructure.Helpers
 {
     public static class DbChannelNames
     {

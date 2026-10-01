@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using StocksApp.Infrastructure.Helpers;
 using StocksApp.Infrastructure.LeaderElection;
 using StocksApp.IntegrationsTests.Factory;
 using StocksApp.IntegrationsTests.Helpers;

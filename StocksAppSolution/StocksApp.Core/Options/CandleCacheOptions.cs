@@ -1,4 +1,4 @@
-﻿namespace StocksApp.Infrastructure.Options
+﻿namespace StocksApp.Core.Options
 {
     public sealed class CandleCacheOptions
     {

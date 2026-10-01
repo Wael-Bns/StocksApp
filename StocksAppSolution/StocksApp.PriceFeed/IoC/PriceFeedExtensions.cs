@@ -1,6 +1,11 @@
 ﻿using System.Threading.Channels;
-using Microsoft.Extensions.Configuration;
+using StocksApp.Core.Diagnostics;
 using StocksApp.Core.DTO.StockDTO;
+using StocksApp.Core.ServiceContracts;
+using StocksApp.Core.Services;
+using StocksApp.Domain.RepositoryContracts;
+using StocksApp.Infrastructure.Repositories;
+using StocksApp.Infrastructure.Services;
 using StocksApp.PriceFeed.BackgroundServices;
 using StocksApp.PriceFeed.Diagnostics;
 using StocksApp.PriceFeed.Options;
@@ -13,7 +18,13 @@ namespace StocksApp.PriceFeed.IoC
         {
             services.Configure<PriceFeedIngestionOptions>(configuration.GetSection(PriceFeedIngestionOptions.SectionName));
 
-            services.AddSingleton<IPriceFeedMetrics, PriceFeedMetrics>();
+            services.AddScoped<ICandleRepository, CandleRepository>();
+            services.AddSingleton<ICandleStore, ScopedCandleStore>();
+            services.AddSingleton<IOhlcBarAggregator, OhlcBarAggregator>();
+
+            services.AddSingleton<PriceFeedMetrics>();
+            services.AddSingleton<IPriceFeedMetrics>(sp => sp.GetRequiredService<PriceFeedMetrics>());
+            services.AddSingleton<ICandleMetrics>(sp => sp.GetRequiredService<PriceFeedMetrics>());
             services.AddSingleton(sp =>
             {
                 var metrics = sp.GetRequiredService<IPriceFeedMetrics>();

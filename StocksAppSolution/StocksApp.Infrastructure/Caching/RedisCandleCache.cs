@@ -77,5 +77,10 @@ namespace StocksApp.Infrastructure.Caching
                 if (bar is not null) yield return bar;
             }
         }
+
+        public async Task DeleteLatestPriceAsync(string symbol, CancellationToken ct)
+        {
+            await Db.KeyDeleteAsync(RedisKeyNames.LatestPrice(symbol));
+        }
     }
 }

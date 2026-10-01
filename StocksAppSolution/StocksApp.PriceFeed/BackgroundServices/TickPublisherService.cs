@@ -1,8 +1,8 @@
 ﻿using System.Threading.Channels;
 using MassTransit;
+using StocksApp.Core.Diagnostics;
 using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Domain.Events;
-using StocksApp.PriceFeed.Diagnostics;
 
 public sealed class TickPublisherService : BackgroundService
 {

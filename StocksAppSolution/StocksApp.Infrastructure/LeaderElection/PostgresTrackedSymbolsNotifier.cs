@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Npgsql;
 using StocksApp.Core.ServiceContracts;
+using StocksApp.Infrastructure.Helpers;
 using StocksApp.Infrastructure.Options;
 
 namespace StocksApp.Infrastructure.LeaderElection

@@ -3,11 +3,11 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using StocksApp.Core.Diagnostics;
 using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.IntegrationsTests.Fakes;
 using StocksApp.PriceFeed.BackgroundServices;
-using StocksApp.PriceFeed.Diagnostics;
 using StocksApp.PriceFeed.Options;
 using StocksApp.Tests.Common.Builders;
 using Xunit;
@@ -27,7 +27,9 @@ namespace StocksApp.Test.PriceFeed
         private readonly RecordingFinnhubWebSocketClient _client;
         private readonly Channel<PriceUpdateMessage> _priceChannel;
         private readonly Channel<bool> _trackedSymbolsChannel;
+        private readonly Mock<IOhlcBarAggregator> _aggregatorMock;
         private readonly Mock<ILeaderElection> _electionMock;
+
         private readonly Mock<ITrackedSymbolsNotifier> _notifierMock;
         private readonly Mock<ISubscriptionReconciler> _reconcilerMock;
         private readonly PriceFeedIngestionOptions _options;
@@ -38,6 +40,7 @@ namespace StocksApp.Test.PriceFeed
             _client = new RecordingFinnhubWebSocketClient();
             _priceChannel = Channel.CreateUnbounded<PriceUpdateMessage>();
             _trackedSymbolsChannel = Channel.CreateBounded<bool>(1);
+            _aggregatorMock = new Mock<IOhlcBarAggregator>();
             _electionMock = new Mock<ILeaderElection>();
             _notifierMock = new Mock<ITrackedSymbolsNotifier>();
             _reconcilerMock = new Mock<ISubscriptionReconciler>();
@@ -59,6 +62,7 @@ namespace StocksApp.Test.PriceFeed
 
             _service = new FinnhubIngestionService(
                 _client,
+                _aggregatorMock.Object,
                 _priceChannel.Writer,
                 _electionMock.Object,
                 _notifierMock.Object,
