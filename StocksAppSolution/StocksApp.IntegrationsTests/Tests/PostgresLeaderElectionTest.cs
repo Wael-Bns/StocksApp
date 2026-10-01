@@ -4,19 +4,11 @@ using Microsoft.Extensions.Options;
 using Npgsql;
 using StocksApp.Infrastructure.LeaderElection;
 using StocksApp.Infrastructure.Options;
+using StocksApp.IntegrationsTests.Factory;
 using StocksApp.IntegrationsTests.Helpers;
-using Testcontainers.PostgreSql;
 
 namespace StocksApp.IntegrationsTests.Tests
 {
-    public class PostgresFixture : IAsyncLifetime
-    {
-        private readonly PostgreSqlContainer _pg = new PostgreSqlBuilder("postgres:16-alpine").Build();
-        public string ConnectionString => _pg.GetConnectionString();
-        public Task InitializeAsync() => _pg.StartAsync();
-        public Task DisposeAsync() => _pg.DisposeAsync().AsTask();
-    }
-
     public class PostgresLeaderElectionTest : IClassFixture<PostgresFixture>
     {
         private readonly PostgresFixture _pg;

@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using StocksApp.Infrastructure.LeaderElection;
+using StocksApp.IntegrationsTests.Factory;
 using StocksApp.IntegrationsTests.Helpers;
 
 namespace StocksApp.IntegrationsTests.Tests;

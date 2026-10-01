@@ -14,7 +14,8 @@ builder.Services
     .AddPersistence(builder.Configuration, builder.Environment)
     .AddFinnhubClient(builder.Configuration)
     .AddInfrastructureMessaging(builder.Configuration)
-    .AddLeaderElection(builder.Configuration);
+    .AddLeaderElection(builder.Configuration)
+    .AddCandleCache(builder.Configuration);
 
 
 builder.Services.AddSingleton<ITrackedSymbolStore, TrackedSymbolStore>();
