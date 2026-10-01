@@ -67,10 +67,13 @@ services:
       - PriceFeedClient__SubscriberId=pricefeed
       - LeaderElection__ConnectionString=Host=postgres-container;Port=5432;Database=stocksappdb;Username=postgres;Password=password; 
       - Observability__ServiceName=StocksApp.PriceFeed
+      - PriceFeed__Candles__RedisConnectionString=redis-container:6379 
     depends_on:
       rabbitmq-container:
         condition: service_healthy
       postgres-container:
+        condition: service_healthy
+      redis-container:
         condition: service_healthy
     networks:
       - stocksapp-network
@@ -112,7 +115,7 @@ services:
       - stocksapp-network
 
   postgres-container:
-    image: postgres:15.1
+    image: timescale/timescaledb:latest-pg15
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -127,6 +130,19 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    networks:
+      - stocksapp-network
+  
+  redis-container:
+    image: redis:7-alpine
+    container_name: redis-container
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - stocksapp-network
 
