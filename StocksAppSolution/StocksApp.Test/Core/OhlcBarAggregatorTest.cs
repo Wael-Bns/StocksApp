@@ -17,12 +17,13 @@ namespace StocksApp.Test.Core
         private readonly Mock<ICandleCache> _cacheMock = new();
         private readonly Mock<ICandleStore> _storeMock = new();
         private readonly Mock<ICandleMetrics> _metricsMock = new();
+        private readonly Mock<ILatestPriceCacheWriter> _latestPriceCacheWriterMock = new();
         private readonly OhlcBarAggregator _aggregator;
 
         public OhlcBarAggregatorTest()
         {
             _aggregator = new OhlcBarAggregator(
-                _cacheMock.Object, _storeMock.Object, _metricsMock.Object,
+                _cacheMock.Object, _storeMock.Object, _metricsMock.Object,_latestPriceCacheWriterMock.Object,
                 Options.Create(new CandleCacheOptions { BucketSize = TimeSpan.FromMinutes(1) }),
                 Mock.Of<ILogger<OhlcBarAggregator>>());
         }
@@ -221,7 +222,7 @@ namespace StocksApp.Test.Core
             _storeMock.Verify(s => s.UpsertClosedCandleAsync(It.IsAny<OhlcBar>(), It.IsAny<CancellationToken>()),
                 Times.Once);
             _cacheMock.Verify(c => c.DeleteActiveBarAsync("AAPL", It.IsAny<CancellationToken>()), Times.Once);
-            _cacheMock.Verify(c => c.DeleteLatestPriceAsync("AAPL", It.IsAny<CancellationToken>()), Times.Once);
+            _latestPriceCacheWriterMock.Verify(t => t.DeleteAsync("AAPL", It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -233,10 +234,10 @@ namespace StocksApp.Test.Core
             // Assert
             _storeMock.Verify(s => s.UpsertClosedCandleAsync(It.IsAny<OhlcBar>(), It.IsAny<CancellationToken>()),
                 Times.Never);
-            _cacheMock.Verify(c => c.DeleteLatestPriceAsync("GHOST", It.IsAny<CancellationToken>()), Times.Once);
+            _latestPriceCacheWriterMock.Verify(t => t.DeleteAsync("GHOST", It.IsAny<CancellationToken>()), Times.Once); 
         }
 
-        [Fact]
+            [Fact]
         public async Task Reset_ClearsInMemoryBars_NextTickStartsFreshBucketRegardlessOfPriorOne()
         {
             // Arrange

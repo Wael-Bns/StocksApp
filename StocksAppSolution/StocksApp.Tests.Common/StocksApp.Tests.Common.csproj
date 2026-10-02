@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Moq" Version="4.21.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\StocksApp.Core\StocksApp.Core.csproj" />
     <ProjectReference Include="..\StocksApp.Domain\StocksApp.Domain.csproj" />
     <ProjectReference Include="..\StocksApp.PriceFeed\StocksApp.PriceFeed.csproj" />

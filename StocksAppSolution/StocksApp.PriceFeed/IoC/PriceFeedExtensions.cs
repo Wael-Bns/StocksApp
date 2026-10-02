@@ -21,7 +21,7 @@ namespace StocksApp.PriceFeed.IoC
             services.AddScoped<ICandleRepository, CandleRepository>();
             services.AddSingleton<ICandleStore, ScopedCandleStore>();
             services.AddSingleton<IOhlcBarAggregator, OhlcBarAggregator>();
-
+            services.AddSingleton<ILatestPriceCacheWriter, LatestPriceCacheWriter>();
             services.AddSingleton<PriceFeedMetrics>();
             services.AddSingleton<IPriceFeedMetrics>(sp => sp.GetRequiredService<PriceFeedMetrics>());
             services.AddSingleton<ICandleMetrics>(sp => sp.GetRequiredService<PriceFeedMetrics>());
@@ -53,6 +53,7 @@ namespace StocksApp.PriceFeed.IoC
             services.AddSingleton(sp => sp.GetRequiredService<Channel<PriceUpdateMessage>>().Reader);
             services.AddSingleton(sp => sp.GetRequiredService<Channel<PriceUpdateMessage>>().Writer);
 
+            services.AddHostedService<CandleSweepService>();
             services.AddHostedService<TickPublisherService>();
             services.AddHostedService<FinnhubIngestionService>();
 

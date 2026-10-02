@@ -9,6 +9,7 @@ using StocksApp.Core.ServiceContracts;
 using StocksApp.IntegrationsTests.Fakes;
 using StocksApp.PriceFeed.BackgroundServices;
 using StocksApp.PriceFeed.Options;
+using StocksApp.Tests.Common;
 using StocksApp.Tests.Common.Builders;
 using Xunit;
 
@@ -94,8 +95,8 @@ namespace StocksApp.Test.PriceFeed
             _client.ReceiveLoopBehaviors.Enqueue(RecordingFinnhubWebSocketClient.RunsUntilCancelled());
 
             await _service.StartAsync(CancellationToken.None);
-            await WaitUntilAsync(() => _client.ConnectCalls.Count >= 1);
-            await WaitUntilAsync(() => CountInvocations(_reconcilerMock, nameof(ISubscriptionReconciler.Reset)) >= 1);
+            await AsyncTestHelpers.WaitUntilAsync(() => _client.ConnectCalls.Count >= 1);
+            await AsyncTestHelpers.WaitUntilAsync(() => AsyncTestHelpers.CountInvocations(_reconcilerMock, nameof(ISubscriptionReconciler.Reset)) >= 1);
 
             _reconcilerMock.Verify(r => r.Reset(), Times.Once);
         }
@@ -112,13 +113,13 @@ namespace StocksApp.Test.PriceFeed
             _client.ReceiveLoopBehaviors.Enqueue(RecordingFinnhubWebSocketClient.RunsUntilCancelled());
 
             await _service.StartAsync(CancellationToken.None);
-            await WaitUntilAsync(() => _client.ConnectCalls.Count >= 1);
+            await AsyncTestHelpers.WaitUntilAsync(() => _client.ConnectCalls.Count >= 1);
 
             firstLeadership.Lose();
 
-            await WaitUntilAsync(() => _client.DisconnectCalls.Count >= 1);
-            await WaitUntilAsync(() =>
-                CountInvocations(_electionMock, nameof(ILeaderElection.AcquireAsync)) >= 2);
+            await AsyncTestHelpers.WaitUntilAsync(() => _client.DisconnectCalls.Count >= 1);
+            await AsyncTestHelpers.WaitUntilAsync(() =>
+                AsyncTestHelpers.CountInvocations(_electionMock, nameof(ILeaderElection.AcquireAsync)) >= 2);
 
             _client.DisconnectCalls.Should().HaveCountGreaterThanOrEqualTo(1);
         }
@@ -136,7 +137,7 @@ namespace StocksApp.Test.PriceFeed
             _client.ReceiveLoopBehaviors.Enqueue(RecordingFinnhubWebSocketClient.RunsUntilCancelled());
 
             await _service.StartAsync(CancellationToken.None);
-            await WaitUntilAsync(() => _client.ConnectCalls.Count >= 2, BackoffTimeout);
+            await AsyncTestHelpers.WaitUntilAsync(() => _client.ConnectCalls.Count >= 2, BackoffTimeout);
 
             _client.DisconnectCalls.Should().HaveCountGreaterThanOrEqualTo(1);
             _client.DisconnectCalls.First().Should().BeOnOrBefore(_client.ConnectCalls.ElementAt(1));
@@ -150,7 +151,7 @@ namespace StocksApp.Test.PriceFeed
             _client.ReceiveLoopBehaviors.Enqueue(RecordingFinnhubWebSocketClient.RunsUntilCancelled());
 
             await _service.StartAsync(CancellationToken.None);
-            await WaitUntilAsync(() => _client.ConnectCalls.Count >= 4, BackoffTimeout);
+            await AsyncTestHelpers.WaitUntilAsync(() => _client.ConnectCalls.Count >= 4, BackoffTimeout);
 
             // expected delays: 20ms, 40ms, 80ms
             TimeSpan[] delays = GetReconnectDelays();
@@ -168,7 +169,7 @@ namespace StocksApp.Test.PriceFeed
             _client.ReceiveLoopBehaviors.Enqueue(RecordingFinnhubWebSocketClient.RunsUntilCancelled());
 
             await _service.StartAsync(CancellationToken.None);
-            await WaitUntilAsync(() => _client.ConnectCalls.Count >= 5, BackoffTimeout);
+            await AsyncTestHelpers.WaitUntilAsync(() => _client.ConnectCalls.Count >= 5, BackoffTimeout);
 
             // delays: 20ms, 40ms, 80ms, then back to 20ms after the stable connection
             TimeSpan[] delays = GetReconnectDelays();
@@ -188,12 +189,12 @@ namespace StocksApp.Test.PriceFeed
             _client.ReceiveLoopBehaviors.Enqueue(RecordingFinnhubWebSocketClient.RunsUntilCancelled());
 
             await _service.StartAsync(CancellationToken.None);
-            await WaitUntilAsync(() => ReconcileCount() >= 1); // the reconcile that happens right after connect
+            await AsyncTestHelpers.WaitUntilAsync(() => ReconcileCount() >= 1); // the reconcile that happens right after connect
             int reconcilesBeforeSignal = ReconcileCount();
 
             _trackedSymbolsChannel.Writer.TryWrite(true);
 
-            await WaitUntilAsync(() => ReconcileCount() > reconcilesBeforeSignal);
+            await AsyncTestHelpers.WaitUntilAsync(() => ReconcileCount() > reconcilesBeforeSignal);
         }
 
         [Fact]
@@ -206,11 +207,11 @@ namespace StocksApp.Test.PriceFeed
                 .Returns(Task.FromResult(new ReconciliationResult()));
 
             await _service.StartAsync(CancellationToken.None);
-            await WaitUntilAsync(() => ReconcileCount() >= 1);
+            await AsyncTestHelpers.WaitUntilAsync(() => ReconcileCount() >= 1);
 
             _trackedSymbolsChannel.Writer.TryWrite(true);
 
-            await WaitUntilAsync(() => ReconcileCount() >= 2);
+            await AsyncTestHelpers.WaitUntilAsync(() => ReconcileCount() >= 2);
             _client.ConnectCalls.Should().HaveCount(1); // the socket session was not torn down
         }
 
@@ -226,7 +227,7 @@ namespace StocksApp.Test.PriceFeed
             var update = new PriceUpdateMessageBuilder().WithSymbol(AaplSymbol).Build();
 
             await _service.StartAsync(CancellationToken.None);
-            await WaitUntilAsync(() => _client.ConnectCalls.Count >= 1);
+            await AsyncTestHelpers.WaitUntilAsync(() => _client.ConnectCalls.Count >= 1);
 
             await _client.RaiseUpdatesAsync(new[] { update });
 
@@ -267,21 +268,7 @@ namespace StocksApp.Test.PriceFeed
         }
 
         private int ReconcileCount() =>
-            CountInvocations(_reconcilerMock, nameof(ISubscriptionReconciler.ReconcileAsync));
-
-        private static int CountInvocations<T>(Mock<T> mock, string methodName) where T : class =>
-            mock.Invocations.Count(i => i.Method.Name == methodName);
-
-        private static async Task WaitUntilAsync(Func<bool> condition, TimeSpan? timeout = null)
-        {
-            var deadline = DateTime.UtcNow + (timeout ?? DefaultTimeout);
-            while (!condition())
-            {
-                if (DateTime.UtcNow > deadline)
-                    throw new TimeoutException("Condition was not met in time.");
-                await Task.Delay(10);
-            }
-        }
+            AsyncTestHelpers.CountInvocations(_reconcilerMock, nameof(ISubscriptionReconciler.ReconcileAsync));
 
         #endregion
     }

@@ -23,6 +23,7 @@ namespace StocksApp.Core.Services
         private readonly ICandleCache _cache;
         private readonly ICandleStore _store;
         private readonly ICandleMetrics _metrics;
+        private readonly ILatestPriceCacheWriter _latestPriceCacheWriter;
         private readonly TimeSpan _bucketSize;
         private readonly ILogger<OhlcBarAggregator> _logger;
 
@@ -30,12 +31,14 @@ namespace StocksApp.Core.Services
             ICandleCache cache,
             ICandleStore store,
             ICandleMetrics metrics,
+            ILatestPriceCacheWriter latestPriceCacheWriter,
             IOptions<CandleCacheOptions> options,
             ILogger<OhlcBarAggregator> logger)
         {
             _cache = cache;
             _store = store;
             _metrics = metrics;
+            _latestPriceCacheWriter = latestPriceCacheWriter;
             _bucketSize = options.Value.BucketSize;
             _logger = logger;
         }
@@ -138,7 +141,7 @@ namespace StocksApp.Core.Services
 
             try
             {
-                await _cache.DeleteLatestPriceAsync(symbol, ct);
+                await _latestPriceCacheWriter.DeleteAsync(symbol, ct);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -189,7 +192,7 @@ namespace StocksApp.Core.Services
             }
             catch (Exception ex)
             {
-                // D9: no retry — log, count, accept the gap
+                // no retry — log, count, accept the gap
                 _metrics.CandleFlushFailed();
                 _logger.LogWarning(ex, "Failed to flush candle for {Symbol} bucket {Bucket}; candle lost (no retry).",
                     symbol, bar.BucketStart);
