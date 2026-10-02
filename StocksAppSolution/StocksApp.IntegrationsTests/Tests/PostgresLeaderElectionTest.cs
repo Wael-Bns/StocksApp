@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Diagnostics;
+using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using StocksApp.Infrastructure.LeaderElection;
@@ -16,12 +17,12 @@ namespace StocksApp.IntegrationsTests.Tests
         [Fact]
         public async Task TwoInstances_OnlyOneBecomesLeader()
         {
-            var election = CreateElection(_pg.ConnectionString, lockKey: 1);
+            var lockKey = 1;
+            var election = CreateElection(_pg.ConnectionString, lockKey: lockKey);
             await using var leader = await election.AcquireAsync(CancellationToken.None);
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1.5));
-            Func<Task> standby = () => CreateElection(_pg.ConnectionString, lockKey: 1).AcquireAsync(cts.Token);
-
+            Func<Task> standby = () => CreateElection(_pg.ConnectionString, lockKey: lockKey).AcquireAsync(cts.Token);
             await standby.Should().ThrowAsync<OperationCanceledException>();
             leader.LostToken.IsCancellationRequested.Should().BeFalse();
         }
@@ -29,10 +30,11 @@ namespace StocksApp.IntegrationsTests.Tests
         [Fact]
         public async Task Leader_Disposed_StandbyAcquires()
         {
-            var leader = await CreateElection(_pg.ConnectionString, lockKey: 2)
+            var lockKey = 2;
+            var leader = await CreateElection(_pg.ConnectionString, lockKey: lockKey)
                 .AcquireAsync(CancellationToken.None);
 
-            var standbyTask = CreateElection(_pg.ConnectionString, lockKey: 2)
+            var standbyTask = CreateElection(_pg.ConnectionString, lockKey: lockKey)
                 .AcquireAsync(CancellationToken.None);
 
             await leader.DisposeAsync();
@@ -46,17 +48,16 @@ namespace StocksApp.IntegrationsTests.Tests
         public async Task LeaderBackendTerminated_StandbyAcquires_OldLeaderFencesImmediately()
         {
             const int key = 3;
-            var leader = await CreateElection(_pg.ConnectionString, key)
+
+            var leader = await CreateElection(_pg.ConnectionString, key, heartbeat: TimeSpan.FromSeconds(1))
                 .AcquireAsync(CancellationToken.None);
-            var standbyTask = CreateElection(_pg.ConnectionString, key)
+            var standbyTask = CreateElection(_pg.ConnectionString, key, heartbeat: TimeSpan.FromSeconds(1))
                 .AcquireAsync(CancellationToken.None);
 
             await PgAdmin.TerminateAdvisoryLockHolderAsync(_pg.ConnectionString, key);
 
-            // standby polls every ~100ms, the old leader heartbeats every 1s: the standby wins the race
             var standby = await standbyTask.WaitAsync(TimeSpan.FromSeconds(5));
 
-            // old leader sees a different holder pid => definitive loss, well before FenceAfter (10s)
             await WaitUntilCancelledAsync(leader.LostToken, TimeSpan.FromSeconds(5));
 
             await standby.DisposeAsync();
@@ -69,18 +70,20 @@ namespace StocksApp.IntegrationsTests.Tests
             await using var isolated = new PostgresFixture();   // own container, we are about to stop it
             await isolated.InitializeAsync();
 
+            var heartbeat = TimeSpan.FromMilliseconds(500);
             var fenceAfter = TimeSpan.FromSeconds(4);
-            var leader = await CreateElection(isolated.ConnectionString, lockKey: 4, fenceAfter)
+            var leader = await CreateElection(isolated.ConnectionString, lockKey: 4, fenceAfter, heartbeat)
                 .AcquireAsync(CancellationToken.None);
 
-            await isolated.DisposeAsync();    // Postgres gone for everyone
-            var outageStart = DateTime.UtcNow;
+            var outage = Stopwatch.StartNew();
+            await isolated.DisposeAsync();
 
-            await Task.Delay(TimeSpan.FromSeconds(1.5));
+            await Task.Delay(TimeSpan.FromSeconds(1));
             leader.LostToken.IsCancellationRequested.Should().BeFalse("still inside the grace window");
 
             await WaitUntilCancelledAsync(leader.LostToken, TimeSpan.FromSeconds(15));
-            (DateTime.UtcNow - outageStart).Should().BeGreaterThan(fenceAfter - TimeSpan.FromSeconds(1));
+
+            outage.Elapsed.Should().BeGreaterThan(fenceAfter - heartbeat * 2);
 
             await leader.DisposeAsync();
         }
@@ -88,17 +91,24 @@ namespace StocksApp.IntegrationsTests.Tests
         // ---------- helpers ----------
 
         private static PostgresLeaderElection CreateElection(
-            string connectionString, long lockKey, TimeSpan? fenceAfter = null) =>
-            new(Options.Create(new LeaderElectionOptions
+            string connectionString, long lockKey,
+            TimeSpan? fenceAfter = null, TimeSpan? heartbeat = null)
+        {
+            var hb = heartbeat ?? TimeSpan.FromSeconds(1);
+            var opts = new LeaderElectionOptions
             {
                 ConnectionString = connectionString,
                 LockKey = lockKey,
                 RetryInterval = TimeSpan.FromMilliseconds(100),
-                HeartbeatInterval = TimeSpan.FromSeconds(1),
-                HeartbeatTimeout = TimeSpan.FromSeconds(2),
-                FenceAfter = fenceAfter ?? TimeSpan.FromSeconds(10)
-            }),
+                HeartbeatInterval = hb,
+                HeartbeatTimeout = hb,
+                FenceAfter = fenceAfter ?? TimeSpan.FromSeconds(5)
+            };
+            var result = new LeaderElectionOptionsValidator().Validate(null, opts);
+            if (result.Failed) throw new InvalidOperationException(result.FailureMessage);
+            return new(Options.Create(opts),
                 NullLogger<PostgresLeaderElection>.Instance);
+        }
 
         private static async Task WaitUntilCancelledAsync(CancellationToken token, TimeSpan timeout)
         {

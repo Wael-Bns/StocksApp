@@ -1,5 +1,4 @@
-﻿// StocksApp.Infrastructure/LeaderElection/PostgresLeadership.cs
-using System.Data;
+﻿using System.Data;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Npgsql;
