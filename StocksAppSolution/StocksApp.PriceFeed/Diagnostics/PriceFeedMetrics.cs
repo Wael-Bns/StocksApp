@@ -1,8 +1,9 @@
 ﻿using System.Diagnostics.Metrics;
+using StocksApp.Core.Diagnostics;
 
 namespace StocksApp.PriceFeed.Diagnostics
 {
-    public sealed class PriceFeedMetrics : IPriceFeedMetrics
+    public sealed class PriceFeedMetrics : IPriceFeedMetrics, ICandleMetrics
     {
         public const string MeterName = "StocksApp.PriceFeed";
 
@@ -12,6 +13,9 @@ namespace StocksApp.PriceFeed.Diagnostics
         private readonly UpDownCounter<int> _isLeader;
         private readonly UpDownCounter<int> _socketConnected;
         private readonly Counter<long> _reconnects;
+        private readonly Counter<long> _ticksLate;
+        private readonly Counter<long> _candlesFlushed;
+        private readonly Counter<long> _candlesFlushFailed;
 
         public PriceFeedMetrics(IMeterFactory meterFactory)
         {
@@ -22,6 +26,9 @@ namespace StocksApp.PriceFeed.Diagnostics
             _isLeader = meter.CreateUpDownCounter<int>("pricefeed_is_leader");
             _socketConnected = meter.CreateUpDownCounter<int>("pricefeed_socket_connected");
             _reconnects = meter.CreateCounter<long>("pricefeed_reconnects_total");
+            _ticksLate = meter.CreateCounter<long>("pricefeed_ticks_late_total");
+            _candlesFlushed = meter.CreateCounter<long>("pricefeed_candles_flushed_total");
+            _candlesFlushFailed = meter.CreateCounter<long>("pricefeed_candles_flush_failed_total");
 
             meter.CreateObservableGauge("pricefeed_symbols_desired", () => Interlocked.Read(ref _desiredSymbols));
             meter.CreateObservableGauge("pricefeed_symbols_actual", () => Interlocked.Read(ref _actualSymbols));
@@ -58,5 +65,8 @@ namespace StocksApp.PriceFeed.Diagnostics
         public void LeaderLost() => _isLeader.Add(-1);
         public void SocketConnected() => _socketConnected.Add(1);
         public void SocketDisconnected() => _socketConnected.Add(-1);
+        public void TickLateForClosedBucket() => _ticksLate.Add(1);
+        public void CandleFlushed() => _candlesFlushed.Add(1);
+        public void CandleFlushFailed() => _candlesFlushFailed.Add(1);
     }
 }

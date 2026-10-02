@@ -60,6 +60,46 @@ namespace StocksApp.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("StocksApp.Domain.Entities.Candle1m", b =>
+                {
+                    b.Property<string>("Symbol")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("symbol");
+
+                    b.Property<DateTimeOffset>("BucketStart")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("bucket_start");
+
+                    b.Property<decimal>("Close")
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("close");
+
+                    b.Property<decimal>("High")
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("high");
+
+                    b.Property<decimal>("Low")
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("low");
+
+                    b.Property<decimal>("Open")
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("open");
+
+                    b.Property<int>("TradeCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("trade_count");
+
+                    b.Property<long>("Volume")
+                        .HasColumnType("bigint")
+                        .HasColumnName("volume");
+
+                    b.HasKey("Symbol", "BucketStart");
+
+                    b.ToTable("candles_1m", (string)null);
+                });
+
             modelBuilder.Entity("StocksApp.Domain.Entities.Outbox", b =>
                 {
                     b.Property<Guid>("OutboxId")

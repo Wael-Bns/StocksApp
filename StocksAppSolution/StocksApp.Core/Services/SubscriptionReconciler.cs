@@ -11,6 +11,8 @@ namespace StocksApp.Core.Services
         private readonly ILogger<SubscriptionReconciler> _logger;
         private readonly HashSet<string> _actual = new(StringComparer.Ordinal);
 
+        public event Func<string, CancellationToken, Task>? SymbolUnsubscribed;
+
         public SubscriptionReconciler(
             ITrackedSymbolStore store,
             IFinnhubWebSocketClient client,
@@ -63,6 +65,22 @@ namespace StocksApp.Core.Services
                 await _client.UnsubscribeAsync(symbol, ct);
                 _actual.Remove(symbol);
                 removed.Add(symbol);
+                if (SymbolUnsubscribed is { } handler)
+                {
+                    try
+                    {
+                        await handler(symbol, ct);
+                    }
+                    catch (OperationCanceledException) when (ct.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+                    catch (Exception ex)
+                    {
+                        // a failed cleanup must not abort the reconcile pass or re-subscribe the symbol
+                        _logger.LogWarning(ex, "SymbolUnsubscribed handler failed for {Symbol}.", symbol);
+                    }
+                }
             }
 
             if (added.Count > 0 || removed.Count > 0)

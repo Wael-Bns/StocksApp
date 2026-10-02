@@ -26,6 +26,11 @@ namespace StocksApp.Tests.Common.Builders
             _timestamp = timestamp;
             return this;
         }
+        public PriceUpdateMessageBuilder WithTimestamp(DateTimeOffset timestamp)
+        {
+            _timestamp = timestamp.ToUnixTimeMilliseconds();
+            return this;
+        }
 
         public PriceUpdateMessageBuilder WithVolume(double volume)
         {

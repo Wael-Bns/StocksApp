@@ -16,7 +16,7 @@ namespace StocksApp.IntegrationsTests.Factory
         public string ConnectionString => _connectionString;
         public PostgresDbManager()
         {
-            _postgreSqlContainer = new PostgreSqlBuilder("postgres:16-alpine")
+            _postgreSqlContainer = new PostgreSqlBuilder("timescale/timescaledb:latest-pg16")
                 .WithDatabase("testdb")
                 .WithUsername("test")
                 .WithPassword("test")
@@ -38,7 +38,8 @@ namespace StocksApp.IntegrationsTests.Factory
 
             _respawner = await Respawner.CreateAsync(connection, new RespawnerOptions
             {
-                DbAdapter = DbAdapter.Postgres
+                DbAdapter = DbAdapter.Postgres,
+                SchemasToInclude = new[] { "public" }
             });
 
             await connection.CloseAsync();

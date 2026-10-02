@@ -1,17 +1,17 @@
 using System.Threading.Channels;
 using Microsoft.Extensions.Options;
+using StocksApp.Core.Diagnostics;
 using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.WebSocketClientAbstractions;
-using StocksApp.PriceFeed.Diagnostics;
 using StocksApp.PriceFeed.Options;
-using static MassTransit.ValidationResultExtensions;
 
 namespace StocksApp.PriceFeed.BackgroundServices
 {
     public sealed class FinnhubIngestionService : BackgroundService
     {
         private readonly IFinnhubWebSocketClient _client;
+        private readonly IOhlcBarAggregator _aggregator;
         private readonly ILeaderElection _election;
         private readonly ITrackedSymbolsNotifier _notifier;
         private readonly ISubscriptionReconciler _reconciler;
@@ -22,6 +22,7 @@ namespace StocksApp.PriceFeed.BackgroundServices
 
         public FinnhubIngestionService(
             IFinnhubWebSocketClient client,
+            IOhlcBarAggregator aggregator,
             ChannelWriter<PriceUpdateMessage> writer,
             ILeaderElection election,
             ITrackedSymbolsNotifier notifier,
@@ -31,6 +32,7 @@ namespace StocksApp.PriceFeed.BackgroundServices
             ILogger<FinnhubIngestionService> logger)
         {
             _client = client;
+            _aggregator = aggregator;
             _writer = writer;
             _election = election;
             _notifier = notifier;
@@ -50,6 +52,8 @@ namespace StocksApp.PriceFeed.BackgroundServices
                     await using var leadership = await _election.AcquireAsync(stoppingToken);
                     _metrics.LeaderAcquired();
 
+                    await _aggregator.HydrateFromCacheAsync(stoppingToken);
+
                     using var sessionCts = CancellationTokenSource.CreateLinkedTokenSource(
                         stoppingToken, leadership.LostToken);
                     try
@@ -62,6 +66,7 @@ namespace StocksApp.PriceFeed.BackgroundServices
                     }
                     finally
                     {
+                        _aggregator.Reset();
                         _metrics.LeaderLost();
                     }
                 }

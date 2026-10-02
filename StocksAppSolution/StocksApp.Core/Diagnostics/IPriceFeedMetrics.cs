@@ -1,4 +1,4 @@
-﻿namespace StocksApp.PriceFeed.Diagnostics
+﻿namespace StocksApp.Core.Diagnostics
 {
     public interface IPriceFeedMetrics
     {

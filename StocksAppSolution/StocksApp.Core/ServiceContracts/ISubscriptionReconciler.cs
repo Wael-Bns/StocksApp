@@ -19,5 +19,9 @@
         void Reset();
 
         Task<ReconciliationResult> ReconcileAsync(CancellationToken ct);
+        /// <summary>Fired once per symbol removed from the desired set, after it has been
+        /// unsubscribed from Finnhub. Used by the candle pipeline to flush and
+        /// clean up that symbol's Redis entries.</summary>
+        event Func<string, CancellationToken, Task>? SymbolUnsubscribed;
     }
 }

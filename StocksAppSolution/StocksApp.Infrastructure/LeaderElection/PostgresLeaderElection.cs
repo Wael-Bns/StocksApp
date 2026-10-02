@@ -1,5 +1,4 @@
-﻿// StocksApp.Infrastructure/LeaderElection/PostgresLeaderElection.cs
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Npgsql;
 using StocksApp.Core.ServiceContracts;
@@ -19,9 +18,6 @@ namespace StocksApp.Infrastructure.LeaderElection
         {
             _options = options.Value;
             _logger = logger;
-
-            if (_options.LockKey <= 0)
-                throw new InvalidOperationException("The leader election lock key must be positive.");
 
             // the lock lives and dies with this physical connection
             _connectionString = new NpgsqlConnectionStringBuilder(_options.ConnectionString)
@@ -72,7 +68,10 @@ namespace StocksApp.Infrastructure.LeaderElection
                     if (!handedOff) await conn.DisposeAsync();
                 }
 
-                var jitter = TimeSpan.FromMilliseconds(Random.Shared.Next(0, 1000));
+                // up to +25% jitter so standbys don't poll in lockstep
+                var jitter = TimeSpan.FromMilliseconds(
+                    Random.Shared.NextDouble() * _options.RetryInterval.TotalMilliseconds * 0.25);
+
                 await Task.Delay(_options.RetryInterval + jitter, ct);
             }
         }

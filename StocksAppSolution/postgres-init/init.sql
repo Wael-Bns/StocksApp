@@ -332,3 +332,67 @@ VALUES ('20260928072532_AddTrackedSymbolTable', '8.0.23');
 
 COMMIT;
 
+START TRANSACTION;
+
+CREATE TABLE candles_1m (
+    symbol character varying(16) NOT NULL,
+    bucket_start timestamp with time zone NOT NULL,
+    open numeric(18,6) NOT NULL,
+    high numeric(18,6) NOT NULL,
+    low numeric(18,6) NOT NULL,
+    close numeric(18,6) NOT NULL,
+    volume bigint NOT NULL,
+    trade_count integer NOT NULL,
+    CONSTRAINT "PK_candles_1m" PRIMARY KEY (symbol, bucket_start)
+);
+
+CREATE EXTENSION IF NOT EXISTS timescaledb;
+
+
+                SELECT create_hypertable('candles_1m', 'bucket_start',
+                    if_not_exists => TRUE);
+
+
+                CREATE MATERIALIZED VIEW candles_5m WITH (timescaledb.continuous) AS
+                SELECT symbol, time_bucket('5 minutes', bucket_start) AS bucket_start,
+                       first(open, bucket_start) AS open, max(high) AS high, min(low) AS low,
+                       last(close, bucket_start) AS close, sum(volume) AS volume, sum(trade_count) AS trade_count
+                FROM candles_1m GROUP BY symbol, time_bucket('5 minutes', bucket_start)
+                WITH NO DATA;
+
+
+                SELECT add_continuous_aggregate_policy('candles_5m',
+                    start_offset => INTERVAL '1 hour', end_offset => INTERVAL '1 minute',
+                    schedule_interval => INTERVAL '1 minute');
+
+
+                CREATE MATERIALIZED VIEW candles_1h WITH (timescaledb.continuous) AS
+                SELECT symbol, time_bucket('1 hour', bucket_start) AS bucket_start,
+                       first(open, bucket_start) AS open, max(high) AS high, min(low) AS low,
+                       last(close, bucket_start) AS close, sum(volume) AS volume, sum(trade_count) AS trade_count
+                FROM candles_5m GROUP BY symbol, time_bucket('1 hour', bucket_start)
+                WITH NO DATA;
+
+
+                SELECT add_continuous_aggregate_policy('candles_1h',
+                    start_offset => INTERVAL '1 day', end_offset => INTERVAL '1 hour',
+                    schedule_interval => INTERVAL '10 minutes');
+
+
+                CREATE MATERIALIZED VIEW candles_1d WITH (timescaledb.continuous) AS
+                SELECT symbol, time_bucket('1 day', bucket_start) AS bucket_start,
+                       first(open, bucket_start) AS open, max(high) AS high, min(low) AS low,
+                       last(close, bucket_start) AS close, sum(volume) AS volume, sum(trade_count) AS trade_count
+                FROM candles_1h GROUP BY symbol, time_bucket('1 day', bucket_start)
+                WITH NO DATA;
+
+
+                SELECT add_continuous_aggregate_policy('candles_1d',
+                    start_offset => INTERVAL '3 days', end_offset => INTERVAL '1 hour',
+                    schedule_interval => INTERVAL '1 hour');
+
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260930154910_AddCandles1mTable', '8.0.23');
+
+COMMIT;
+
