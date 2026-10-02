@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Npgsql;
 using StocksApp.Infrastructure.LeaderElection;
 using StocksApp.Infrastructure.Options;
 using StocksApp.IntegrationsTests.Factory;

@@ -1,5 +1,4 @@
-﻿// StocksApp.IntegrationsTests/Tests/RedisCandleCacheTest.cs
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using StackExchange.Redis;
 using StocksApp.Infrastructure.Caching;
