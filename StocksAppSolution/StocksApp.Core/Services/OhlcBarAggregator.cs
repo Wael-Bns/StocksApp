@@ -1,11 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using StocksApp.Core.Candles;
 using StocksApp.Core.Diagnostics;
 using StocksApp.Core.DTO.CandleDTO;
 using StocksApp.Core.DTO.StockDTO;
-using StocksApp.Core.Options;
 using StocksApp.Core.ServiceContracts;
 
 namespace StocksApp.Core.Services

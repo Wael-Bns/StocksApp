@@ -1,6 +1,11 @@
+using StocksApp.Core.Options;
+using StocksApp.Core.ServiceContracts;
+using StocksApp.Core.Services;
+using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Infrastructure.IoC;
+using StocksApp.Infrastructure.Repositories;
 using StocksApp.Observability;
-using StocksApp.OrdersWorker.IoC;
+using StocksApp.OrdersWorker.BackgroundServices;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -11,10 +16,14 @@ builder.Services.Configure<ServiceProviderOptions>(options =>
 });
 
 builder.Services
-    .AddWorkerServices()
     .AddPersistence(builder.Configuration, builder.Environment)
-    .AddInfrastructureMessaging(builder.Configuration)
-    .AddPriceFeedSubscriber(builder.Configuration);
+    .Configure<OrderMatchingOptions>(builder.Configuration.GetSection(OrderMatchingOptions.SectionName));
+
+builder.Services.AddScoped<ISellOrderMatchRepository, SellOrderMatchRepository>();
+builder.Services.AddScoped<IOrderMatcher, OrderMatcher>();
+builder.Services.AddHostedService<SellOrderMatchingService>();
+
+
 
 if (!builder.Environment.IsEnvironment("Test"))
 {
