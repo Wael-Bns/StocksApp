@@ -18,5 +18,13 @@ namespace StocksApp.Domain.RepositoryContracts
         /// <param name="ct"></param>
         /// <returns></returns>
         Task<IReadOnlyList<SellOrder>> ListTrackedAsync(IReadOnlyList<Guid> orderIds, CancellationToken ct);
+        /// <summary>
+        /// Marks a sell order as cancelled in the database
+        /// </summary>
+        /// <param name="orderId"></param>
+        /// <param name="gracePeriod"></param>
+        /// <param name="ct"></param>
+        /// <returns>A boolean value equal to true if the order is marked executed and false if not.</returns>
+        Task<bool> TryCancelAsync(Guid orderId, TimeSpan gracePeriod, CancellationToken ct);
     }
 }

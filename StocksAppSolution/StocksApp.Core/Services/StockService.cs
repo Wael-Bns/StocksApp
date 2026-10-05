@@ -19,6 +19,7 @@ namespace StocksApp.Core.Services
         private readonly IGenericRepository<BuyOrder> _buyOrderRepository;
         private readonly IGenericRepository<SellOrder> _sellOrderRepository;
         private readonly IGenericRepository<Outbox> _outboxRepository;
+        private readonly ISellOrderMatchRepository _sellorderMatchRepository;
         private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFinnHubHttpClient _finnhubHttpClient;
@@ -33,6 +34,7 @@ namespace StocksApp.Core.Services
             IUnitOfWork unitOfWork,
             IFinnHubHttpClient finnHubHttpClient,
             ICandleCache candleCache,
+            ISellOrderMatchRepository matchRepository,
             IOptions<OrderMatchingOptions> matchingOptions)
         {
             _buyOrderRepository = buyOrderRepository;
@@ -42,7 +44,17 @@ namespace StocksApp.Core.Services
             _unitOfWork = unitOfWork;
             _finnhubHttpClient = finnHubHttpClient;
             _candleCache = candleCache;
+            _sellorderMatchRepository = matchRepository;
             _matchingOptions = matchingOptions;
+        }
+
+        public async Task<bool> CancelSellOrder(Guid sellOrderId, Guid userId)
+        {
+            var spec = new SellOrderByIdAndUserSpecification(sellOrderId, userId);
+            var owned = await _sellOrderRepository.ListAsync(spec);
+            if (owned.Count == 0) return false;
+
+            return await _sellorderMatchRepository.TryCancelAsync(sellOrderId, _matchingOptions.Value.MatcherGracePeriod, CancellationToken.None);
         }
 
         public async Task<BuyOrderResponse> CreateBuyOrder(BuyOrderAddRequest? buyOrderRequest, Guid userId)
