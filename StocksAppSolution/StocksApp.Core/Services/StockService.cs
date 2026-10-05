@@ -1,14 +1,16 @@
-﻿/*using StocksApp.Domain.Entities;
-using StocksApp.Domain.RepositoryContracts;
-using StocksApp.Domain.Specifications;
+﻿using Microsoft.Extensions.Options;
 using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.DTO.StockDTO;
 using StocksApp.Core.Exceptions;
 using StocksApp.Core.Helpers;
 using StocksApp.Core.HttpClientAbstractions;
+using StocksApp.Core.Options;
 using StocksApp.Core.ServiceContracts;
+using StocksApp.Domain.Entities;
 using StocksApp.Domain.Events;
+using StocksApp.Domain.RepositoryContracts;
+using StocksApp.Domain.Specifications;
 
 namespace StocksApp.Core.Services
 {
@@ -17,21 +19,30 @@ namespace StocksApp.Core.Services
         private readonly IGenericRepository<BuyOrder> _buyOrderRepository;
         private readonly IGenericRepository<SellOrder> _sellOrderRepository;
         private readonly IGenericRepository<Outbox> _outboxRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IFinnHubHttpClient _finnhubHttpClient;
+        private readonly ICandleCache _candleCache;
+        private readonly IOptions<OrderMatchingOptions> _matchingOptions;
 
         public StockService(
             IGenericRepository<BuyOrder> buyOrderRepository,
             IGenericRepository<SellOrder> sellOrderRepository,
             IGenericRepository<Outbox> outboxRepository,
+            IUserRepository userRepository,
             IUnitOfWork unitOfWork,
-            IFinnHubHttpClient finnHubHttpClient)
+            IFinnHubHttpClient finnHubHttpClient,
+            ICandleCache candleCache,
+            IOptions<OrderMatchingOptions> matchingOptions)
         {
             _buyOrderRepository = buyOrderRepository;
             _sellOrderRepository = sellOrderRepository;
-            _finnhubHttpClient = finnHubHttpClient;
             _outboxRepository = outboxRepository;
+            _userRepository = userRepository;
             _unitOfWork = unitOfWork;
+            _finnhubHttpClient = finnHubHttpClient;
+            _candleCache = candleCache;
+            _matchingOptions = matchingOptions;
         }
 
         public async Task<BuyOrderResponse> CreateBuyOrder(BuyOrderAddRequest? buyOrderRequest, Guid userId)
@@ -47,34 +58,46 @@ namespace StocksApp.Core.Services
         }
 
         public async Task<SellOrderResponse> CreateSellOrder(SellOrderAddRequest? sellOrderRequest, Guid userId)
+    {
+        ArgumentNullException.ThrowIfNull(sellOrderRequest);
+        ValidationHelper.ModelValidation(sellOrderRequest);
+
+        var options = _matchingOptions.Value;
+        var sellOrder = SellOrder.Create(
+            userId, sellOrderRequest.StockSymbol!, sellOrderRequest.StockName,
+            sellOrderRequest.Price, sellOrderRequest.Quantity, DateTime.UtcNow, options.MatchBucketSize);
+
+        var latest = await _candleCache.GetLatestPriceAsync(sellOrder.StockSymbol, CancellationToken.None);
+        var marketable = latest is { } p
+            && (DateTimeOffset.UtcNow - DateTimeOffset.FromUnixTimeMilliseconds(p.Timestamp)) <= options.MaxImmediateFillPriceAge
+            && (double)p.Price >= sellOrder.Price;
+
+        await _unitOfWork.BeginTransactionAsync(CancellationToken.None);
+        try
         {
-            ArgumentNullException.ThrowIfNull(sellOrderRequest);
-            ValidationHelper.ModelValidation(sellOrderRequest);
+            var createdSellOrder = await _sellOrderRepository.AddAsync(sellOrder);
 
-            var sellOrder = sellOrderRequest.ToSellOrder();
-            sellOrder.UserId = userId;
-            try
+            if (marketable)
             {
-                // Begin transaction
-                await _unitOfWork.BeginTransactionAsync(CancellationToken.None);
-                
-                var createdSellOrder = await _sellOrderRepository.AddAsync(sellOrder);
-                var sellOrderCreatedCommand = createdSellOrder.ToSellOrderCreatedCommand();
-                var outboxEvent = sellOrderCreatedCommand.ToOutbox();
+                var user = await _userRepository.GetByIdAsync(userId, CancellationToken.None)
+                    ?? throw new InvalidOperationException($"User {userId} not found.");
+                createdSellOrder.MarkExecuted(user);
+
+                var outboxEvent = SellOrderExecuted.From(createdSellOrder).ToOutbox();
                 await _outboxRepository.AddAsync(outboxEvent);
-                
-                // Commit transaction
-                await _unitOfWork.CommitTransactionAsync(CancellationToken.None);
+            }
 
-                return createdSellOrder.ToSellOrderResponse();
-            }
-            catch (Exception ex)
-            {
-                // Rollback transaction in case of an error
-                await _unitOfWork.RollbackTransactionAsync(CancellationToken.None);
-                throw new Exception("An error occurred while creating the sell order and saving the outbox event.", ex);
-            }
+            await _unitOfWork.SaveChangesAsync(CancellationToken.None);
+            await _unitOfWork.CommitTransactionAsync(CancellationToken.None);
+
+            return createdSellOrder.ToSellOrderResponse();
         }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync(CancellationToken.None);
+            throw;
+        }
+    }
 
         public async Task<List<BuyOrderResponse>> GetBuyOrdersByUser(Guid userId)
         {
@@ -113,4 +136,4 @@ namespace StocksApp.Core.Services
             };
         }
     }
-}*/
+}

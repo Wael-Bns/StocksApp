@@ -32,8 +32,15 @@ var host = builder.Build();
 if (host.Services.GetRequiredService<IOptions<CandleCacheOptions>>().Value.Enabled)
 {
     var reconciler = host.Services.GetRequiredService<ISubscriptionReconciler>();
-    var aggregator = host.Services.GetRequiredService<IOhlcBarAggregator>();
-    reconciler.SymbolUnsubscribed += aggregator.FlushAndRemoveSymbolAsync;
+    var chartAggregator = host.Services.GetRequiredKeyedService<IOhlcBarAggregator>("chart");
+    reconciler.SymbolUnsubscribed += chartAggregator.FlushAndRemoveSymbolAsync;
+}
+
+if (host.Services.GetRequiredService<IOptions<OrderMatchingOptions>>().Value.Enabled)
+{
+    var reconciler = host.Services.GetRequiredService<ISubscriptionReconciler>();
+    var matchAggregator = host.Services.GetRequiredKeyedService<IOhlcBarAggregator>("match");
+    reconciler.SymbolUnsubscribed += matchAggregator.FlushAndRemoveSymbolAsync;
 }
 
 host.Run();
