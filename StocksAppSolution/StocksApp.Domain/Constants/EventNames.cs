@@ -1,7 +1,7 @@
-﻿namespace StocksApp.OutboxDispatcher.Constants
+﻿namespace StocksApp.Domain.Constants
 {
     public static class EventNames
     {
-        public const string SellOrderCreatedCommand = "SellOrderCreated";
+        public const string SellOrderExecuted = "SellOrderExecuted";
     }
 }
