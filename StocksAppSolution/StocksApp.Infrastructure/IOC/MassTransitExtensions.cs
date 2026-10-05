@@ -53,13 +53,14 @@ namespace StocksApp.Infrastructure.IoC
 
         public static IServiceCollection AddCommandBusProfiles(this IServiceCollection services)
         {
-            services.AddTransient<ICommandBusProfile, OrderCreatedCommandBusProfile>();
             return services;
         }
 
         public static IServiceCollection AddEventBusProfiles(this IServiceCollection services)
         {
             services.AddTransient<IEventBusProfile, PriceTickPublishedEventBusProfile>();
+            services.AddTransient<IEventBusProfile, SellOrderExecutedEventBusProfile>();
+
             return services;
         }
     }

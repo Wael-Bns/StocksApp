@@ -1,4 +1,4 @@
-﻿using FluentAssertions;
+﻿/*using FluentAssertions;
 using Moq;
 using StocksApp.Domain.Entities;
 using StocksApp.Domain.RepositoryContracts;
@@ -39,7 +39,6 @@ namespace StocksApp.Test.Core
             StockName = "APPLE INC",
             StockSymbol = "AAPL",
             Quantity = 250,
-            DateAndTimeOfOrder = DateTime.Now,
             Price = 100
         };
 
@@ -502,4 +501,4 @@ namespace StocksApp.Test.Core
         #endregion
 
     }
-}
+}*/

@@ -8,7 +8,7 @@ namespace StocksApp.Core.IoC
     {
         public static IServiceCollection AddStockCore(this IServiceCollection services)
         {
-            services.AddScoped<IStockService, StockService>();
+            //services.AddScoped<IStockService, StockService>();
             return services;
         }
     }

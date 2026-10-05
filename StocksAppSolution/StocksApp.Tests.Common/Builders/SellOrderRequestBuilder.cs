@@ -6,7 +6,6 @@ namespace StocksApp.Tests.Common.Builders
     {
         private string _stockSymbol = "MSFT";
         private string _stockName = "Microsoft Corporation";
-        private DateTime _dateAndTimeOfOrder = DateTime.UtcNow;
         private uint _quantity = 10;
         private double _price = 100;
 
@@ -19,12 +18,6 @@ namespace StocksApp.Tests.Common.Builders
         public SellOrderRequestBuilder WithStockName(string stockName)
         {
             _stockName = stockName;
-            return this;
-        }
-
-        public SellOrderRequestBuilder WithDateAndTimeOfOrder(DateTime dateAndTimeOfOrder)
-        {
-            _dateAndTimeOfOrder = dateAndTimeOfOrder;
             return this;
         }
 
@@ -44,7 +37,6 @@ namespace StocksApp.Tests.Common.Builders
         {
             StockSymbol = _stockSymbol,
             StockName = _stockName,
-            DateAndTimeOfOrder = _dateAndTimeOfOrder,
             Quantity = _quantity,
             Price = _price
         };
