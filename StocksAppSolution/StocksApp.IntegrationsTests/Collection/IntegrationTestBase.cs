@@ -1,6 +1,8 @@
 ﻿using MassTransit.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using StocksApp.Core.ServiceContracts;
 using StocksApp.IntegrationsTests.Factory;
+using StocksApp.Tests.Common.Fakes;
 
 namespace StocksApp.IntegrationsTests.Collection
 {
@@ -24,6 +26,7 @@ namespace StocksApp.IntegrationsTests.Collection
         }
         public Task DisposeAsync()
         {
+            ((FakeCandleCache)Factory.Services.GetRequiredService<ICandleCache>()).Clear();
             Client.Dispose();
             return Task.CompletedTask;
         }

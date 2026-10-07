@@ -38,5 +38,8 @@ namespace StocksApp.IntegrationsTests.Helpers
 
         public async Task<HttpResponseMessage> GetAllSellOrdersRawAsync()
             => await _client.GetAsync(AllSellOrdersRoute);
+
+        public async Task<HttpResponseMessage> CancelSellOrderRawAsync(Guid sellOrderId)
+            => await _client.PostAsync($"{SellOrderRoute}/{sellOrderId}/cancel", null);
     }
 }
