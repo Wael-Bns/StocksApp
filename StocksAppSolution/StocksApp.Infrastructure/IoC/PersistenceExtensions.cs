@@ -16,7 +16,6 @@ namespace StocksApp.Infrastructure.IoC
             services.AddScoped<IOutboxRepository, OutboxRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ITrackedSymbolRepository, TrackedSymbolRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
 
             if (!environment.IsEnvironment("Test"))
             {

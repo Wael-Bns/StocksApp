@@ -1,5 +1,8 @@
 using StocksApp.Core.IoC;
+using StocksApp.Core.Options;
+using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Infrastructure.IoC;
+using StocksApp.Infrastructure.Repositories;
 using StocksApp.Observability;
 using StocksApp.WebApi.Hubs;
 using StocksApp.WebApi.IoC;
@@ -15,8 +18,12 @@ builder.Services.AddApiFramework(builder.Configuration)
     .AddPersistence(builder.Configuration, builder.Environment)
     .AddInfrastructureMessaging(builder.Configuration)
     .AddPriceFeedSubscriber(builder.Configuration)
-    .AddPriceFeedNotifications();
+    .AddPriceFeedNotifications()
+    .AddCandleCache(builder.Configuration);
 
+builder.Services.Configure<OrderMatchingOptions>(
+    builder.Configuration.GetSection(OrderMatchingOptions.SectionName));
+builder.Services.AddScoped<ISellOrderMatchRepository, SellOrderMatchRepository>();
 
 if (!builder.Environment.IsEnvironment("Test"))
 {

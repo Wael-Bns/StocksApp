@@ -5,7 +5,7 @@ namespace StocksApp.Domain.RepositoryContracts
     public interface ISellOrderMatchRepository
     {
         /// <summary>
-        /// Returns the Sell order ids that need to get matched .
+        /// Returns the Sell order ids that match the app criteria.
         /// </summary>
         /// <param name="gracePeriod">The amount of time after which it is assured that a candle is written comfortably</param>
         /// <param name="ct"></param>
@@ -26,5 +26,14 @@ namespace StocksApp.Domain.RepositoryContracts
         /// <param name="ct"></param>
         /// <returns>A boolean value equal to true if the order is marked executed and false if not.</returns>
         Task<bool> TryCancelAsync(Guid orderId, TimeSpan gracePeriod, CancellationToken ct);
+        /// <summary>
+        /// Credits the cash balance of a user in the database.
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <param name="amount"></param>
+        /// <param name="ct"></param>
+        /// <returns></returns>
+        Task CreditCashAsync(Guid userId, double amount, CancellationToken ct);
+
     }
 }

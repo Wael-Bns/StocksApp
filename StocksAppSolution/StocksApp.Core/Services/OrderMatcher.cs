@@ -45,7 +45,8 @@ namespace StocksApp.Core.Services
                 var orders = await _matchRepository.ListTrackedAsync(orderIds, ct);
                 foreach (var order in orders)
                 {
-                    order.MarkExecuted(order.User);
+                    order.MarkExecuted();
+                    await _matchRepository.CreditCashAsync(order.UserId, order.Price * order.Quantity, ct);
                     await _outboxRepository.AddAsync(SellOrderExecuted.From(order).ToOutbox());
                 }
 

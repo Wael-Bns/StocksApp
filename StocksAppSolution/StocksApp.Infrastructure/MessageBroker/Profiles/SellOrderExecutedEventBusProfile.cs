@@ -1,6 +1,7 @@
 ﻿using MassTransit;
 using RabbitMQ.Client;
 using StocksApp.Domain.Events;
+using StocksApp.Infrastructure.Helpers;
 
 namespace StocksApp.Infrastructure.MessageBroker.Profiles
 {
@@ -8,7 +9,7 @@ namespace StocksApp.Infrastructure.MessageBroker.Profiles
     {
         public void ConfigureMessages(IRabbitMqBusFactoryConfigurator cfg)
         {
-            cfg.Message<SellOrderExecuted>(m => m.SetEntityName("sell-order-executed"));
+            cfg.Message<SellOrderExecuted>(m => m.SetEntityName(RabbitMQExchanges.SellOrderExecutedExchange));
             cfg.Publish<SellOrderExecuted>(p => p.ExchangeType = ExchangeType.Topic);
         }
     }

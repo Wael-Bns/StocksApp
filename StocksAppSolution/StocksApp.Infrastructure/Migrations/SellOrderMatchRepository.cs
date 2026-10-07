@@ -44,21 +44,26 @@ namespace StocksApp.Infrastructure.Repositories
 
         public async Task<IReadOnlyList<SellOrder>> ListTrackedAsync(IReadOnlyList<Guid> orderIds, CancellationToken ct) =>
             await _context.SellOrders
-                .Include(o => o.User)
                 .Where(o => orderIds.Contains(o.SellOrderID))
                 .ToListAsync(ct);
         public async Task<bool> TryCancelAsync(Guid orderId, TimeSpan gracePeriod, CancellationToken ct)
         {
             var rows = await _context.Database.ExecuteSqlInterpolatedAsync($@"
-            UPDATE ""SellOrder"" SET ""Status"" = 'Cancelled'
-            WHERE ""SellOrderID"" = {orderId} AND ""Status"" = 'Pending'
-              AND NOT EXISTS (
-                SELECT 1 FROM candle_matches_5s m
-                WHERE m.symbol = ""StockSymbol"" AND m.bucket_start >= ""ActivatesAt""
-                  AND m.bucket_start + interval '5 seconds' + {gracePeriod} <= now()
-                  AND m.high >= ""Price"")", ct);
+                UPDATE ""SellOrder"" SET ""Status"" = 'Cancelled'
+                WHERE ""SellOrderID"" = {orderId} AND ""Status"" = 'Pending'
+                  AND NOT EXISTS (
+                    SELECT 1 FROM candle_matches_5s m
+                    WHERE m.symbol = ""StockSymbol"" AND m.bucket_start >= ""ActivatesAt""
+                      AND m.bucket_start + interval '5 seconds' + {gracePeriod} <= now()
+                      AND m.high >= ""Price"")", ct);
 
             return rows > 0;
+        }
+        public async Task CreditCashAsync(Guid userId, double amount, CancellationToken ct)
+        {
+            await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                UPDATE ""User"" SET ""CashBalance"" = ""CashBalance"" + {amount}
+                WHERE ""UserId"" = {userId}", ct);
         }
     }
 }

@@ -38,15 +38,11 @@ namespace StocksApp.Domain.Entities
             };
         }
 
-        public void MarkExecuted(User user)
+        public void MarkExecuted()
         {
             if (Status != SellOrderStatus.Pending)
                 throw new InvalidOperationException($"Cannot execute a {Status} order.");
-            if (user.UserId != UserId)
-                throw new ArgumentException("User does not own this order.", nameof(user));
-
             Status = SellOrderStatus.Executed;
-            user.CashBalance += Price * Quantity;
         }
 
         private static DateTime CeilToBucket(DateTime t, TimeSpan bucket)

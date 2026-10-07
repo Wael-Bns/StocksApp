@@ -1,5 +1,4 @@
-﻿// StocksApp.Test.PriceFeed/TickPublisherServiceTest.cs
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -18,16 +17,18 @@ namespace StocksApp.Test.PriceFeed
     public class TickPublisherServiceTest : IAsyncLifetime
     {
         private readonly Channel<PriceUpdateMessage> _channel;
-        private readonly Mock<IOhlcBarAggregator> _aggregatorMock;
-        private readonly Mock<ILatestPriceCacheWriter> _latestPriceTrackerMock;
+        private readonly Mock<IOhlcBarAggregator> _chartAggregatorMock;
+        private readonly Mock<IOhlcBarAggregator> _matchAggregatorMock;
+        private readonly Mock<ILatestPriceCacheWriter> _latestPriceCacheWriterMock;
         private readonly Mock<IPriceFeedMetrics> _metricsMock;
         private TickPublisherService _service = default!;
 
         public TickPublisherServiceTest()
         {
             _channel = Channel.CreateUnbounded<PriceUpdateMessage>();
-            _aggregatorMock = new Mock<IOhlcBarAggregator>();
-            _latestPriceTrackerMock = new Mock<ILatestPriceCacheWriter>();
+            _chartAggregatorMock = new Mock<IOhlcBarAggregator>();
+            _matchAggregatorMock = new Mock<IOhlcBarAggregator>();
+            _latestPriceCacheWriterMock = new Mock<ILatestPriceCacheWriter>();
             _metricsMock = new Mock<IPriceFeedMetrics>();
         }
 
@@ -52,10 +53,41 @@ namespace StocksApp.Test.PriceFeed
             await _channel.Writer.WriteAsync(new PriceUpdateMessageBuilder().Build());
             await AsyncTestHelpers.WaitUntilAsync(() => AsyncTestHelpers.CountInvocations(_metricsMock, nameof(IPriceFeedMetrics.TickPublished)) >= 1);
 
-            _aggregatorMock.Invocations.Should().BeEmpty();
-            _latestPriceTrackerMock.Invocations.Should().BeEmpty();
+            _chartAggregatorMock.Invocations.Should().BeEmpty();
+            _latestPriceCacheWriterMock.Invocations.Should().BeEmpty();
+        }
+        [Fact]
+        public async Task CandlesAndMatchingBothEnabled_EveryTick_FeedsBothAggregatorsIndependently()
+        {
+            ArrangeService(candlesEnabled: true, matchingEnabled: true);
+            var tick = new PriceUpdateMessageBuilder().WithSymbol("AAPL").Build();
+
+            await _service.StartAsync(CancellationToken.None);
+            await _channel.Writer.WriteAsync(tick);
+
+            await AsyncTestHelpers.WaitUntilAsync(() =>
+                AsyncTestHelpers.CountInvocations(_chartAggregatorMock, nameof(IOhlcBarAggregator.ApplyTickAsync)) >= 1 &&
+                AsyncTestHelpers.CountInvocations(_matchAggregatorMock, nameof(IOhlcBarAggregator.ApplyTickAsync)) >= 1);
+
+            _chartAggregatorMock.Verify(a => a.ApplyTickAsync(
+                It.Is<PriceUpdateMessage>(m => m.StockSymbol == "AAPL"), It.IsAny<CancellationToken>()), Times.Once);
+            _matchAggregatorMock.Verify(a => a.ApplyTickAsync(
+                It.Is<PriceUpdateMessage>(m => m.StockSymbol == "AAPL"), It.IsAny<CancellationToken>()), Times.Once);
         }
 
+        [Fact]
+        public async Task MatchingDisabled_ChartEnabled_MatchAggregatorNeverCalled()
+        {
+            ArrangeService(candlesEnabled: true, matchingEnabled: false);
+
+            await _service.StartAsync(CancellationToken.None);
+            await _channel.Writer.WriteAsync(new PriceUpdateMessageBuilder().Build());
+
+            await AsyncTestHelpers.WaitUntilAsync(() =>
+                AsyncTestHelpers.CountInvocations(_chartAggregatorMock, nameof(IOhlcBarAggregator.ApplyTickAsync)) >= 1);
+
+            _matchAggregatorMock.Invocations.Should().BeEmpty();
+        }
         #endregion
 
         #region Independence Tests
@@ -64,7 +96,7 @@ namespace StocksApp.Test.PriceFeed
         public async Task CandlesEnabled_EveryTick_TracksLatestPriceRegardlessOfAggregatorOutcome()
         {
             ArrangeService(candlesEnabled: true);
-            _aggregatorMock.Setup(a => a.ApplyTickAsync(It.IsAny<PriceUpdateMessage>(), It.IsAny<CancellationToken>()))
+            _chartAggregatorMock.Setup(a => a.ApplyTickAsync(It.IsAny<PriceUpdateMessage>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException("aggregation failed"));
             var tick = new PriceUpdateMessageBuilder().WithSymbol("AAPL").Build();
 
@@ -72,10 +104,10 @@ namespace StocksApp.Test.PriceFeed
             await _channel.Writer.WriteAsync(tick);
 
             await AsyncTestHelpers.WaitUntilAsync(() =>
-                AsyncTestHelpers.CountInvocations(_latestPriceTrackerMock, nameof(ILatestPriceCacheWriter.WriteAsync)) >= 1);
+                AsyncTestHelpers.CountInvocations(_latestPriceCacheWriterMock, nameof(ILatestPriceCacheWriter.WriteAsync)) >= 1);
 
             // a failing aggregator must never block latest-price tracking — independent blocks
-            _latestPriceTrackerMock.Verify(t => t.WriteAsync(
+            _latestPriceCacheWriterMock.Verify(t => t.WriteAsync(
                 It.Is<PriceUpdateMessage>(m => m.StockSymbol == "AAPL"), It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -83,7 +115,7 @@ namespace StocksApp.Test.PriceFeed
         public async Task CandlesEnabled_AggregatorThrows_PublishingAndLatestPriceStillProceed()
         {
             ArrangeService(candlesEnabled: true);
-            _aggregatorMock.Setup(a => a.ApplyTickAsync(It.IsAny<PriceUpdateMessage>(), It.IsAny<CancellationToken>()))
+            _chartAggregatorMock.Setup(a => a.ApplyTickAsync(It.IsAny<PriceUpdateMessage>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException("aggregation failed"));
 
             await _service.StartAsync(CancellationToken.None);
@@ -91,36 +123,38 @@ namespace StocksApp.Test.PriceFeed
 
             await AsyncTestHelpers.WaitUntilAsync(() => AsyncTestHelpers.CountInvocations(_metricsMock, nameof(IPriceFeedMetrics.TickPublished)) >= 1);
             await AsyncTestHelpers.WaitUntilAsync(() =>
-                AsyncTestHelpers.CountInvocations(_latestPriceTrackerMock, nameof(ILatestPriceCacheWriter.WriteAsync)) >= 1);
+                AsyncTestHelpers.CountInvocations(_latestPriceCacheWriterMock, nameof(ILatestPriceCacheWriter.WriteAsync)) >= 1);
         }
 
         [Fact]
         public async Task CandlesEnabled_LatestPriceTrackerThrows_AggregationStillProceeds()
         {
             ArrangeService(candlesEnabled: true);
-            _latestPriceTrackerMock.Setup(t => t.WriteAsync(It.IsAny<PriceUpdateMessage>(), It.IsAny<CancellationToken>()))
+            _latestPriceCacheWriterMock.Setup(t => t.WriteAsync(It.IsAny<PriceUpdateMessage>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new InvalidOperationException("tracking failed"));
 
             await _service.StartAsync(CancellationToken.None);
             await _channel.Writer.WriteAsync(new PriceUpdateMessageBuilder().Build());
 
             await AsyncTestHelpers.WaitUntilAsync(() =>
-               AsyncTestHelpers.CountInvocations(_aggregatorMock, nameof(IOhlcBarAggregator.ApplyTickAsync)) >= 1);
+               AsyncTestHelpers.CountInvocations(_chartAggregatorMock, nameof(IOhlcBarAggregator.ApplyTickAsync)) >= 1);
         }
 
         #endregion
 
         #region Helpers
 
-        private void ArrangeService(bool candlesEnabled)
+        private void ArrangeService(bool candlesEnabled = false, bool matchingEnabled = false)
         {
             _service = new TickPublisherService(
                 _channel.Reader,
                 Mock.Of<MassTransit.IBus>(),
-                _aggregatorMock.Object,
-                _latestPriceTrackerMock.Object,
+                _chartAggregatorMock.Object,
+                _matchAggregatorMock.Object,
+                _latestPriceCacheWriterMock.Object,
                 _metricsMock.Object,
                 Options.Create(new CandleCacheOptions { Enabled = candlesEnabled }),
+                Options.Create(new OrderMatchingOptions { Enabled = matchingEnabled }),
                 Mock.Of<ILogger<TickPublisherService>>());
         }
 

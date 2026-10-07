@@ -102,7 +102,7 @@ namespace StocksApp.IntegrationsTests.Tests
         [Fact]
         public async Task SellOrder_Unauthenticated_ReturnsUnauthorized()
         {
-            var request = new SellOrderRequestBuilder().Build();
+            var request = new SellOrderAddRequestBuilder().Build();
 
             var response = await _trade.SellOrderRawAsync(request);
 
@@ -114,7 +114,7 @@ namespace StocksApp.IntegrationsTests.Tests
         {
             await AuthenticateAsync("sellorder@test.com");
 
-            var request = new SellOrderRequestBuilder()
+            var request = new SellOrderAddRequestBuilder()
                 .WithStockSymbol("MSFT")
                 .WithStockName("Microsoft Corporation")
                 .WithQuantity(5)
@@ -136,7 +136,7 @@ namespace StocksApp.IntegrationsTests.Tests
         {
             await AuthenticateAsync("invalidsell@test.com");
 
-            var request = new SellOrderRequestBuilder()
+            var request = new SellOrderAddRequestBuilder()
                 .WithStockSymbol("")
                 .WithStockName("")
                 .WithQuantity(0)
@@ -191,7 +191,7 @@ namespace StocksApp.IntegrationsTests.Tests
         {
             await AuthenticateAsync("allsellorders@test.com");
 
-            var request = new SellOrderRequestBuilder()
+            var request = new SellOrderAddRequestBuilder()
                 .WithStockSymbol("AAPL")
                 .WithStockName("Apple Inc.")
                 .WithQuantity(2)
