@@ -3,7 +3,6 @@ using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.ServiceContracts;
 using Microsoft.AspNetCore.Authorization;
-using StocksApp.Core.MessageBroker.Publisher;
 
 namespace StocksApp.WebApi.Controllers
 {
