@@ -21,7 +21,6 @@ namespace StocksApp.Infrastructure.IoC
                 ?? throw new InvalidOperationException("RabbitMQ settings are not configured.");
 
             services.Configure<RabbitMqOptions>(rabbitMqSection);
-            services.AddCommandBusProfiles();
             services.AddEventBusProfiles();
 
             services.AddMassTransit(x =>
@@ -38,9 +37,6 @@ namespace StocksApp.Infrastructure.IoC
 
                     configureReceiveEndpoints?.Invoke(cfg, ctx);
 
-                    foreach (var profile in ctx.GetServices<ICommandBusProfile>())
-                        profile.ConfigureMessages(cfg);
-
                     foreach (var profile in ctx.GetServices<IEventBusProfile>())
                         profile.ConfigureMessages(cfg);
                 });
@@ -51,15 +47,11 @@ namespace StocksApp.Infrastructure.IoC
             return services;
         }
 
-        public static IServiceCollection AddCommandBusProfiles(this IServiceCollection services)
-        {
-            services.AddTransient<ICommandBusProfile, OrderCreatedCommandBusProfile>();
-            return services;
-        }
-
         public static IServiceCollection AddEventBusProfiles(this IServiceCollection services)
         {
             services.AddTransient<IEventBusProfile, PriceTickPublishedEventBusProfile>();
+            services.AddTransient<IEventBusProfile, SellOrderExecutedEventBusProfile>();
+
             return services;
         }
     }

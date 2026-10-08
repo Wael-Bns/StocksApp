@@ -100,6 +100,86 @@ namespace StocksApp.Infrastructure.Migrations
                     b.ToTable("candles_1m", (string)null);
                 });
 
+            modelBuilder.Entity("StocksApp.Domain.Entities.CandleMatch5s", b =>
+                {
+                    b.Property<string>("Symbol")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("symbol");
+
+                    b.Property<DateTimeOffset>("BucketStart")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("bucket_start");
+
+                    b.Property<decimal>("Close")
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("close");
+
+                    b.Property<decimal>("High")
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("high");
+
+                    b.Property<decimal>("Low")
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("low");
+
+                    b.Property<decimal>("Open")
+                        .HasColumnType("numeric(18,6)")
+                        .HasColumnName("open");
+
+                    b.Property<int>("TradeCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("trade_count");
+
+                    b.Property<long>("Volume")
+                        .HasColumnType("bigint")
+                        .HasColumnName("volume");
+
+                    b.HasKey("Symbol", "BucketStart");
+
+                    b.ToTable("candle_matches_5s", (string)null);
+                });
+
+            modelBuilder.Entity("StocksApp.Domain.Entities.CandleMatchFlushBackup", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("BucketStart")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Close")
+                        .HasColumnType("numeric(18,6)");
+
+                    b.Property<DateTime>("FailedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("High")
+                        .HasColumnType("numeric(18,6)");
+
+                    b.Property<decimal>("Low")
+                        .HasColumnType("numeric(18,6)");
+
+                    b.Property<decimal>("Open")
+                        .HasColumnType("numeric(18,6)");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<int>("TradeCount")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("Volume")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("candle_match_flush_backup", (string)null);
+                });
+
             modelBuilder.Entity("StocksApp.Domain.Entities.Outbox", b =>
                 {
                     b.Property<Guid>("OutboxId")
@@ -147,6 +227,9 @@ namespace StocksApp.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("ActivatesAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("DateAndTimeOfOrder")
                         .HasColumnType("timestamp with time zone");
 
@@ -175,6 +258,10 @@ namespace StocksApp.Infrastructure.Migrations
                     b.HasKey("SellOrderID");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("StockSymbol", "ActivatesAt")
+                        .HasDatabaseName("ix_sellorders_pending_symbol")
+                        .HasFilter("\"Status\" = 'Pending'");
 
                     b.ToTable("SellOrder", null, t =>
                         {

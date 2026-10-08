@@ -1,9 +1,12 @@
 ﻿using System.Threading.Channels;
+using Microsoft.Extensions.Options;
 using StocksApp.Core.Diagnostics;
 using StocksApp.Core.DTO.StockDTO;
+using StocksApp.Core.Options;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 using StocksApp.Domain.RepositoryContracts;
+using StocksApp.Infrastructure.Caching;
 using StocksApp.Infrastructure.Repositories;
 using StocksApp.Infrastructure.Services;
 using StocksApp.PriceFeed.BackgroundServices;
@@ -17,7 +20,43 @@ namespace StocksApp.PriceFeed.IoC
         public static IServiceCollection AddPriceFeedServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<PriceFeedIngestionOptions>(configuration.GetSection(PriceFeedIngestionOptions.SectionName));
+            services.Configure<MatchCandleStoreOptions>(configuration.GetSection(MatchCandleStoreOptions.SectionName));
+            services.Configure<MatchBarBackupRetryOptions>(configuration.GetSection(MatchBarBackupRetryOptions.SectionName));
 
+            services.AddScoped<ICandleMatchRepository, CandleMatchRepository>();
+            services.AddScoped<ICandleMatchFlushBackupRepository, CandleMatchFlushBackupRepository>();
+
+            services.AddKeyedSingleton<IOhlcBarAggregator>("chart", (sp, _) =>
+            {
+                var options = sp.GetRequiredService<IOptions<CandleCacheOptions>>().Value;
+                return new OhlcBarAggregator(
+                    sp.GetRequiredService<ICandleCache>(),
+                    new ScopedCandleStore(sp.GetRequiredService<IServiceScopeFactory>()),
+                    sp.GetRequiredService<ICandleMetrics>(),
+                    sp.GetRequiredService<ILatestPriceCacheWriter>(),
+                    options.BucketSize,
+                    sp.GetRequiredService<ILogger<OhlcBarAggregator>>());
+            });
+
+            services.AddKeyedSingleton<IOhlcBarAggregator>("match", (sp, _) =>
+            {
+                var matchOptions = sp.GetRequiredService<IOptions<OrderMatchingOptions>>().Value;
+                var matchStore = new ResilientCandleMatchStore(
+                    sp.GetRequiredService<IServiceScopeFactory>(),
+                    sp.GetRequiredService<ICandleMetrics>(),
+                    sp.GetRequiredService<IOptions<MatchCandleStoreOptions>>(),
+                    sp.GetRequiredService<ILogger<ResilientCandleMatchStore>>());
+
+                return new OhlcBarAggregator(
+                    new NullCandleCache(),
+                    matchStore,
+                    sp.GetRequiredService<ICandleMetrics>(),
+                    new NullLatestPriceCacheWriter(),
+                    matchOptions.MatchBucketSize,
+                    sp.GetRequiredService<ILogger<OhlcBarAggregator>>());
+            });
+
+            services.AddHostedService<MatchBarBackupRetryService>();
             services.AddScoped<ICandleRepository, CandleRepository>();
             services.AddSingleton<ICandleStore, ScopedCandleStore>();
             services.AddSingleton<IOhlcBarAggregator, OhlcBarAggregator>();

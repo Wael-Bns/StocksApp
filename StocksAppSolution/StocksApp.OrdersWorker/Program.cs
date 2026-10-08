@@ -1,11 +1,11 @@
-using MassTransit;
-using StocksApp.Core.IoC;
-using StocksApp.Infrastructure.Helpers;
+using StocksApp.Core.Options;
+using StocksApp.Core.ServiceContracts;
+using StocksApp.Core.Services;
+using StocksApp.Domain.RepositoryContracts;
 using StocksApp.Infrastructure.IoC;
+using StocksApp.Infrastructure.Repositories;
 using StocksApp.Observability;
-using StocksApp.OrdersWorker.IoC;
-using StocksApp.OrdersWorker.MessageBroker;
-using StocksApp.OrdersWorker.Worker;
+using StocksApp.OrdersWorker.BackgroundServices;
 
 var builder = Host.CreateApplicationBuilder(args);
 
@@ -15,31 +15,15 @@ builder.Services.Configure<ServiceProviderOptions>(options =>
     options.ValidateOnBuild = true;
 });
 
-builder.Services.AddHostedService<OrdersWorker>();
-
 builder.Services
-    .AddWorkerServices()
     .AddPersistence(builder.Configuration, builder.Environment)
-    .AddInfrastructureMessaging(
-        builder.Configuration,
-        registerConsumers: x =>
-        {
-            x.AddConsumer<SellOrderCreatedConsumer>();
-        },
-        configureReceiveEndpoints: (cfg, ctx) =>
-        {
-            cfg.ReceiveEndpoint(RabbitMQQueues.SellOrderCreatedQueue, e =>
-            {
-                e.Bind(RabbitMQExchanges.OrdersExchange, b =>
-                {
-                    b.ExchangeType = "direct";
-                    b.RoutingKey = "sellorder.created";
-                });
+    .Configure<OrderMatchingOptions>(builder.Configuration.GetSection(OrderMatchingOptions.SectionName));
 
-                e.ConfigureConsumer<SellOrderCreatedConsumer>(ctx);
-            });
-        })
-    .AddPriceFeedSubscriber(builder.Configuration);
+builder.Services.AddScoped<ISellOrderMatchRepository, SellOrderMatchRepository>();
+builder.Services.AddScoped<IOrderMatcher, OrderMatcher>();
+builder.Services.AddHostedService<SellOrderMatchingService>();
+
+
 
 if (!builder.Environment.IsEnvironment("Test"))
 {

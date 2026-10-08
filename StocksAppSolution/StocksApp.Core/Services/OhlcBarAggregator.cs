@@ -1,11 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using StocksApp.Core.Candles;
 using StocksApp.Core.Diagnostics;
 using StocksApp.Core.DTO.CandleDTO;
 using StocksApp.Core.DTO.StockDTO;
-using StocksApp.Core.Options;
 using StocksApp.Core.ServiceContracts;
 
 namespace StocksApp.Core.Services
@@ -32,14 +30,14 @@ namespace StocksApp.Core.Services
             ICandleStore store,
             ICandleMetrics metrics,
             ILatestPriceCacheWriter latestPriceCacheWriter,
-            IOptions<CandleCacheOptions> options,
+            TimeSpan bucketSize,
             ILogger<OhlcBarAggregator> logger)
         {
             _cache = cache;
             _store = store;
             _metrics = metrics;
             _latestPriceCacheWriter = latestPriceCacheWriter;
-            _bucketSize = options.Value.BucketSize;
+            _bucketSize = bucketSize;
             _logger = logger;
         }
 

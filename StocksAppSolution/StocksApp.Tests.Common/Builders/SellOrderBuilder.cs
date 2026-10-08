@@ -74,18 +74,15 @@ namespace StocksApp.Tests.Common.Builders
         {
             var user = _user ?? new UserBuilder().WithUserId(_userId ?? Guid.NewGuid()).Build();
 
-            return new SellOrder
-            {
-                SellOrderID = _sellOrderId,
-                StockSymbol = _stockSymbol,
-                StockName = _stockName,
-                DateAndTimeOfOrder = _dateAndTimeOfOrder,
-                Quantity = _quantity,
-                Price = _price,
-                Status = _status,
-                UserId = _userId ?? user.UserId,
-                User = user
-            };
+            return SellOrder.Create(
+                user.UserId,
+                _stockSymbol,
+                _stockName,
+                _price,
+                _quantity,
+                _dateAndTimeOfOrder,
+                TimeSpan.FromMinutes(1)
+            );
         }
     }
 }

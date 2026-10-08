@@ -11,29 +11,23 @@ namespace StocksApp.Infrastructure.Configurations
             builder.ToTable("SellOrder");
             builder.HasKey(b => b.SellOrderID);
 
-            builder.Property(b => b.StockSymbol)
-                .HasMaxLength(25)
-                .IsRequired();
-
-            builder.Property(b => b.Price)
-                .HasColumnType("decimal(18,2)")
-                .IsRequired();
-
-            builder.Property(b => b.Quantity)
-                .IsRequired();
-
-            builder.Property(b => b.Status)
-                .HasConversion<string>()
-                .HasMaxLength(50)
-                .IsRequired();
+            builder.Property(b => b.StockSymbol).HasMaxLength(25).IsRequired();
+            builder.Property(b => b.Price).HasColumnType("decimal(18,2)").IsRequired();
+            builder.Property(b => b.Quantity).IsRequired();
+            builder.Property(b => b.Status).HasConversion<string>().HasMaxLength(50).IsRequired();
+            builder.Property(b => b.ActivatesAt).IsRequired();
 
             builder.HasOne(s => s.User)
-                    .WithMany(u => u.SellOrders)
-                    .HasForeignKey(s => s.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                .WithMany(u => u.SellOrders)
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.ToTable(t => t.HasCheckConstraint("CK_SellOrder_Quantity", "\"Quantity\" > 0"));
             builder.ToTable(t => t.HasCheckConstraint("CK_SellOrder_Price", "\"Price\" > 0"));
+
+            builder.HasIndex(s => new { s.StockSymbol, s.ActivatesAt })
+                .HasDatabaseName("ix_sellorders_pending_symbol")
+                .HasFilter("\"Status\" = 'Pending'");
         }
     }
 }

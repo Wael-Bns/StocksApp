@@ -1,5 +1,4 @@
-﻿// StocksApp.Domain/Specifications/BaseSpecification.cs
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
 namespace StocksApp.Domain.Specifications
 {

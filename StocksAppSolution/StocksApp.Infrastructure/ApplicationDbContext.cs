@@ -11,6 +11,8 @@ namespace StocksApp.Infrastructure
         public DbSet<Outbox> Outbox { get; set; }
         public DbSet<TrackedSymbol> TrackedSymbols { get; set; }
         public DbSet<Candle1m> Candles1m { get; set; }
+        public DbSet<CandleMatch5s> CandleMatches5s { get; set; }
+        public DbSet<CandleMatchFlushBackup> CandleMatchFlushBackups { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

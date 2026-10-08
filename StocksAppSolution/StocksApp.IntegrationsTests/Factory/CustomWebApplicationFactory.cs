@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using StocksApp.Core.HttpClientAbstractions;
+using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.WebSocketClientAbstractions;
 using StocksApp.Infrastructure;
 using StocksApp.Tests.Common.Fakes;
@@ -39,11 +40,14 @@ namespace StocksApp.IntegrationsTests.Factory
                 });
 
                 services.RemoveAll<IFinnHubHttpClient>();
-
                 services.AddScoped<IFinnHubHttpClient, FakeFinnhubHttpClient>();
 
                 services.RemoveAll<IFinnhubWebSocketClient>();
                 services.AddSingleton<IFinnhubWebSocketClient, FakeFinnhubWebSocketClient>();
+
+
+                services.RemoveAll<ICandleCache>();
+                services.AddSingleton<ICandleCache, FakeCandleCache>();
 
                 var massTransitDescriptors = services
                     .Where(d => d.ServiceType.Namespace != null
