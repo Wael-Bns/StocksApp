@@ -5,6 +5,9 @@ import type {
   OrderResponse,
   SellOrderAddRequest,
   TradeInfoResponse,
+  CandleHydrationResponse,
+  CandleInterval,
+  MarketPrice,
 } from "../types/trade.types";
 
 export const tradeService = {
@@ -41,6 +44,25 @@ export const tradeService = {
   async getAllSellOrders(): Promise<OrderResponse[]> {
     const { data } = await httpClient.get<OrderResponse[]>(
       API_ROUTES.allSellOrders,
+    );
+    return data;
+  },
+
+  async getMarketPrices(symbols: string[]): Promise<MarketPrice[]> {
+    const { data } = await httpClient.get<MarketPrice[]>(
+      API_ROUTES.marketPrices,
+      { params: symbols.length ? { symbols: symbols.join(",") } : undefined },
+    );
+    return data;
+  },
+
+  async getCandleHydration(
+    symbol: string,
+    interval: CandleInterval = "1m",
+  ): Promise<CandleHydrationResponse> {
+    const { data } = await httpClient.get<CandleHydrationResponse>(
+      API_ROUTES.marketCandles(symbol),
+      { params: { interval } },
     );
     return data;
   },

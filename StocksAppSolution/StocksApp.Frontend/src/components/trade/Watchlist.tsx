@@ -3,6 +3,8 @@ import { Card } from "../common/Card";
 import { EmptyState } from "../common/EmptyState";
 import { useStockPrice } from "../../hooks/useStockPrice";
 import { TOP_50_SYMBOLS, type MarketSymbol } from "../../config/topSymbols";
+import { tickStore } from "../../stores/tickStore";
+import { PREVIEW_MARKETS } from "../../config/previewData";
 
 interface WatchlistProps {
   activeSymbol: string | null;
@@ -15,6 +17,14 @@ interface WatchlistProps {
 export function Watchlist({ activeSymbol, onSelect }: WatchlistProps) {
   const [filter, setFilter] = useState("");
 
+  useEffect(() => {
+    void tickStore
+      .hydratePrices(TOP_50_SYMBOLS.map((item) => item.symbol))
+      .catch((error: unknown) => {
+        console.error("Unable to hydrate watchlist prices.", error);
+      });
+  }, []);
+
   const filtered = useMemo(() => {
     const query = filter.trim().toUpperCase();
     if (!query) return TOP_50_SYMBOLS;
@@ -25,8 +35,8 @@ export function Watchlist({ activeSymbol, onSelect }: WatchlistProps) {
   }, [filter]);
 
   return (
-    <Card className="h-fit">
-      <div className="flex items-center justify-between gap-sm">
+    <Card className="h-full min-h-0 rounded-none border-y-0 border-l-0 p-0 gap-0 bg-surface-container-lowest">
+      <div className="flex items-center justify-between gap-sm px-md py-md border-b border-outline-variant">
         <span className="font-label-caps text-label-caps text-outline uppercase whitespace-nowrap">
           Watchlist ({TOP_50_SYMBOLS.length})
         </span>
@@ -46,7 +56,7 @@ export function Watchlist({ activeSymbol, onSelect }: WatchlistProps) {
       {filtered.length === 0 ? (
         <EmptyState icon="visibility_off" title="No symbols match that filter" />
       ) : (
-        <div className="flex flex-col divide-y divide-surface-container-highest/60 -mt-xs max-h-[560px] overflow-y-auto">
+        <div className="flex flex-col divide-y divide-surface-container-highest/60 max-h-full overflow-y-auto">
           {filtered.map((item) => (
             <WatchlistRow
               key={item.symbol}
@@ -71,6 +81,7 @@ function WatchlistRow({
   onSelect: () => void;
 }) {
   const price = useStockPrice(item.symbol);
+  const preview = PREVIEW_MARKETS.find((market) => market.symbol === item.symbol);
   const firstPriceRef = useRef<number | null>(null);
   const [changePct, setChangePct] = useState<number | null>(null);
 
@@ -102,20 +113,20 @@ function WatchlistRow({
 
       <div className="flex flex-col items-end shrink-0">
         <span className="font-mono-code text-body-sm text-on-surface tabular-nums">
-          {price !== null ? price.toFixed(2) : "—"}
+          {(price ?? preview?.price)?.toFixed(2) ?? "—"}
         </span>
-        {changePct !== null ? (
+        {changePct !== null || preview ? (
           <span
             className={`font-mono-code text-[11px] ${
-              changePct >= 0 ? "text-tertiary" : "text-error"
+              (changePct ?? preview?.change ?? 0) >= 0 ? "text-tertiary" : "text-error"
             }`}
           >
-            {changePct >= 0 ? "+" : ""}
-            {changePct.toFixed(2)}%
+            {(changePct ?? preview?.change ?? 0) >= 0 ? "+" : ""}
+            {(changePct ?? preview?.change ?? 0).toFixed(2)}%
           </span>
         ) : (
           <span className="font-mono-code text-[11px] text-outline">
-            {price !== null ? "live" : "connecting"}
+            {price !== null ? "live" : "preview"}
           </span>
         )}
       </div>

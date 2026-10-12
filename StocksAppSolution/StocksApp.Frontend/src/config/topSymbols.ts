@@ -12,12 +12,13 @@ export interface MarketSymbol {
  */
 export const TOP_50_SYMBOLS: MarketSymbol[] = [
   { symbol: "AAPL", name: "Apple Inc." },
-  { symbol: "MSFT", name: "Microsoft Corp." },
-  { symbol: "GOOGL", name: "Alphabet Inc." },
-  { symbol: "AMZN", name: "Amazon.com Inc." },
+  { symbol: "TSLA", name: "Tesla, Inc." },
   { symbol: "NVDA", name: "NVIDIA Corp." },
+  { symbol: "MSFT", name: "Microsoft Corp." },
+  { symbol: "AMD", name: "AMD" },
+  { symbol: "AMZN", name: "Amazon" },
+  { symbol: "GOOGL", name: "Alphabet" },
   { symbol: "META", name: "Meta Platforms Inc." },
-  { symbol: "TSLA", name: "Tesla Inc." },
   { symbol: "BRK.B", name: "Berkshire Hathaway" },
   { symbol: "JPM", name: "JPMorgan Chase & Co." },
   { symbol: "V", name: "Visa Inc." },
@@ -60,5 +61,4 @@ export const TOP_50_SYMBOLS: MarketSymbol[] = [
   { symbol: "UNP", name: "Union Pacific Corp." },
   { symbol: "HON", name: "Honeywell Intl." },
   { symbol: "IBM", name: "IBM Corp." },
-  { symbol: "AMD", name: "Advanced Micro Devices" },
 ];

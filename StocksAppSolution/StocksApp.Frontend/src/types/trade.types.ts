@@ -52,3 +52,30 @@ export interface OrderResponse {
   userId?: string;
   [key: string]: unknown;
 }
+
+export type CandleInterval = "1m" | "5m" | "1h" | "1d";
+
+export interface MarketPrice {
+  symbol: string;
+  price: number;
+  volume: number;
+  time: number;
+}
+
+export interface MarketCandle {
+  time: number;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface CandleHydrationResponse {
+  symbol: string;
+  interval: CandleInterval;
+  closed: MarketCandle[];
+  current: MarketCandle | null;
+  lastPrice: MarketPrice | null;
+  serverTime: number;
+}

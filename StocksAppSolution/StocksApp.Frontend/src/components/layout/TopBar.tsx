@@ -11,7 +11,7 @@ interface TopBarProps {
 const INERT_ICON_CLASSES =
   "w-9 h-9 rounded-full flex items-center justify-center text-outline hover:text-on-surface-variant cursor-not-allowed transition-colors";
 
-export function TopBar({ title, subtitle, actions }: TopBarProps) {
+export function TopBar({ title, actions }: TopBarProps) {
   const { session } = useAuth();
 
   const initial = (session?.userName ?? session?.email ?? "?")
@@ -19,26 +19,22 @@ export function TopBar({ title, subtitle, actions }: TopBarProps) {
     .toUpperCase();
 
   return (
-    <header className="flex items-center justify-between gap-lg border-b border-outline-variant/30 px-lg py-md flex-wrap">
-      <div>
-        <h1 className="font-headline-lg text-headline-lg text-on-surface">
-          {title}
-        </h1>
-        {subtitle && (
-          <p className="font-body-sm text-body-sm text-on-surface-variant">
-            {subtitle}
-          </p>
-        )}
+    <header className="flex items-center justify-between gap-lg border-b border-outline-variant bg-surface-container-low px-lg h-12 flex-wrap">
+      <div className="flex items-center gap-xl">
+        {actions}
+        <nav className="hidden md:flex items-center gap-lg">
+          <span className="font-body-sm font-bold text-primary border-b-2 border-primary h-12 flex items-center">{title}</span>
+          <span className="font-body-sm text-on-surface-variant">Portfolio</span>
+          <span className="font-body-sm text-on-surface-variant">Orders</span>
+        </nav>
       </div>
 
       <div className="flex items-center gap-md flex-wrap">
-        {actions}
-
         <button
           type="button"
           disabled
           title="Deposits aren't wired to an account/balance endpoint yet"
-          className="bg-primary/20 text-primary font-body-sm font-bold px-md py-sm rounded-lg cursor-not-allowed"
+          className="bg-primary text-on-primary font-body-sm font-bold px-lg py-sm rounded-lg cursor-not-allowed uppercase"
         >
           Deposit
         </button>

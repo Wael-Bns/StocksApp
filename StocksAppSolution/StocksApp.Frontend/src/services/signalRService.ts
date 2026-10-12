@@ -6,7 +6,13 @@ import {
 } from "../config/constants";
 import { loadSession } from "../utils/storage";
 
-type PriceListener = (price: number) => void;
+export type PriceUpdate = {
+  symbol: string;
+  price: number;
+  volume: number;
+  time: number;
+};
+type PriceListener = (update: PriceUpdate) => void;
 export type HubStatus = "disconnected" | "connecting" | "connected" | "reconnecting";
 type StatusListener = (status: HubStatus) => void;
 
@@ -72,9 +78,11 @@ class SignalRService {
 
       this.connection.on(
         SIGNALR_EVENTS.receivePriceUpdate,
-        (symbol: string, price: number) => {
+        (symbol: string, price: number, volume = 0, time = Date.now()) => {
           const symbolListeners = this.listeners.get(symbol.toUpperCase());
-          symbolListeners?.forEach((listener) => listener(price));
+          symbolListeners?.forEach((listener) =>
+            listener({ symbol, price, volume, time }),
+          );
         },
       );
 

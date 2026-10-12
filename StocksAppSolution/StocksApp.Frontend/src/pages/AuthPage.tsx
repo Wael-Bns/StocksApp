@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Card } from "../components/common/Card";
 import { StatusPill } from "../components/common/StatusPill";
 import { LoginForm } from "../components/auth/LoginForm";
@@ -10,6 +10,7 @@ type AuthMode = "login" | "register";
 
 export function AuthPage() {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<AuthMode>("login");
 
   if (isAuthenticated) {
@@ -70,6 +71,20 @@ export function AuthPage() {
                 ? "Need an account? Create one"
                 : "Already provisioned? Sign in"}
             </button>
+
+            <button
+              type="button"
+              onClick={() => navigate("/markets?preview=true")}
+              className="flex items-center justify-center gap-sm border border-outline-variant/60 text-on-surface-variant hover:border-primary hover:text-primary font-label-caps text-label-caps uppercase py-sm px-md rounded-lg transition-colors"
+            >
+              <span className="material-symbols-outlined text-[18px]">
+                visibility
+              </span>
+              Preview Dashboard
+            </button>
+            <p className="text-center font-body-sm text-[12px] text-outline">
+              Preview mode skips authentication and uses read-only market UI.
+            </p>
           </Card>
         </main>
     </div>

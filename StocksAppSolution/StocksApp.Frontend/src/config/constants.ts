@@ -15,6 +15,9 @@ export const API_ROUTES = {
   sellOrder: "/Trade/sellorder",
   allBuyOrders: "/Trade/allbuyorders",
   allSellOrders: "/Trade/allsellorders",
+  marketPrices: "/MarketData/prices",
+  marketCandles: (symbol: string) =>
+    `/MarketData/candles/${encodeURIComponent(symbol)}`,
 } as const;
 
 /**

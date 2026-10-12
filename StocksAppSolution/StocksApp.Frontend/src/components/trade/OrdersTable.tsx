@@ -12,6 +12,17 @@ function humanizeKey(key: string): string {
     .replace(/^./, (c) => c.toUpperCase());
 }
 
+const TERMINAL_COLUMNS = [
+  "time",
+  "asset",
+  "side",
+  "type",
+  "price",
+  "qty",
+  "status",
+  "action",
+];
+
 /** Renders rows without assuming a fixed schema, since /allbuyorders and
  * /allsellorders response shapes aren't documented in the OpenAPI spec. */
 export function OrdersTable({ orders, emptyLabel }: OrdersTableProps) {
@@ -19,12 +30,14 @@ export function OrdersTable({ orders, emptyLabel }: OrdersTableProps) {
     return <EmptyState icon="receipt_long" title={emptyLabel} />;
   }
 
-  const columns = Array.from(
-    orders.reduce((keys, order) => {
-      Object.keys(order).forEach((key) => keys.add(key));
-      return keys;
-    }, new Set<string>()),
-  );
+  const columns = orders.some((order) => order.side)
+    ? TERMINAL_COLUMNS
+    : Array.from(
+        orders.reduce((keys, order) => {
+          Object.keys(order).forEach((key) => keys.add(key));
+          return keys;
+        }, new Set<string>()),
+      );
 
   return (
     <div className="overflow-x-auto">
@@ -52,8 +65,14 @@ export function OrdersTable({ orders, emptyLabel }: OrdersTableProps) {
                   key={column}
                   className="py-sm px-sm font-mono-code text-body-sm text-on-surface whitespace-nowrap"
                 >
-                  {order[column] !== null && order[column] !== undefined
-                    ? String(order[column])
+                  {column === "time"
+                    ? String(order.dateAndTimeOfOrder ?? "—").slice(-8)
+                    : column === "asset"
+                      ? String(order.stockSymbol ?? "—")
+                      : column === "action"
+                        ? "⊗"
+                        : order[column] !== null && order[column] !== undefined
+                          ? String(order[column])
                     : "—"}
                 </td>
               ))}

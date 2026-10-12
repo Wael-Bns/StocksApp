@@ -48,7 +48,7 @@ export function MarketSearch({ onResolved }: MarketSearchProps) {
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search markets (e.g. AAPL)"
+        placeholder="Search markets (CMD+K)"
         className="terminal-input w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-sm pl-xl pr-md text-on-surface font-body-md focus:outline-none focus:border-primary transition-all placeholder:text-outline-variant placeholder:font-mono-code"
       />
       {isLoading && (

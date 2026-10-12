@@ -5,6 +5,7 @@ import { Button } from "../common/Button";
 import { tradeService } from "../../services/tradeService";
 import { useAuth } from "../../hooks/useAuth";
 import { useToast } from "../../hooks/useToast";
+import { PREVIEW_MARKETS } from "../../config/previewData";
 
 type Side = "buy" | "sell";
 
@@ -21,12 +22,15 @@ export function TradePanel({ symbol, stockName, onOrderPlaced }: TradePanelProps
   const [side, setSide] = useState<Side>("buy");
   const [name, setName] = useState(stockName ?? "");
   const [quantity, setQuantity] = useState("10");
-  const [price, setPrice] = useState("");
+  const previewPrice = PREVIEW_MARKETS.find((market) => market.symbol === symbol)?.price;
+  const [price, setPrice] = useState(previewPrice?.toFixed(2) ?? "");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (stockName) setName(stockName);
-  }, [stockName]);
+    const nextPrice = PREVIEW_MARKETS.find((market) => market.symbol === symbol)?.price;
+    if (nextPrice !== undefined) setPrice(nextPrice.toFixed(2));
+  }, [stockName, symbol]);
 
   const parsedQuantity = Number(quantity) || 0;
   const parsedPrice = Number(price) || 0;
@@ -83,8 +87,8 @@ export function TradePanel({ symbol, stockName, onOrderPlaced }: TradePanelProps
   }
 
   return (
-    <Card className="h-fit">
-      <div className="flex items-center justify-between">
+    <Card className="h-full rounded-none border-y-0 border-r-0 p-md gap-md bg-surface-container">
+      <div className="flex items-center justify-between border-b border-outline-variant pb-md">
         <span className="font-label-caps text-label-caps text-outline uppercase">
           Execute Trade
         </span>
@@ -134,22 +138,6 @@ export function TradePanel({ symbol, stockName, onOrderPlaced }: TradePanelProps
             </span>
           </div>
         </div>
-
-        <div className="flex flex-col gap-xs">
-          <span className="font-label-caps text-label-caps text-outline uppercase">
-            Symbol
-          </span>
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-lg py-md px-md font-mono-code text-body-md text-on-surface">
-            {symbol ?? "— resolve a symbol —"}
-          </div>
-        </div>
-
-        <Input
-          label="Stock Name"
-          placeholder="Apple Inc."
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
 
         <div className="grid grid-cols-2 gap-md">
           <Input
@@ -225,6 +213,15 @@ export function TradePanel({ symbol, stockName, onOrderPlaced }: TradePanelProps
           {side === "buy" ? "Confirm Buy Order" : "Confirm Sell Order"}
         </Button>
       </form>
+      <div className="mt-auto border-t border-outline-variant pt-md">
+        <div className="flex items-center justify-between mb-sm">
+          <span className="font-label-caps text-[10px] text-outline uppercase">Daily P&amp;L</span>
+          <span className="font-mono-code text-body-md text-tertiary font-bold">+$840.12</span>
+        </div>
+        <div className="h-1 bg-surface-container-lowest rounded-full overflow-hidden">
+          <div className="h-full w-[65%] bg-tertiary" />
+        </div>
+      </div>
     </Card>
   );
 }

@@ -33,26 +33,30 @@ export function MarketsPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-[calc(100vh-3rem)] overflow-hidden">
       <TopBar
         title="Markets"
         subtitle="Connect to a symbol's live price stream and trade it."
         actions={<MarketSearch onResolved={handleResolved} />}
       />
 
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-[280px_1fr_340px] gap-lg p-lg">
-        <Watchlist activeSymbol={activeSymbol.symbol} onSelect={handleSelectFromWatchlist} />
+      <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-[200px_minmax(0,1fr)_256px] gap-0">
+        <div className="min-h-0 overflow-hidden">
+          <Watchlist activeSymbol={activeSymbol.symbol} onSelect={handleSelectFromWatchlist} />
+        </div>
 
-        <div className="flex flex-col gap-lg min-w-0">
+        <div className="flex flex-col min-w-0 min-h-0 bg-surface-container-lowest">
           <MarketPanel symbol={activeSymbol.symbol} stockName={activeStockName} />
           <ActivityTable symbol={activeSymbol.symbol} refreshKey={activityRefreshKey} />
         </div>
 
-        <TradePanel
-          symbol={activeSymbol.symbol}
-          stockName={activeStockName}
-          onOrderPlaced={() => setActivityRefreshKey((k) => k + 1)}
-        />
+        <div className="min-h-0 overflow-y-auto">
+          <TradePanel
+            symbol={activeSymbol.symbol}
+            stockName={activeStockName}
+            onOrderPlaced={() => setActivityRefreshKey((k) => k + 1)}
+          />
+        </div>
       </div>
     </div>
   );

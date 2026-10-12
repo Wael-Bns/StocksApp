@@ -3,6 +3,7 @@ import { Card } from "../common/Card";
 import { OrdersTable } from "./OrdersTable";
 import { tradeService } from "../../services/tradeService";
 import type { OrderResponse } from "../../types/trade.types";
+import { PREVIEW_ORDERS } from "../../config/previewData";
 
 interface ActivityTableProps {
   symbol: string | null;
@@ -25,15 +26,15 @@ const RECENT_LIMIT = 8;
 
 export function ActivityTable({ symbol, refreshKey }: ActivityTableProps) {
   const [tab, setTab] = useState<Tab>("active");
-  const [orders, setOrders] = useState<MergedOrder[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [orders, setOrders] = useState<MergedOrder[]>(
+    PREVIEW_ORDERS.map((order) => ({ ...order, side: String(order.side) as "BUY" | "SELL" })),
+  );
 
   useEffect(() => {
     if (tab !== "active") return;
     let cancelled = false;
 
     async function load() {
-      setIsLoading(true);
       try {
         const [buys, sells] = await Promise.all([
           tradeService.getAllBuyOrders(),
@@ -55,9 +56,12 @@ export function ActivityTable({ symbol, refreshKey }: ActivityTableProps) {
           })
           .slice(0, RECENT_LIMIT);
 
-        setOrders(merged);
+        setOrders(merged.length ? merged : PREVIEW_ORDERS.map((order) => ({ ...order, side: String(order.side) as "BUY" | "SELL" })));
+      } catch {
+        if (!cancelled) {
+          setOrders(PREVIEW_ORDERS.map((order) => ({ ...order, side: String(order.side) as "BUY" | "SELL" })));
+        }
       } finally {
-        if (!cancelled) setIsLoading(false);
       }
     }
 
@@ -68,7 +72,7 @@ export function ActivityTable({ symbol, refreshKey }: ActivityTableProps) {
   }, [symbol, refreshKey, tab]);
 
   return (
-    <Card>
+    <Card className="h-56 shrink-0 rounded-none border-x-0 border-b-0 p-md gap-sm bg-surface-container-low">
       <div className="flex gap-xs border-b border-outline-variant/30 pb-md -mt-xs -mx-xs px-xs overflow-x-auto">
         {TABS.map((t) =>
           t.enabled ? (
@@ -116,10 +120,6 @@ export function ActivityTable({ symbol, refreshKey }: ActivityTableProps) {
               : "Positions isn't implemented — there's no portfolio/holdings endpoint to compute it from yet."}
           </p>
         </div>
-      ) : isLoading ? (
-        <p className="font-mono-code text-body-sm text-outline text-center py-lg">
-          Loading orders...
-        </p>
       ) : (
         <>
           <span className="font-label-caps text-[11px] text-outline uppercase -mb-sm">

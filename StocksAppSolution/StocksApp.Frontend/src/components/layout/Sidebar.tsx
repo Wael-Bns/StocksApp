@@ -4,7 +4,8 @@ import { useHubStatus } from "../../hooks/useHubStatus";
 import { useAuth } from "../../hooks/useAuth";
 
 const NAV_ITEMS = [
-  { to: "/markets", label: "Markets", icon: "monitoring", enabled: true },
+  { to: "/dashboard", label: "Dashboard", icon: "dashboard", enabled: false },
+  { to: "/markets", label: "Markets", icon: "query_stats", enabled: true },
   { to: "/orders", label: "Orders", icon: "receipt_long", enabled: true },
   { to: "/portfolio", label: "Portfolio", icon: "pie_chart", enabled: false },
   { to: "/history", label: "History", icon: "history", enabled: false },
@@ -16,7 +17,7 @@ export function Sidebar() {
   const { logout } = useAuth();
 
   return (
-    <aside className="hidden md:flex w-[260px] shrink-0 flex-col justify-between h-screen sticky top-0 border-r border-outline-variant/30 bg-surface-container-lowest/60 px-md py-lg">
+    <aside className="hidden md:flex w-[192px] shrink-0 flex-col justify-between h-screen sticky top-0 border-r border-outline-variant bg-surface-container-low px-sm py-md">
       <div className="flex flex-col gap-xl">
         <div className="flex flex-col gap-sm">
           <div className="flex items-center gap-sm">
@@ -27,11 +28,11 @@ export function Sidebar() {
               terminal
             </span>
             <span className="font-headline-md text-headline-md text-on-surface tracking-tighter">
-              TRADIFY
+              OBSIDIAN
             </span>
           </div>
           <StatusPill
-            label={hubStatus === "connected" ? "Stream Live" : hubStatus}
+            label={hubStatus === "connected" ? "Connected: NY4" : "Connected: NY4"}
             active={hubStatus === "connected"}
           />
         </div>
@@ -74,13 +75,21 @@ export function Sidebar() {
         </nav>
       </div>
 
-      <div className="flex flex-col gap-md">
+      <div className="flex flex-col gap-unit border-t border-outline-variant pt-md">
         <NavLink
           to="/markets"
           className="w-full text-center bg-primary-container/30 text-primary font-body-md font-bold py-md rounded-lg hover:bg-primary-container/50 transition-all"
         >
-          Trade Now
+          TRADE NOW
         </NavLink>
+        <span className="flex items-center gap-sm px-md py-sm font-label-caps text-label-caps text-on-surface-variant">
+          <span className="material-symbols-outlined text-[18px]">support_agent</span>
+          Support
+        </span>
+        <span className="flex items-center gap-sm px-md py-sm font-label-caps text-label-caps text-on-surface-variant">
+          <span className="material-symbols-outlined text-[18px]">code</span>
+          API
+        </span>
         <button
           onClick={logout}
           className="flex items-center gap-sm px-md font-label-caps text-label-caps uppercase text-outline hover:text-error transition-all"
