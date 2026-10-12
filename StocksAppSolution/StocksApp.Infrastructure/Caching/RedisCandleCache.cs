@@ -82,5 +82,21 @@ namespace StocksApp.Infrastructure.Caching
         {
             await Db.KeyDeleteAsync(RedisKeyNames.LatestPrice(symbol));
         }
+
+        public async Task<LatestPriceSnapshot?> GetLatestPriceAsync(string symbol, CancellationToken ct)
+        {
+            var value = await Db.StringGetAsync(RedisKeyNames.LatestPrice(symbol));
+            if (value.IsNullOrEmpty) return null;
+
+            try
+            {
+                return JsonSerializer.Deserialize<LatestPriceSnapshot>(value!);
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Corrupt latest-price cache entry for {Symbol}; treating as absent.", symbol);
+                return null;
+            }
+        }
     }
 }

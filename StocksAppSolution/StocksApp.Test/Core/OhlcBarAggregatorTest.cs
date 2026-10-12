@@ -1,10 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 using StocksApp.Core.Candles;
 using StocksApp.Core.Diagnostics;
 using StocksApp.Core.DTO.CandleDTO;
-using StocksApp.Core.Options;
 using StocksApp.Core.ServiceContracts;
 using StocksApp.Core.Services;
 using StocksApp.Tests.Common.Builders;
@@ -24,7 +22,7 @@ namespace StocksApp.Test.Core
         {
             _aggregator = new OhlcBarAggregator(
                 _cacheMock.Object, _storeMock.Object, _metricsMock.Object,_latestPriceCacheWriterMock.Object,
-                Options.Create(new CandleCacheOptions { BucketSize = TimeSpan.FromMinutes(1) }),
+                TimeSpan.FromMinutes(1),
                 Mock.Of<ILogger<OhlcBarAggregator>>());
         }
 

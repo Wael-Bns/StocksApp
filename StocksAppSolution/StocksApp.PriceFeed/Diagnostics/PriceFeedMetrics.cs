@@ -16,6 +16,9 @@ namespace StocksApp.PriceFeed.Diagnostics
         private readonly Counter<long> _ticksLate;
         private readonly Counter<long> _candlesFlushed;
         private readonly Counter<long> _candlesFlushFailed;
+        private readonly Counter<long> _matchBarFlushFailed;
+        private readonly Counter<long> _matchBarBackupRecovered;
+        private long _matchBarBackupPending;
 
         public PriceFeedMetrics(IMeterFactory meterFactory)
         {
@@ -29,6 +32,9 @@ namespace StocksApp.PriceFeed.Diagnostics
             _ticksLate = meter.CreateCounter<long>("pricefeed_ticks_late_total");
             _candlesFlushed = meter.CreateCounter<long>("pricefeed_candles_flushed_total");
             _candlesFlushFailed = meter.CreateCounter<long>("pricefeed_candles_flush_failed_total");
+            _matchBarFlushFailed = meter.CreateCounter<long>("match_bar_flush_failed_total");
+            _matchBarBackupRecovered = meter.CreateCounter<long>("match_bar_backup_recovered_total");
+            meter.CreateObservableGauge("match_bar_backup_pending", () => Interlocked.Read(ref _matchBarBackupPending));
 
             meter.CreateObservableGauge("pricefeed_symbols_desired", () => Interlocked.Read(ref _desiredSymbols));
             meter.CreateObservableGauge("pricefeed_symbols_actual", () => Interlocked.Read(ref _actualSymbols));
@@ -68,5 +74,8 @@ namespace StocksApp.PriceFeed.Diagnostics
         public void TickLateForClosedBucket() => _ticksLate.Add(1);
         public void CandleFlushed() => _candlesFlushed.Add(1);
         public void CandleFlushFailed() => _candlesFlushFailed.Add(1);
+        public void MatchBarFlushFailed() => _matchBarFlushFailed.Add(1);
+        public void MatchBarBackupRecovered() => _matchBarBackupRecovered.Add(1);
+        public void SetMatchBarBackupPending(int count) => Interlocked.Exchange(ref _matchBarBackupPending, count);
     }
 }

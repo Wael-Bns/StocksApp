@@ -38,5 +38,12 @@ namespace StocksApp.Core.ServiceContracts
         /// <param name="stockSymbol">Symbol based on which informations are fetched .</param>
         /// <returns>Stock informations</returns>
         Task<StockInformations> GetStockInformations(string stockSymbol);
+        /// <summary>
+        /// Cancels a sell order and mark it as executed in the database
+        /// </summary>
+        /// <param name="sellOrderId"></param>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        Task<bool> CancelSellOrder(Guid sellOrderId, Guid userId);
     }
 }

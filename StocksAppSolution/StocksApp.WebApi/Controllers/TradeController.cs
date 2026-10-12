@@ -3,7 +3,6 @@ using StocksApp.Core.DTO.BuyOrderDTO;
 using StocksApp.Core.DTO.SellOrderDTO;
 using StocksApp.Core.ServiceContracts;
 using Microsoft.AspNetCore.Authorization;
-using StocksApp.Core.MessageBroker.Publisher;
 
 namespace StocksApp.WebApi.Controllers
 {
@@ -35,6 +34,12 @@ namespace StocksApp.WebApi.Controllers
         {
             SellOrderResponse sellOrderResponse = await _stockService.CreateSellOrder(sellOrderRequest, CurrentUserId);
             return Ok(sellOrderResponse);
+        }
+        [HttpPost("sellorder/{sellOrderId}/cancel")]
+        public async Task<IActionResult> CancelSellOrder(Guid sellOrderId)
+        {
+            var cancelled = await _stockService.CancelSellOrder(sellOrderId, CurrentUserId);
+            return cancelled ? Ok() : Conflict("Order could not be cancelled — it may already be executed or no longer pending.");
         }
         [HttpGet("allbuyorders")]
         public async Task<IActionResult> GetAllBuyOrders()

@@ -7,5 +7,6 @@
         public const string SymbolSubscriptionsExchange = "symbol_subscriptions_exchange";
         public const string NeedSymbolExchange = "need_symbol_exchange";
         public const string ReleaseSymbolExchange = "release_symbol_exchange";
+        public const string SellOrderExecutedExchange = "sell_order_executed_exchange";
     }
 }

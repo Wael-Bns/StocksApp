@@ -21,7 +21,7 @@ namespace StocksApp.IntegrationsTests.Factory
                 .Options;
 
             await using var ctx = new ApplicationDbContext(Options);
-            await ctx.Database.MigrateAsync();   // runs once per test class, not per test method
+            await ctx.Database.MigrateAsync();
         }
 
         public Task DisposeAsync() => _pg.DisposeAsync().AsTask();

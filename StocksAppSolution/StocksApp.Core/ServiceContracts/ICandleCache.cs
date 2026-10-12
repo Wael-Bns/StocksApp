@@ -5,7 +5,7 @@ namespace StocksApp.Core.ServiceContracts
     public interface ICandleCache
     {
         Task SetLatestPriceAsync(LatestPriceSnapshot snapshot, CancellationToken ct);
-
+        Task<LatestPriceSnapshot?> GetLatestPriceAsync(string symbol, CancellationToken ct);
         Task DeleteLatestPriceAsync(string symbol, CancellationToken ct);
         Task SetActiveBarAsync(ActiveBarSnapshot bar, CancellationToken ct);
         Task<ActiveBarSnapshot?> GetActiveBarAsync(string symbol, CancellationToken ct);

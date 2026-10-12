@@ -1,5 +1,6 @@
 ﻿using System.Threading.Channels;
 using MassTransit;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StocksApp.Core.Diagnostics;
 using StocksApp.Core.DTO.StockDTO;
@@ -13,29 +14,36 @@ namespace StocksApp.PriceFeed.BackgroundServices
     {
         private readonly ChannelReader<PriceUpdateMessage> _reader;
         private readonly IBus _bus;
-        private readonly IOhlcBarAggregator _aggregator;
+        private readonly IOhlcBarAggregator _chartAggregator;
+        private readonly IOhlcBarAggregator _matchAggregator;
         private readonly ILatestPriceCacheWriter _latestPriceCacheWriter;
         private readonly IPriceFeedMetrics _metrics;
         private readonly CandleCacheOptions _candleOptions;
+        private readonly OrderMatchingOptions _matchingOptions;
         private readonly ILogger<TickPublisherService> _logger;
 
         public TickPublisherService(
             ChannelReader<PriceUpdateMessage> reader,
             IBus bus,
-            IOhlcBarAggregator aggregator,
+            [FromKeyedServices("chart")] IOhlcBarAggregator chartAggregator,
+            [FromKeyedServices("match")] IOhlcBarAggregator matchAggregator,
             ILatestPriceCacheWriter latestPriceCacheWriter,
             IPriceFeedMetrics metrics,
             IOptions<CandleCacheOptions> candleOptions,
+            IOptions<OrderMatchingOptions> matchingOptions,
             ILogger<TickPublisherService> logger)
         {
             _reader = reader;
             _bus = bus;
-            _aggregator = aggregator;
+            _chartAggregator = chartAggregator;
+            _matchAggregator = matchAggregator;
             _latestPriceCacheWriter = latestPriceCacheWriter;
             _metrics = metrics;
             _candleOptions = candleOptions.Value;
+            _matchingOptions = matchingOptions.Value;
             _logger = logger;
         }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await foreach (var update in _reader.ReadAllAsync(stoppingToken))
@@ -43,18 +51,29 @@ namespace StocksApp.PriceFeed.BackgroundServices
                 if (await PublishTickAsync(update, stoppingToken))
                     break;
 
-                if (_candleOptions.Enabled)
-                {
-                    var writingToCacheTask = WriteLatestPriceAsync(update, stoppingToken);
-                    var aggregatingCandleTask = AggregateCandleAsync(update, stoppingToken);
-                    bool terminateWriting = await writingToCacheTask;
-                    bool terminateAggregating = await aggregatingCandleTask;
-                    if(terminateAggregating || terminateWriting)
-                    {
-                        return;
-                    }
-                }
+                if (await RunCandleWorkAsync(update, stoppingToken))
+                    break;
             }
+        }
+
+        private async Task<bool> RunCandleWorkAsync(PriceUpdateMessage update, CancellationToken stoppingToken)
+        {
+            var pending = new List<Task<bool>>(3);
+
+            if (_candleOptions.Enabled)
+            {
+                pending.Add(AggregateCandleAsync(_chartAggregator, "chart", update, stoppingToken));
+                pending.Add(WriteLatestPriceAsync(update, stoppingToken));
+            }
+
+            if (_matchingOptions.Enabled)
+                pending.Add(AggregateCandleAsync(_matchAggregator, "match", update, stoppingToken));
+
+            if (pending.Count == 0)
+                return false;
+
+            var results = await Task.WhenAll(pending);
+            return Array.Exists(results, shouldStop => shouldStop);
         }
 
         private async Task<bool> PublishTickAsync(PriceUpdateMessage update, CancellationToken stoppingToken)
@@ -81,11 +100,12 @@ namespace StocksApp.PriceFeed.BackgroundServices
             }
         }
 
-        private async Task<bool> AggregateCandleAsync(PriceUpdateMessage update, CancellationToken stoppingToken)
+        private async Task<bool> AggregateCandleAsync(
+            IOhlcBarAggregator aggregator, string label, PriceUpdateMessage update, CancellationToken stoppingToken)
         {
             try
             {
-                await _aggregator.ApplyTickAsync(update, stoppingToken);
+                await aggregator.ApplyTickAsync(update, stoppingToken);
                 return false;
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -94,7 +114,7 @@ namespace StocksApp.PriceFeed.BackgroundServices
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to aggregate candle for {Symbol}", update.StockSymbol);
+                _logger.LogWarning(ex, "Failed to aggregate {Label} candle for {Symbol}", label, update.StockSymbol);
                 return false;
             }
         }

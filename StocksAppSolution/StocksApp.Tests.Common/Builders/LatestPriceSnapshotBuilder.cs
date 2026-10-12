@@ -33,6 +33,11 @@ namespace StocksApp.Tests.Common.Builders
             _timestamp = timestamp;
             return this;
         }
+        public LatestPriceSnapshotBuilder WithTimestamp(DateTimeOffset timestamp)
+        {
+            _timestamp = timestamp.ToUnixTimeMilliseconds();
+            return this;
+        }
 
         public LatestPriceSnapshot Build() => new(_symbol, _price, _volume, _timestamp);
     }
